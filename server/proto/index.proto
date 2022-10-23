@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "server/proto";
+
+import "google/api/annotations.proto";
+import "server/proto/exchange.proto";
+
+service Index {
+  // Get statistic.
+  rpc GetStatistic (GetIndexRequestStatistic) returns (ResponseStatistic) {
+    option (google.api.http) = {
+      get: "/v2/index/get-statistic"
+    };
+  }
+  // Index get currencies.
+  rpc GetCurrencies (GetIndexRequestCurrencies) returns (ResponseCurrency) {
+    option (google.api.http) = {
+      post: "/v2/index/get-currencies"
+      body: "*"
+    };
+  }
+  // Index get pairs.
+  rpc GetPairs (GetIndexRequestPairs) returns (ResponsePair) {
+    option (google.api.http) = {
+      post: "/v2/index/get-pairs"
+      body: "*"
+    };
+  }
+}
+
+// Statistic message structure.
+message Statistic {
+  message Account {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Chain {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Currency {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Pair {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Transaction {
+    int32 filled = 1;
+    int32 pending = 2;
+  }
+  message Order {
+    int32 buy = 1;
+    int32 sell = 2;
+  }
+  Account accounts = 1;
+  Chain chains = 2;
+  Currency currencies = 3;
+  Pair pairs = 4;
+  Transaction transactions = 5;
+  Order orders = 6;
+  message Reserve {
+    string symbol = 1;
+    double value = 2;
+    double value_charged = 3;
+    double value_charged_convert = 4;
+    double value_costs = 5;
+  }
+  repeated Reserve reserves = 7;
+}
+
+// Statistic structure.
+message GetIndexRequestStatistic {}
+message ResponseStatistic {
+  Statistic fields = 1;
+}
+
+// Currency structure.
+message GetIndexRequestCurrencies {
+  int64 id = 1;
+}
+
+// Pair structure.
+message GetIndexRequestPairs {}

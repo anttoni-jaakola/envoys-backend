@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "server/proto";
+
+message Publish {
+  string channel = 1;
+  string data = 2;
+}
