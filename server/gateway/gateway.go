@@ -204,6 +204,7 @@ func (o *Options) gateway(ctx context.Context, connect *grpc.ClientConn, opts []
 		proto.RegisterAuthHandler,
 		proto.RegisterAccountHandler,
 		proto.RegisterExchangeHandler,
+		proto.RegisterMarketHandler,
 	} {
 		if err := f(ctx, route, connect); err != nil {
 			return nil, err

@@ -287,7 +287,7 @@ enum Tag {
     C_ETHEREUM = 2;
     C_BINANCE = 3;
     C_TRON = 4;
-    C_POLYGON= 5;
+    C_POLYGON = 5;
     C_CRONOS = 6;
     C_FANTOM = 7;
     C_AVALANCHE = 8;

@@ -54,6 +54,9 @@ type Context struct {
 	RedisDB                  int
 	RedisClient              *redis.Client
 
+	MarketKey, MarketSecret string
+	MarketTest              bool
+
 	BrokerClient                               MQTT.Client
 	BrokerHost, BrokerUsername, BrokerPassword string
 	BrokerCleanSession                         bool

@@ -121,7 +121,7 @@ func (x *Statistic) GetReserves() []*Statistic_Reserve {
 	return nil
 }
 
-// Request statistic.
+// Statistic structure.
 type GetIndexRequestStatistic struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -160,7 +160,6 @@ func (*GetIndexRequestStatistic) Descriptor() ([]byte, []int) {
 	return file_server_proto_index_proto_rawDescGZIP(), []int{1}
 }
 
-// Response statistic.
 type ResponseStatistic struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -208,7 +207,7 @@ func (x *ResponseStatistic) GetFields() *Statistic {
 	return nil
 }
 
-// Request currency.
+// Currency structure.
 type GetIndexRequestCurrencies struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -256,7 +255,7 @@ func (x *GetIndexRequestCurrencies) GetId() int64 {
 	return 0
 }
 
-// Request currency.
+// Pair structure.
 type GetIndexRequestPairs struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

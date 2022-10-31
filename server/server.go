@@ -95,10 +95,13 @@ func Master(option *assets.Context) {
 
 		var (
 			exchange = &service.ExchangeService{Context: option}
+			market   = &service.MarketService{Context: option}
 		)
 
 		go exchange.Initialization()
+		go market.Initialization()
 
+		proto.RegisterMarketServer(srv, market)
 		proto.RegisterExchangeServer(srv, exchange)
 
 		reflection.Register(srv)
