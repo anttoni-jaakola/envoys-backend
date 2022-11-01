@@ -562,8 +562,8 @@ func (e *ExchangeService) transferTron(userId, txId int64, symbol, to string, va
 	if e.Context.Debug(err) {
 		return
 	}
-	err = client.Transaction()
-	if e.Context.Debug(err) {
+
+	if err = client.Transaction(); e.Context.Debug(err) {
 		return
 	}
 

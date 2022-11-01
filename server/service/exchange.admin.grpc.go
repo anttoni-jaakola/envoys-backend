@@ -413,13 +413,14 @@ func (e *ExchangeService) SetChainRule(ctx context.Context, req *proto.SetExchan
 
 	if req.GetId() > 0 {
 
-		if _, err := e.Context.Db.Exec("update chains set name = $1, rpc = $2, rpc_key = $3, rpc_user = $4, rpc_password = $5, network = $6, explorer_link = $7, platform = $8, confirmation = $9, time_withdraw = $10, fees_withdraw = $11, address = $12, tag = $13, parent_symbol = $14, status = $15 where id = $16;",
+		if _, err := e.Context.Db.Exec("update chains set name = $1, rpc = $2, rpc_key = $3, rpc_user = $4, rpc_password = $5, network = $6, block = $7, explorer_link = $8, platform = $9, confirmation = $10, time_withdraw = $11, fees_withdraw = $12, address = $13, tag = $14, parent_symbol = $15, status = $16 where id = $17;",
 			req.Chain.GetName(),
 			req.Chain.GetRpc(),
 			req.Chain.GetRpcKey(),
 			req.Chain.GetRpcUser(),
 			req.Chain.GetRpcPassword(),
 			req.Chain.GetNetwork(),
+			req.Chain.GetBlock(),
 			req.Chain.GetExplorerLink(),
 			req.Chain.GetPlatform(),
 			req.Chain.GetConfirmation(),
@@ -443,6 +444,7 @@ func (e *ExchangeService) SetChainRule(ctx context.Context, req *proto.SetExchan
 			req.Chain.GetRpcUser(),
 			req.Chain.GetRpcPassword(),
 			req.Chain.GetNetwork(),
+			req.Chain.GetBlock(),
 			req.Chain.GetExplorerLink(),
 			req.Chain.GetPlatform(),
 			req.Chain.GetConfirmation(),
@@ -818,12 +820,13 @@ func (e *ExchangeService) SetContractRule(ctx context.Context, req *proto.SetExc
 
 	if req.GetId() > 0 {
 
-		if _, err := e.Context.Db.Exec("update contracts set symbol = $1, chain_id = $2, address = $3, fees_withdraw = $4, protocol = $5 where id = $6;",
+		if _, err := e.Context.Db.Exec("update contracts set symbol = $1, chain_id = $2, address = $3, fees_withdraw = $4, protocol = $5, decimals = $6 where id = $7;",
 			req.Contract.GetSymbol(),
 			req.Contract.GetChainId(),
 			req.Contract.GetAddress(),
 			req.Contract.GetFeesWithdraw(),
 			req.Contract.GetProtocol(),
+			req.Contract.GetDecimals(),
 			req.GetId(),
 		); err != nil {
 			return &response, e.Context.Error(err)
@@ -831,12 +834,13 @@ func (e *ExchangeService) SetContractRule(ctx context.Context, req *proto.SetExc
 
 	} else {
 
-		if _, err := e.Context.Db.Exec("insert into contracts (symbol, chain_id, address, fees_withdraw, protocol) values ($1, $2, $3, $4, $5)",
+		if _, err := e.Context.Db.Exec("insert into contracts (symbol, chain_id, address, fees_withdraw, protocol, decimals) values ($1, $2, $3, $4, $5, $6)",
 			req.Contract.GetSymbol(),
 			req.Contract.GetChainId(),
 			req.Contract.GetAddress(),
 			req.Contract.GetFeesWithdraw(),
 			req.Contract.GetProtocol(),
+			req.Contract.GetDecimals(),
 		); err != nil {
 			return &response, e.Context.Error(err)
 		}
