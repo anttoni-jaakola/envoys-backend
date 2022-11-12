@@ -1,4 +1,4 @@
-package main
+package broker
 
 import (
 	"crypto/hmac"
@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -90,6 +91,9 @@ func (connector *WebsocketConnector) listen(connected chan<- struct{}) {
 				}
 			}
 		}
-		connector.processor.ProcessMessage(data)
+
+		spew.Dump(data)
+
+		//connector.processor.ProcessMessage(data)
 	}
 }

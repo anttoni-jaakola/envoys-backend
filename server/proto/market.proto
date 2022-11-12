@@ -77,9 +77,101 @@ service Market {
             }
         };
     }
+    // Set places an order. Taker can specify order volume instead of order size.
+    rpc SetOrder (SetMarketRequestOrder) returns (ResponseMarketOrder) {
+        option (google.api.http) = {
+            post: "/v2/market/set-order",
+            body: "*"
+        };
+    }
+    // Set places an order. Taker can specify order volume instead of order size.
+    rpc GetOrders (GetMarketRequestOrder) returns (ResponseMarketOrder) {
+        option (google.api.http) = {
+            post: "/v2/market/get-orders",
+            body: "*"
+            additional_bindings {
+                get: "/v2/market/get-orders"
+            }
+        };
+    }
+}
+
+// Market set order.
+message MarketOrder {
+    // Order id.
+    int64 id = 1;
+    // Instrument name.
+    string symbol = 2;
+    // Internal client id.
+    int64 uid = 3;
+    // Counterparty Id.
+    int64 cid = 4;
+    // Order price.
+    double price = 5;
+    // Order volume.
+    double volume = 6;
+    // Quantity value.
+    double size = 7;
+    //  Order side, "bid" - buy and "ask" - sell.
+    string side = 8;
+    // Order types "limitIOC", "limitFOK", "marketIOC", "marketFOK".
+    string type = 9;
+    // Create order at.
+    string create_at = 10;
+}
+
+message GetMarketRequestOrder {
+    // Instrument name.
+    string symbol = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
+
+message SetMarketRequestOrder {
+    // Instrument name.
+    string symbol = 1;
+    // Order limit price (for postOnly and limit orders).
+    double price = 2;
+    // Order size. If specified - volume shouldn't be used.
+    double size = 3;
+    // Order volume to be filled. Can be used by takers only. If specified - size shouldn't be used.
+    double volume = 4;
+    // Order side, use "bid" to buy and "ask" to sell.
+    string side = 5;
+    // Order types "limitIOC", "limitFOK", "marketIOC", "marketFOK" can only be used by market takers. "postOnly" and "limit" can only be used by market makers..
+    string type = 6;
+}
+message ResponseMarketOrder {
+    repeated MarketOrder fields = 1;
+    int32 count = 2;
+}
+
+// Market depth.
+message MarketDepth {
+    message Attributes {
+        string assigning = 1;
+        string action = 2;
+        // Level price.
+        double price = 3;
+        // Level total size.
+        double size = 4;
+    }
+    string symbol = 1;
+    repeated Attributes fields = 2;
 }
 
 // Market book.
+message MarketBook {
+    message Book {
+        // Level price.
+        double price = 1;
+        // Level total size.
+        double size = 2;
+    }
+    repeated Book bid = 1;
+    repeated Book ask = 2;
+}
+
 message GetMarketRequestBook {
     // Instrument name.
     string instrument = 1;
@@ -87,10 +179,10 @@ message GetMarketRequestBook {
     bool tradable = 2;
 }
 message ResponseBook {
-
+    MarketBook fields = 1;
 }
 
-// Market settlement request.
+// Market settlement.
 message SettlementRequest {
     message Item {
         // Counterparty Id.

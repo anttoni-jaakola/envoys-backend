@@ -25,7 +25,460 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Market set order.
+type MarketOrder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Order id.
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Instrument name.
+	Symbol string `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	// Internal client id.
+	Uid int64 `protobuf:"varint,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	// Counterparty Id.
+	Cid int64 `protobuf:"varint,4,opt,name=cid,proto3" json:"cid,omitempty"`
+	// Order price.
+	Price float64 `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
+	// Order volume.
+	Volume float64 `protobuf:"fixed64,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	// Quantity value.
+	Size float64 `protobuf:"fixed64,7,opt,name=size,proto3" json:"size,omitempty"`
+	// Order side, "bid" - buy and "ask" - sell.
+	Side string `protobuf:"bytes,8,opt,name=side,proto3" json:"side,omitempty"`
+	// Order types "limitIOC", "limitFOK", "marketIOC", "marketFOK".
+	Type string `protobuf:"bytes,9,opt,name=type,proto3" json:"type,omitempty"`
+	// Create order at.
+	CreateAt string `protobuf:"bytes,10,opt,name=create_at,json=createAt,proto3" json:"create_at,omitempty"`
+}
+
+func (x *MarketOrder) Reset() {
+	*x = MarketOrder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MarketOrder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarketOrder) ProtoMessage() {}
+
+func (x *MarketOrder) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarketOrder.ProtoReflect.Descriptor instead.
+func (*MarketOrder) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *MarketOrder) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *MarketOrder) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *MarketOrder) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+func (x *MarketOrder) GetCid() int64 {
+	if x != nil {
+		return x.Cid
+	}
+	return 0
+}
+
+func (x *MarketOrder) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *MarketOrder) GetVolume() float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return 0
+}
+
+func (x *MarketOrder) GetSize() float64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *MarketOrder) GetSide() string {
+	if x != nil {
+		return x.Side
+	}
+	return ""
+}
+
+func (x *MarketOrder) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *MarketOrder) GetCreateAt() string {
+	if x != nil {
+		return x.CreateAt
+	}
+	return ""
+}
+
+type GetMarketRequestOrder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Instrument name.
+	Symbol string `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Limit  int64  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Page   int64  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+}
+
+func (x *GetMarketRequestOrder) Reset() {
+	*x = GetMarketRequestOrder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetMarketRequestOrder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMarketRequestOrder) ProtoMessage() {}
+
+func (x *GetMarketRequestOrder) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMarketRequestOrder.ProtoReflect.Descriptor instead.
+func (*GetMarketRequestOrder) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetMarketRequestOrder) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *GetMarketRequestOrder) GetLimit() int64 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetMarketRequestOrder) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+type SetMarketRequestOrder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Instrument name.
+	Symbol string `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	// Order limit price (for postOnly and limit orders).
+	Price float64 `protobuf:"fixed64,2,opt,name=price,proto3" json:"price,omitempty"`
+	// Order size. If specified - volume shouldn't be used.
+	Size float64 `protobuf:"fixed64,3,opt,name=size,proto3" json:"size,omitempty"`
+	// Order volume to be filled. Can be used by takers only. If specified - size shouldn't be used.
+	Volume float64 `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
+	// Order side, use "bid" to buy and "ask" to sell.
+	Side string `protobuf:"bytes,5,opt,name=side,proto3" json:"side,omitempty"`
+	// Order types "limitIOC", "limitFOK", "marketIOC", "marketFOK" can only be used by market takers. "postOnly" and "limit" can only be used by market makers..
+	Type string `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
+}
+
+func (x *SetMarketRequestOrder) Reset() {
+	*x = SetMarketRequestOrder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetMarketRequestOrder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMarketRequestOrder) ProtoMessage() {}
+
+func (x *SetMarketRequestOrder) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMarketRequestOrder.ProtoReflect.Descriptor instead.
+func (*SetMarketRequestOrder) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *SetMarketRequestOrder) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SetMarketRequestOrder) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *SetMarketRequestOrder) GetSize() float64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *SetMarketRequestOrder) GetVolume() float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return 0
+}
+
+func (x *SetMarketRequestOrder) GetSide() string {
+	if x != nil {
+		return x.Side
+	}
+	return ""
+}
+
+func (x *SetMarketRequestOrder) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+type ResponseMarketOrder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Fields []*MarketOrder `protobuf:"bytes,1,rep,name=fields,proto3" json:"fields,omitempty"`
+	Count  int32          `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+}
+
+func (x *ResponseMarketOrder) Reset() {
+	*x = ResponseMarketOrder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ResponseMarketOrder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResponseMarketOrder) ProtoMessage() {}
+
+func (x *ResponseMarketOrder) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResponseMarketOrder.ProtoReflect.Descriptor instead.
+func (*ResponseMarketOrder) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ResponseMarketOrder) GetFields() []*MarketOrder {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *ResponseMarketOrder) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+// Market depth.
+type MarketDepth struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string                    `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Fields []*MarketDepth_Attributes `protobuf:"bytes,2,rep,name=fields,proto3" json:"fields,omitempty"`
+}
+
+func (x *MarketDepth) Reset() {
+	*x = MarketDepth{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MarketDepth) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarketDepth) ProtoMessage() {}
+
+func (x *MarketDepth) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarketDepth.ProtoReflect.Descriptor instead.
+func (*MarketDepth) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *MarketDepth) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *MarketDepth) GetFields() []*MarketDepth_Attributes {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
 // Market book.
+type MarketBook struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Bid []*MarketBook_Book `protobuf:"bytes,1,rep,name=bid,proto3" json:"bid,omitempty"`
+	Ask []*MarketBook_Book `protobuf:"bytes,2,rep,name=ask,proto3" json:"ask,omitempty"`
+}
+
+func (x *MarketBook) Reset() {
+	*x = MarketBook{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MarketBook) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarketBook) ProtoMessage() {}
+
+func (x *MarketBook) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarketBook.ProtoReflect.Descriptor instead.
+func (*MarketBook) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *MarketBook) GetBid() []*MarketBook_Book {
+	if x != nil {
+		return x.Bid
+	}
+	return nil
+}
+
+func (x *MarketBook) GetAsk() []*MarketBook_Book {
+	if x != nil {
+		return x.Ask
+	}
+	return nil
+}
+
 type GetMarketRequestBook struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -40,7 +493,7 @@ type GetMarketRequestBook struct {
 func (x *GetMarketRequestBook) Reset() {
 	*x = GetMarketRequestBook{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[0]
+		mi := &file_server_proto_market_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -53,7 +506,7 @@ func (x *GetMarketRequestBook) String() string {
 func (*GetMarketRequestBook) ProtoMessage() {}
 
 func (x *GetMarketRequestBook) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[0]
+	mi := &file_server_proto_market_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66,7 +519,7 @@ func (x *GetMarketRequestBook) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMarketRequestBook.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestBook) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{0}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetMarketRequestBook) GetInstrument() string {
@@ -87,12 +540,14 @@ type ResponseBook struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Fields *MarketBook `protobuf:"bytes,1,opt,name=fields,proto3" json:"fields,omitempty"`
 }
 
 func (x *ResponseBook) Reset() {
 	*x = ResponseBook{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[1]
+		mi := &file_server_proto_market_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -105,7 +560,7 @@ func (x *ResponseBook) String() string {
 func (*ResponseBook) ProtoMessage() {}
 
 func (x *ResponseBook) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[1]
+	mi := &file_server_proto_market_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -118,10 +573,17 @@ func (x *ResponseBook) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseBook.ProtoReflect.Descriptor instead.
 func (*ResponseBook) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{1}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{7}
 }
 
-// Market settlement request.
+func (x *ResponseBook) GetFields() *MarketBook {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+// Market settlement.
 type SettlementRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -134,7 +596,7 @@ type SettlementRequest struct {
 func (x *SettlementRequest) Reset() {
 	*x = SettlementRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[2]
+		mi := &file_server_proto_market_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -147,7 +609,7 @@ func (x *SettlementRequest) String() string {
 func (*SettlementRequest) ProtoMessage() {}
 
 func (x *SettlementRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[2]
+	mi := &file_server_proto_market_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -160,7 +622,7 @@ func (x *SettlementRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettlementRequest.ProtoReflect.Descriptor instead.
 func (*SettlementRequest) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{2}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SettlementRequest) GetIncoming() []*SettlementRequest_Item {
@@ -186,7 +648,7 @@ type GetMarketRequestSettlementRequest struct {
 func (x *GetMarketRequestSettlementRequest) Reset() {
 	*x = GetMarketRequestSettlementRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[3]
+		mi := &file_server_proto_market_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -199,7 +661,7 @@ func (x *GetMarketRequestSettlementRequest) String() string {
 func (*GetMarketRequestSettlementRequest) ProtoMessage() {}
 
 func (x *GetMarketRequestSettlementRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[3]
+	mi := &file_server_proto_market_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -212,7 +674,7 @@ func (x *GetMarketRequestSettlementRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use GetMarketRequestSettlementRequest.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestSettlementRequest) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{3}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{9}
 }
 
 type ResponseSettlementRequest struct {
@@ -226,7 +688,7 @@ type ResponseSettlementRequest struct {
 func (x *ResponseSettlementRequest) Reset() {
 	*x = ResponseSettlementRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[4]
+		mi := &file_server_proto_market_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -239,7 +701,7 @@ func (x *ResponseSettlementRequest) String() string {
 func (*ResponseSettlementRequest) ProtoMessage() {}
 
 func (x *ResponseSettlementRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[4]
+	mi := &file_server_proto_market_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -252,7 +714,7 @@ func (x *ResponseSettlementRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseSettlementRequest.ProtoReflect.Descriptor instead.
 func (*ResponseSettlementRequest) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{4}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ResponseSettlementRequest) GetFields() *SettlementRequest {
@@ -275,7 +737,7 @@ type SettlementTransaction struct {
 func (x *SettlementTransaction) Reset() {
 	*x = SettlementTransaction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[5]
+		mi := &file_server_proto_market_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -288,7 +750,7 @@ func (x *SettlementTransaction) String() string {
 func (*SettlementTransaction) ProtoMessage() {}
 
 func (x *SettlementTransaction) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[5]
+	mi := &file_server_proto_market_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -301,7 +763,7 @@ func (x *SettlementTransaction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettlementTransaction.ProtoReflect.Descriptor instead.
 func (*SettlementTransaction) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{5}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SettlementTransaction) GetIncoming() []*SettlementTransaction_Item {
@@ -327,7 +789,7 @@ type GetMarketRequestSettlementTransaction struct {
 func (x *GetMarketRequestSettlementTransaction) Reset() {
 	*x = GetMarketRequestSettlementTransaction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[6]
+		mi := &file_server_proto_market_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -340,7 +802,7 @@ func (x *GetMarketRequestSettlementTransaction) String() string {
 func (*GetMarketRequestSettlementTransaction) ProtoMessage() {}
 
 func (x *GetMarketRequestSettlementTransaction) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[6]
+	mi := &file_server_proto_market_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +815,7 @@ func (x *GetMarketRequestSettlementTransaction) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use GetMarketRequestSettlementTransaction.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestSettlementTransaction) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{6}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{12}
 }
 
 type ResponseSettlementTransaction struct {
@@ -367,7 +829,7 @@ type ResponseSettlementTransaction struct {
 func (x *ResponseSettlementTransaction) Reset() {
 	*x = ResponseSettlementTransaction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[7]
+		mi := &file_server_proto_market_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -380,7 +842,7 @@ func (x *ResponseSettlementTransaction) String() string {
 func (*ResponseSettlementTransaction) ProtoMessage() {}
 
 func (x *ResponseSettlementTransaction) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[7]
+	mi := &file_server_proto_market_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +855,7 @@ func (x *ResponseSettlementTransaction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseSettlementTransaction.ProtoReflect.Descriptor instead.
 func (*ResponseSettlementTransaction) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{7}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ResponseSettlementTransaction) GetFields() *SettlementTransaction {
@@ -430,7 +892,7 @@ type CounterpartyLimit struct {
 func (x *CounterpartyLimit) Reset() {
 	*x = CounterpartyLimit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[8]
+		mi := &file_server_proto_market_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -443,7 +905,7 @@ func (x *CounterpartyLimit) String() string {
 func (*CounterpartyLimit) ProtoMessage() {}
 
 func (x *CounterpartyLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[8]
+	mi := &file_server_proto_market_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -456,7 +918,7 @@ func (x *CounterpartyLimit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CounterpartyLimit.ProtoReflect.Descriptor instead.
 func (*CounterpartyLimit) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{8}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CounterpartyLimit) GetCid() int64 {
@@ -525,7 +987,7 @@ type GetMarketRequestCounterpartyLimit struct {
 func (x *GetMarketRequestCounterpartyLimit) Reset() {
 	*x = GetMarketRequestCounterpartyLimit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[9]
+		mi := &file_server_proto_market_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -538,7 +1000,7 @@ func (x *GetMarketRequestCounterpartyLimit) String() string {
 func (*GetMarketRequestCounterpartyLimit) ProtoMessage() {}
 
 func (x *GetMarketRequestCounterpartyLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[9]
+	mi := &file_server_proto_market_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -551,7 +1013,7 @@ func (x *GetMarketRequestCounterpartyLimit) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use GetMarketRequestCounterpartyLimit.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestCounterpartyLimit) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{9}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{15}
 }
 
 type ResponseCounterpartyLimit struct {
@@ -565,7 +1027,7 @@ type ResponseCounterpartyLimit struct {
 func (x *ResponseCounterpartyLimit) Reset() {
 	*x = ResponseCounterpartyLimit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[10]
+		mi := &file_server_proto_market_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -578,7 +1040,7 @@ func (x *ResponseCounterpartyLimit) String() string {
 func (*ResponseCounterpartyLimit) ProtoMessage() {}
 
 func (x *ResponseCounterpartyLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[10]
+	mi := &file_server_proto_market_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -591,7 +1053,7 @@ func (x *ResponseCounterpartyLimit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseCounterpartyLimit.ProtoReflect.Descriptor instead.
 func (*ResponseCounterpartyLimit) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{10}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ResponseCounterpartyLimit) GetFields() []*CounterpartyLimit {
@@ -624,7 +1086,7 @@ type Limit struct {
 func (x *Limit) Reset() {
 	*x = Limit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[11]
+		mi := &file_server_proto_market_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -637,7 +1099,7 @@ func (x *Limit) String() string {
 func (*Limit) ProtoMessage() {}
 
 func (x *Limit) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[11]
+	mi := &file_server_proto_market_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -650,7 +1112,7 @@ func (x *Limit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Limit.ProtoReflect.Descriptor instead.
 func (*Limit) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{11}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Limit) GetName() string {
@@ -705,7 +1167,7 @@ type GetMarketRequestLimit struct {
 func (x *GetMarketRequestLimit) Reset() {
 	*x = GetMarketRequestLimit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[12]
+		mi := &file_server_proto_market_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -718,7 +1180,7 @@ func (x *GetMarketRequestLimit) String() string {
 func (*GetMarketRequestLimit) ProtoMessage() {}
 
 func (x *GetMarketRequestLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[12]
+	mi := &file_server_proto_market_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -731,7 +1193,7 @@ func (x *GetMarketRequestLimit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMarketRequestLimit.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestLimit) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{12}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{18}
 }
 
 type ResponseLimit struct {
@@ -745,7 +1207,7 @@ type ResponseLimit struct {
 func (x *ResponseLimit) Reset() {
 	*x = ResponseLimit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[13]
+		mi := &file_server_proto_market_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -758,7 +1220,7 @@ func (x *ResponseLimit) String() string {
 func (*ResponseLimit) ProtoMessage() {}
 
 func (x *ResponseLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[13]
+	mi := &file_server_proto_market_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -771,7 +1233,7 @@ func (x *ResponseLimit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseLimit.ProtoReflect.Descriptor instead.
 func (*ResponseLimit) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{13}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ResponseLimit) GetFields() []*Limit {
@@ -800,7 +1262,7 @@ type Position struct {
 func (x *Position) Reset() {
 	*x = Position{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[14]
+		mi := &file_server_proto_market_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -813,7 +1275,7 @@ func (x *Position) String() string {
 func (*Position) ProtoMessage() {}
 
 func (x *Position) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[14]
+	mi := &file_server_proto_market_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -826,7 +1288,7 @@ func (x *Position) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Position.ProtoReflect.Descriptor instead.
 func (*Position) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{14}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Position) GetId() int64 {
@@ -867,7 +1329,7 @@ type GetMarketRequestPosition struct {
 func (x *GetMarketRequestPosition) Reset() {
 	*x = GetMarketRequestPosition{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[15]
+		mi := &file_server_proto_market_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -880,7 +1342,7 @@ func (x *GetMarketRequestPosition) String() string {
 func (*GetMarketRequestPosition) ProtoMessage() {}
 
 func (x *GetMarketRequestPosition) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[15]
+	mi := &file_server_proto_market_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -893,7 +1355,7 @@ func (x *GetMarketRequestPosition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMarketRequestPosition.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestPosition) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{15}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{21}
 }
 
 type ResponsePosition struct {
@@ -907,7 +1369,7 @@ type ResponsePosition struct {
 func (x *ResponsePosition) Reset() {
 	*x = ResponsePosition{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[16]
+		mi := &file_server_proto_market_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -920,7 +1382,7 @@ func (x *ResponsePosition) String() string {
 func (*ResponsePosition) ProtoMessage() {}
 
 func (x *ResponsePosition) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[16]
+	mi := &file_server_proto_market_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -933,7 +1395,7 @@ func (x *ResponsePosition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponsePosition.ProtoReflect.Descriptor instead.
 func (*ResponsePosition) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{16}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ResponsePosition) GetFields() *Position {
@@ -956,7 +1418,7 @@ type Instrument struct {
 func (x *Instrument) Reset() {
 	*x = Instrument{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[17]
+		mi := &file_server_proto_market_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -969,7 +1431,7 @@ func (x *Instrument) String() string {
 func (*Instrument) ProtoMessage() {}
 
 func (x *Instrument) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[17]
+	mi := &file_server_proto_market_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -982,7 +1444,7 @@ func (x *Instrument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Instrument.ProtoReflect.Descriptor instead.
 func (*Instrument) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{17}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *Instrument) GetCurrencies() []*Instrument_Currency {
@@ -1009,7 +1471,7 @@ type GetMarketRequestInstrument struct {
 func (x *GetMarketRequestInstrument) Reset() {
 	*x = GetMarketRequestInstrument{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[18]
+		mi := &file_server_proto_market_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1022,7 +1484,7 @@ func (x *GetMarketRequestInstrument) String() string {
 func (*GetMarketRequestInstrument) ProtoMessage() {}
 
 func (x *GetMarketRequestInstrument) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[18]
+	mi := &file_server_proto_market_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1035,7 +1497,7 @@ func (x *GetMarketRequestInstrument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMarketRequestInstrument.ProtoReflect.Descriptor instead.
 func (*GetMarketRequestInstrument) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{18}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{24}
 }
 
 type ResponseInstrument struct {
@@ -1049,7 +1511,7 @@ type ResponseInstrument struct {
 func (x *ResponseInstrument) Reset() {
 	*x = ResponseInstrument{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[19]
+		mi := &file_server_proto_market_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1062,7 +1524,7 @@ func (x *ResponseInstrument) String() string {
 func (*ResponseInstrument) ProtoMessage() {}
 
 func (x *ResponseInstrument) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[19]
+	mi := &file_server_proto_market_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1075,7 +1537,7 @@ func (x *ResponseInstrument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResponseInstrument.ProtoReflect.Descriptor instead.
 func (*ResponseInstrument) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{19}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ResponseInstrument) GetFields() *Instrument {
@@ -1083,6 +1545,136 @@ func (x *ResponseInstrument) GetFields() *Instrument {
 		return x.Fields
 	}
 	return nil
+}
+
+type MarketDepth_Attributes struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Assigning string `protobuf:"bytes,1,opt,name=assigning,proto3" json:"assigning,omitempty"`
+	Action    string `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
+	// Level price.
+	Price float64 `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	// Level total size.
+	Size float64 `protobuf:"fixed64,4,opt,name=size,proto3" json:"size,omitempty"`
+}
+
+func (x *MarketDepth_Attributes) Reset() {
+	*x = MarketDepth_Attributes{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[26]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MarketDepth_Attributes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarketDepth_Attributes) ProtoMessage() {}
+
+func (x *MarketDepth_Attributes) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[26]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarketDepth_Attributes.ProtoReflect.Descriptor instead.
+func (*MarketDepth_Attributes) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{4, 0}
+}
+
+func (x *MarketDepth_Attributes) GetAssigning() string {
+	if x != nil {
+		return x.Assigning
+	}
+	return ""
+}
+
+func (x *MarketDepth_Attributes) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *MarketDepth_Attributes) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *MarketDepth_Attributes) GetSize() float64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+type MarketBook_Book struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Level price.
+	Price float64 `protobuf:"fixed64,1,opt,name=price,proto3" json:"price,omitempty"`
+	// Level total size.
+	Size float64 `protobuf:"fixed64,2,opt,name=size,proto3" json:"size,omitempty"`
+}
+
+func (x *MarketBook_Book) Reset() {
+	*x = MarketBook_Book{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_market_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MarketBook_Book) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarketBook_Book) ProtoMessage() {}
+
+func (x *MarketBook_Book) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_market_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarketBook_Book.ProtoReflect.Descriptor instead.
+func (*MarketBook_Book) Descriptor() ([]byte, []int) {
+	return file_server_proto_market_proto_rawDescGZIP(), []int{5, 0}
+}
+
+func (x *MarketBook_Book) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *MarketBook_Book) GetSize() float64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
 }
 
 type SettlementRequest_Item struct {
@@ -1108,7 +1700,7 @@ type SettlementRequest_Item struct {
 func (x *SettlementRequest_Item) Reset() {
 	*x = SettlementRequest_Item{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[20]
+		mi := &file_server_proto_market_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1121,7 +1713,7 @@ func (x *SettlementRequest_Item) String() string {
 func (*SettlementRequest_Item) ProtoMessage() {}
 
 func (x *SettlementRequest_Item) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[20]
+	mi := &file_server_proto_market_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1134,7 +1726,7 @@ func (x *SettlementRequest_Item) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettlementRequest_Item.ProtoReflect.Descriptor instead.
 func (*SettlementRequest_Item) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{2, 0}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{8, 0}
 }
 
 func (x *SettlementRequest_Item) GetCid() int64 {
@@ -1220,7 +1812,7 @@ type SettlementTransaction_Item struct {
 func (x *SettlementTransaction_Item) Reset() {
 	*x = SettlementTransaction_Item{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[21]
+		mi := &file_server_proto_market_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1233,7 +1825,7 @@ func (x *SettlementTransaction_Item) String() string {
 func (*SettlementTransaction_Item) ProtoMessage() {}
 
 func (x *SettlementTransaction_Item) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[21]
+	mi := &file_server_proto_market_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1246,7 +1838,7 @@ func (x *SettlementTransaction_Item) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettlementTransaction_Item.ProtoReflect.Descriptor instead.
 func (*SettlementTransaction_Item) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{5, 0}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{11, 0}
 }
 
 func (x *SettlementTransaction_Item) GetCid() int64 {
@@ -1349,7 +1941,7 @@ type Position_Position struct {
 func (x *Position_Position) Reset() {
 	*x = Position_Position{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[22]
+		mi := &file_server_proto_market_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1362,7 +1954,7 @@ func (x *Position_Position) String() string {
 func (*Position_Position) ProtoMessage() {}
 
 func (x *Position_Position) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[22]
+	mi := &file_server_proto_market_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1375,7 +1967,7 @@ func (x *Position_Position) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Position_Position.ProtoReflect.Descriptor instead.
 func (*Position_Position) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{14, 0}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{20, 0}
 }
 
 func (x *Position_Position) GetCid() int64 {
@@ -1446,7 +2038,7 @@ type Position_Order struct {
 func (x *Position_Order) Reset() {
 	*x = Position_Order{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[23]
+		mi := &file_server_proto_market_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1459,7 +2051,7 @@ func (x *Position_Order) String() string {
 func (*Position_Order) ProtoMessage() {}
 
 func (x *Position_Order) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[23]
+	mi := &file_server_proto_market_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1472,7 +2064,7 @@ func (x *Position_Order) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Position_Order.ProtoReflect.Descriptor instead.
 func (*Position_Order) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{14, 1}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{20, 1}
 }
 
 func (x *Position_Order) GetId() int64 {
@@ -1576,7 +2168,7 @@ type Position_Settlement struct {
 func (x *Position_Settlement) Reset() {
 	*x = Position_Settlement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[24]
+		mi := &file_server_proto_market_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1589,7 +2181,7 @@ func (x *Position_Settlement) String() string {
 func (*Position_Settlement) ProtoMessage() {}
 
 func (x *Position_Settlement) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[24]
+	mi := &file_server_proto_market_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1602,7 +2194,7 @@ func (x *Position_Settlement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Position_Settlement.ProtoReflect.Descriptor instead.
 func (*Position_Settlement) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{14, 2}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{20, 2}
 }
 
 func (x *Position_Settlement) GetId() int64 {
@@ -1672,7 +2264,7 @@ type Instrument_Currency struct {
 func (x *Instrument_Currency) Reset() {
 	*x = Instrument_Currency{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[25]
+		mi := &file_server_proto_market_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1685,7 +2277,7 @@ func (x *Instrument_Currency) String() string {
 func (*Instrument_Currency) ProtoMessage() {}
 
 func (x *Instrument_Currency) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[25]
+	mi := &file_server_proto_market_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1698,7 +2290,7 @@ func (x *Instrument_Currency) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Instrument_Currency.ProtoReflect.Descriptor instead.
 func (*Instrument_Currency) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{17, 0}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{23, 0}
 }
 
 func (x *Instrument_Currency) GetId() int64 {
@@ -1747,7 +2339,7 @@ type Instrument_Pair struct {
 func (x *Instrument_Pair) Reset() {
 	*x = Instrument_Pair{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_server_proto_market_proto_msgTypes[26]
+		mi := &file_server_proto_market_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1760,7 +2352,7 @@ func (x *Instrument_Pair) String() string {
 func (*Instrument_Pair) ProtoMessage() {}
 
 func (x *Instrument_Pair) ProtoReflect() protoreflect.Message {
-	mi := &file_server_proto_market_proto_msgTypes[26]
+	mi := &file_server_proto_market_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1773,7 +2365,7 @@ func (x *Instrument_Pair) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Instrument_Pair.ProtoReflect.Descriptor instead.
 func (*Instrument_Pair) Descriptor() ([]byte, []int) {
-	return file_server_proto_market_proto_rawDescGZIP(), []int{17, 1}
+	return file_server_proto_market_proto_rawDescGZIP(), []int{23, 1}
 }
 
 func (x *Instrument_Pair) GetId() int64 {
@@ -1811,13 +2403,73 @@ var file_server_proto_market_proto_rawDesc = []byte{
 	0x61, 0x72, 0x6b, 0x65, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x61,
 	0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0x52, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x42, 0x6f, 0x6f, 0x6b, 0x12, 0x1e, 0x0a, 0x0a, 0x69, 0x6e, 0x73, 0x74,
-	0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x69, 0x6e,
-	0x73, 0x74, 0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x74, 0x72, 0x61, 0x64,
-	0x61, 0x62, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x74, 0x72, 0x61, 0x64,
-	0x61, 0x62, 0x6c, 0x65, 0x22, 0x0e, 0x0a, 0x0c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x42, 0x6f, 0x6f, 0x6b, 0x22, 0x9a, 0x02, 0x0a, 0x11, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d,
+	0x22, 0xe0, 0x01, 0x0a, 0x0b, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72,
+	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64,
+	0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x69,
+	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x63, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05,
+	0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x70, 0x72, 0x69,
+	0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x76, 0x6f, 0x6c, 0x75, 0x6d, 0x65, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x01, 0x52, 0x06, 0x76, 0x6f, 0x6c, 0x75, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69,
+	0x7a, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x01, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x12, 0x12,
+	0x0a, 0x04, 0x73, 0x69, 0x64, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x73, 0x69,
+	0x64, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65,
+	0x5f, 0x61, 0x74, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x41, 0x74, 0x22, 0x59, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06,
+	0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79,
+	0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61,
+	0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x70, 0x61, 0x67, 0x65, 0x22, 0x99,
+	0x01, 0x0a, 0x15, 0x53, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62,
+	0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c,
+	0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52,
+	0x05, 0x70, 0x72, 0x69, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x01, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x76, 0x6f,
+	0x6c, 0x75, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x76, 0x6f, 0x6c, 0x75,
+	0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x64, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x73, 0x69, 0x64, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x57, 0x0a, 0x13, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65,
+	0x72, 0x12, 0x2a, 0x0a, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74,
+	0x4f, 0x72, 0x64, 0x65, 0x72, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x12, 0x14, 0x0a,
+	0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f,
+	0x75, 0x6e, 0x74, 0x22, 0xca, 0x01, 0x0a, 0x0b, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x44, 0x65,
+	0x70, 0x74, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x35, 0x0a, 0x06, 0x66,
+	0x69, 0x65, 0x6c, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x44, 0x65, 0x70, 0x74, 0x68, 0x2e,
+	0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c,
+	0x64, 0x73, 0x1a, 0x6c, 0x0a, 0x0a, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73,
+	0x12, 0x1c, 0x0a, 0x09, 0x61, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x69, 0x6e, 0x67, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x69, 0x6e, 0x67, 0x12, 0x16,
+	0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x69, 0x63, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x70, 0x72, 0x69, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04,
+	0x73, 0x69, 0x7a, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x01, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65,
+	0x22, 0x92, 0x01, 0x0a, 0x0a, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x42, 0x6f, 0x6f, 0x6b, 0x12,
+	0x28, 0x0a, 0x03, 0x62, 0x69, 0x64, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x42, 0x6f, 0x6f, 0x6b, 0x2e,
+	0x42, 0x6f, 0x6f, 0x6b, 0x52, 0x03, 0x62, 0x69, 0x64, 0x12, 0x28, 0x0a, 0x03, 0x61, 0x73, 0x6b,
+	0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d,
+	0x61, 0x72, 0x6b, 0x65, 0x74, 0x42, 0x6f, 0x6f, 0x6b, 0x2e, 0x42, 0x6f, 0x6f, 0x6b, 0x52, 0x03,
+	0x61, 0x73, 0x6b, 0x1a, 0x30, 0x0a, 0x04, 0x42, 0x6f, 0x6f, 0x6b, 0x12, 0x14, 0x0a, 0x05, 0x70,
+	0x72, 0x69, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x70, 0x72, 0x69, 0x63,
+	0x65, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52,
+	0x04, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x52, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x42, 0x6f, 0x6f, 0x6b, 0x12, 0x1e, 0x0a,
+	0x0a, 0x69, 0x6e, 0x73, 0x74, 0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x0a, 0x69, 0x6e, 0x73, 0x74, 0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x1a, 0x0a,
+	0x08, 0x74, 0x72, 0x61, 0x64, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52,
+	0x08, 0x74, 0x72, 0x61, 0x64, 0x61, 0x62, 0x6c, 0x65, 0x22, 0x39, 0x0a, 0x0c, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x6f, 0x6f, 0x6b, 0x12, 0x29, 0x0a, 0x06, 0x66, 0x69, 0x65,
+	0x6c, 0x64, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x42, 0x6f, 0x6f, 0x6b, 0x52, 0x06, 0x66, 0x69,
+	0x65, 0x6c, 0x64, 0x73, 0x22, 0x9a, 0x02, 0x0a, 0x11, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d,
 	0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x39, 0x0a, 0x08, 0x69, 0x6e,
 	0x63, 0x6f, 0x6d, 0x69, 0x6e, 0x67, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52,
@@ -1996,7 +2648,7 @@ var file_server_proto_market_proto_rawDesc = []byte{
 	0x74, 0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x29, 0x0a, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64,
 	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
 	0x49, 0x6e, 0x73, 0x74, 0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c,
-	0x64, 0x73, 0x32, 0xdf, 0x08, 0x0a, 0x06, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x12, 0x93, 0x01,
+	0x64, 0x73, 0x32, 0xc9, 0x0a, 0x0a, 0x06, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x12, 0x93, 0x01,
 	0x0a, 0x0e, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x73, 0x74, 0x72, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73,
 	0x12, 0x21, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b,
 	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x73, 0x74, 0x72, 0x75, 0x6d,
@@ -2066,8 +2718,23 @@ var file_server_proto_market_proto_rawDesc = []byte{
 	0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x22, 0x13, 0x2f, 0x76, 0x32, 0x2f, 0x6d, 0x61, 0x72, 0x6b, 0x65,
 	0x74, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x62, 0x6f, 0x6f, 0x6b, 0x3a, 0x01, 0x2a, 0x5a, 0x15, 0x12,
 	0x13, 0x2f, 0x76, 0x32, 0x2f, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x2f, 0x67, 0x65, 0x74, 0x2d,
-	0x62, 0x6f, 0x6f, 0x6b, 0x42, 0x0e, 0x5a, 0x0c, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x62, 0x6f, 0x6f, 0x6b, 0x12, 0x65, 0x0a, 0x08, 0x53, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72,
+	0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x1a, 0x1a,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d,
+	0x61, 0x72, 0x6b, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x22, 0x1f, 0x82, 0xd3, 0xe4, 0x93,
+	0x02, 0x19, 0x22, 0x14, 0x2f, 0x76, 0x32, 0x2f, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x2f, 0x73,
+	0x65, 0x74, 0x2d, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x80, 0x01, 0x0a, 0x09,
+	0x47, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x4f, 0x72,
+	0x64, 0x65, 0x72, 0x22, 0x39, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x33, 0x22, 0x15, 0x2f, 0x76, 0x32,
+	0x2f, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x6f, 0x72, 0x64, 0x65,
+	0x72, 0x73, 0x3a, 0x01, 0x2a, 0x5a, 0x17, 0x12, 0x15, 0x2f, 0x76, 0x32, 0x2f, 0x6d, 0x61, 0x72,
+	0x6b, 0x65, 0x74, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x42, 0x0e,
+	0x5a, 0x0c, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2082,71 +2749,88 @@ func file_server_proto_market_proto_rawDescGZIP() []byte {
 	return file_server_proto_market_proto_rawDescData
 }
 
-var file_server_proto_market_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_server_proto_market_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_server_proto_market_proto_goTypes = []interface{}{
-	(*GetMarketRequestBook)(nil),                  // 0: proto.GetMarketRequestBook
-	(*ResponseBook)(nil),                          // 1: proto.ResponseBook
-	(*SettlementRequest)(nil),                     // 2: proto.SettlementRequest
-	(*GetMarketRequestSettlementRequest)(nil),     // 3: proto.GetMarketRequestSettlementRequest
-	(*ResponseSettlementRequest)(nil),             // 4: proto.ResponseSettlementRequest
-	(*SettlementTransaction)(nil),                 // 5: proto.SettlementTransaction
-	(*GetMarketRequestSettlementTransaction)(nil), // 6: proto.GetMarketRequestSettlementTransaction
-	(*ResponseSettlementTransaction)(nil),         // 7: proto.ResponseSettlementTransaction
-	(*CounterpartyLimit)(nil),                     // 8: proto.CounterpartyLimit
-	(*GetMarketRequestCounterpartyLimit)(nil),     // 9: proto.GetMarketRequestCounterpartyLimit
-	(*ResponseCounterpartyLimit)(nil),             // 10: proto.ResponseCounterpartyLimit
-	(*Limit)(nil),                                 // 11: proto.Limit
-	(*GetMarketRequestLimit)(nil),                 // 12: proto.GetMarketRequestLimit
-	(*ResponseLimit)(nil),                         // 13: proto.ResponseLimit
-	(*Position)(nil),                              // 14: proto.Position
-	(*GetMarketRequestPosition)(nil),              // 15: proto.GetMarketRequestPosition
-	(*ResponsePosition)(nil),                      // 16: proto.ResponsePosition
-	(*Instrument)(nil),                            // 17: proto.Instrument
-	(*GetMarketRequestInstrument)(nil),            // 18: proto.GetMarketRequestInstrument
-	(*ResponseInstrument)(nil),                    // 19: proto.ResponseInstrument
-	(*SettlementRequest_Item)(nil),                // 20: proto.SettlementRequest.Item
-	(*SettlementTransaction_Item)(nil),            // 21: proto.SettlementTransaction.Item
-	(*Position_Position)(nil),                     // 22: proto.Position.Position
-	(*Position_Order)(nil),                        // 23: proto.Position.Order
-	(*Position_Settlement)(nil),                   // 24: proto.Position.Settlement
-	(*Instrument_Currency)(nil),                   // 25: proto.Instrument.Currency
-	(*Instrument_Pair)(nil),                       // 26: proto.Instrument.Pair
+	(*MarketOrder)(nil),                           // 0: proto.MarketOrder
+	(*GetMarketRequestOrder)(nil),                 // 1: proto.GetMarketRequestOrder
+	(*SetMarketRequestOrder)(nil),                 // 2: proto.SetMarketRequestOrder
+	(*ResponseMarketOrder)(nil),                   // 3: proto.ResponseMarketOrder
+	(*MarketDepth)(nil),                           // 4: proto.MarketDepth
+	(*MarketBook)(nil),                            // 5: proto.MarketBook
+	(*GetMarketRequestBook)(nil),                  // 6: proto.GetMarketRequestBook
+	(*ResponseBook)(nil),                          // 7: proto.ResponseBook
+	(*SettlementRequest)(nil),                     // 8: proto.SettlementRequest
+	(*GetMarketRequestSettlementRequest)(nil),     // 9: proto.GetMarketRequestSettlementRequest
+	(*ResponseSettlementRequest)(nil),             // 10: proto.ResponseSettlementRequest
+	(*SettlementTransaction)(nil),                 // 11: proto.SettlementTransaction
+	(*GetMarketRequestSettlementTransaction)(nil), // 12: proto.GetMarketRequestSettlementTransaction
+	(*ResponseSettlementTransaction)(nil),         // 13: proto.ResponseSettlementTransaction
+	(*CounterpartyLimit)(nil),                     // 14: proto.CounterpartyLimit
+	(*GetMarketRequestCounterpartyLimit)(nil),     // 15: proto.GetMarketRequestCounterpartyLimit
+	(*ResponseCounterpartyLimit)(nil),             // 16: proto.ResponseCounterpartyLimit
+	(*Limit)(nil),                                 // 17: proto.Limit
+	(*GetMarketRequestLimit)(nil),                 // 18: proto.GetMarketRequestLimit
+	(*ResponseLimit)(nil),                         // 19: proto.ResponseLimit
+	(*Position)(nil),                              // 20: proto.Position
+	(*GetMarketRequestPosition)(nil),              // 21: proto.GetMarketRequestPosition
+	(*ResponsePosition)(nil),                      // 22: proto.ResponsePosition
+	(*Instrument)(nil),                            // 23: proto.Instrument
+	(*GetMarketRequestInstrument)(nil),            // 24: proto.GetMarketRequestInstrument
+	(*ResponseInstrument)(nil),                    // 25: proto.ResponseInstrument
+	(*MarketDepth_Attributes)(nil),                // 26: proto.MarketDepth.Attributes
+	(*MarketBook_Book)(nil),                       // 27: proto.MarketBook.Book
+	(*SettlementRequest_Item)(nil),                // 28: proto.SettlementRequest.Item
+	(*SettlementTransaction_Item)(nil),            // 29: proto.SettlementTransaction.Item
+	(*Position_Position)(nil),                     // 30: proto.Position.Position
+	(*Position_Order)(nil),                        // 31: proto.Position.Order
+	(*Position_Settlement)(nil),                   // 32: proto.Position.Settlement
+	(*Instrument_Currency)(nil),                   // 33: proto.Instrument.Currency
+	(*Instrument_Pair)(nil),                       // 34: proto.Instrument.Pair
 }
 var file_server_proto_market_proto_depIdxs = []int32{
-	20, // 0: proto.SettlementRequest.incoming:type_name -> proto.SettlementRequest.Item
-	20, // 1: proto.SettlementRequest.outgoing:type_name -> proto.SettlementRequest.Item
-	2,  // 2: proto.ResponseSettlementRequest.fields:type_name -> proto.SettlementRequest
-	21, // 3: proto.SettlementTransaction.incoming:type_name -> proto.SettlementTransaction.Item
-	21, // 4: proto.SettlementTransaction.outgoing:type_name -> proto.SettlementTransaction.Item
-	5,  // 5: proto.ResponseSettlementTransaction.fields:type_name -> proto.SettlementTransaction
-	8,  // 6: proto.ResponseCounterpartyLimit.fields:type_name -> proto.CounterpartyLimit
-	11, // 7: proto.ResponseLimit.fields:type_name -> proto.Limit
-	22, // 8: proto.Position.positions:type_name -> proto.Position.Position
-	23, // 9: proto.Position.orders:type_name -> proto.Position.Order
-	24, // 10: proto.Position.settlements:type_name -> proto.Position.Settlement
-	14, // 11: proto.ResponsePosition.fields:type_name -> proto.Position
-	25, // 12: proto.Instrument.currencies:type_name -> proto.Instrument.Currency
-	26, // 13: proto.Instrument.pairs:type_name -> proto.Instrument.Pair
-	17, // 14: proto.ResponseInstrument.fields:type_name -> proto.Instrument
-	18, // 15: proto.Market.GetInstruments:input_type -> proto.GetMarketRequestInstrument
-	15, // 16: proto.Market.GetPositions:input_type -> proto.GetMarketRequestPosition
-	12, // 17: proto.Market.GetLimits:input_type -> proto.GetMarketRequestLimit
-	9,  // 18: proto.Market.GetCounterpartyLimits:input_type -> proto.GetMarketRequestCounterpartyLimit
-	3,  // 19: proto.Market.GetSettlementRequests:input_type -> proto.GetMarketRequestSettlementRequest
-	6,  // 20: proto.Market.GetSettlementTransactions:input_type -> proto.GetMarketRequestSettlementTransaction
-	0,  // 21: proto.Market.GetBook:input_type -> proto.GetMarketRequestBook
-	19, // 22: proto.Market.GetInstruments:output_type -> proto.ResponseInstrument
-	16, // 23: proto.Market.GetPositions:output_type -> proto.ResponsePosition
-	13, // 24: proto.Market.GetLimits:output_type -> proto.ResponseLimit
-	10, // 25: proto.Market.GetCounterpartyLimits:output_type -> proto.ResponseCounterpartyLimit
-	4,  // 26: proto.Market.GetSettlementRequests:output_type -> proto.ResponseSettlementRequest
-	7,  // 27: proto.Market.GetSettlementTransactions:output_type -> proto.ResponseSettlementTransaction
-	1,  // 28: proto.Market.GetBook:output_type -> proto.ResponseBook
-	22, // [22:29] is the sub-list for method output_type
-	15, // [15:22] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	0,  // 0: proto.ResponseMarketOrder.fields:type_name -> proto.MarketOrder
+	26, // 1: proto.MarketDepth.fields:type_name -> proto.MarketDepth.Attributes
+	27, // 2: proto.MarketBook.bid:type_name -> proto.MarketBook.Book
+	27, // 3: proto.MarketBook.ask:type_name -> proto.MarketBook.Book
+	5,  // 4: proto.ResponseBook.fields:type_name -> proto.MarketBook
+	28, // 5: proto.SettlementRequest.incoming:type_name -> proto.SettlementRequest.Item
+	28, // 6: proto.SettlementRequest.outgoing:type_name -> proto.SettlementRequest.Item
+	8,  // 7: proto.ResponseSettlementRequest.fields:type_name -> proto.SettlementRequest
+	29, // 8: proto.SettlementTransaction.incoming:type_name -> proto.SettlementTransaction.Item
+	29, // 9: proto.SettlementTransaction.outgoing:type_name -> proto.SettlementTransaction.Item
+	11, // 10: proto.ResponseSettlementTransaction.fields:type_name -> proto.SettlementTransaction
+	14, // 11: proto.ResponseCounterpartyLimit.fields:type_name -> proto.CounterpartyLimit
+	17, // 12: proto.ResponseLimit.fields:type_name -> proto.Limit
+	30, // 13: proto.Position.positions:type_name -> proto.Position.Position
+	31, // 14: proto.Position.orders:type_name -> proto.Position.Order
+	32, // 15: proto.Position.settlements:type_name -> proto.Position.Settlement
+	20, // 16: proto.ResponsePosition.fields:type_name -> proto.Position
+	33, // 17: proto.Instrument.currencies:type_name -> proto.Instrument.Currency
+	34, // 18: proto.Instrument.pairs:type_name -> proto.Instrument.Pair
+	23, // 19: proto.ResponseInstrument.fields:type_name -> proto.Instrument
+	24, // 20: proto.Market.GetInstruments:input_type -> proto.GetMarketRequestInstrument
+	21, // 21: proto.Market.GetPositions:input_type -> proto.GetMarketRequestPosition
+	18, // 22: proto.Market.GetLimits:input_type -> proto.GetMarketRequestLimit
+	15, // 23: proto.Market.GetCounterpartyLimits:input_type -> proto.GetMarketRequestCounterpartyLimit
+	9,  // 24: proto.Market.GetSettlementRequests:input_type -> proto.GetMarketRequestSettlementRequest
+	12, // 25: proto.Market.GetSettlementTransactions:input_type -> proto.GetMarketRequestSettlementTransaction
+	6,  // 26: proto.Market.GetBook:input_type -> proto.GetMarketRequestBook
+	2,  // 27: proto.Market.SetOrder:input_type -> proto.SetMarketRequestOrder
+	1,  // 28: proto.Market.GetOrders:input_type -> proto.GetMarketRequestOrder
+	25, // 29: proto.Market.GetInstruments:output_type -> proto.ResponseInstrument
+	22, // 30: proto.Market.GetPositions:output_type -> proto.ResponsePosition
+	19, // 31: proto.Market.GetLimits:output_type -> proto.ResponseLimit
+	16, // 32: proto.Market.GetCounterpartyLimits:output_type -> proto.ResponseCounterpartyLimit
+	10, // 33: proto.Market.GetSettlementRequests:output_type -> proto.ResponseSettlementRequest
+	13, // 34: proto.Market.GetSettlementTransactions:output_type -> proto.ResponseSettlementTransaction
+	7,  // 35: proto.Market.GetBook:output_type -> proto.ResponseBook
+	3,  // 36: proto.Market.SetOrder:output_type -> proto.ResponseMarketOrder
+	3,  // 37: proto.Market.GetOrders:output_type -> proto.ResponseMarketOrder
+	29, // [29:38] is the sub-list for method output_type
+	20, // [20:29] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_server_proto_market_proto_init() }
@@ -2156,7 +2840,7 @@ func file_server_proto_market_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_server_proto_market_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestBook); i {
+			switch v := v.(*MarketOrder); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2168,7 +2852,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponseBook); i {
+			switch v := v.(*GetMarketRequestOrder); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2180,7 +2864,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SettlementRequest); i {
+			switch v := v.(*SetMarketRequestOrder); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2192,7 +2876,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestSettlementRequest); i {
+			switch v := v.(*ResponseMarketOrder); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2204,7 +2888,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponseSettlementRequest); i {
+			switch v := v.(*MarketDepth); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2216,7 +2900,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SettlementTransaction); i {
+			switch v := v.(*MarketBook); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2228,7 +2912,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestSettlementTransaction); i {
+			switch v := v.(*GetMarketRequestBook); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2240,7 +2924,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponseSettlementTransaction); i {
+			switch v := v.(*ResponseBook); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2252,7 +2936,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CounterpartyLimit); i {
+			switch v := v.(*SettlementRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2264,7 +2948,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestCounterpartyLimit); i {
+			switch v := v.(*GetMarketRequestSettlementRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2276,7 +2960,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponseCounterpartyLimit); i {
+			switch v := v.(*ResponseSettlementRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2288,7 +2972,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Limit); i {
+			switch v := v.(*SettlementTransaction); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2300,7 +2984,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestLimit); i {
+			switch v := v.(*GetMarketRequestSettlementTransaction); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2312,7 +2996,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponseLimit); i {
+			switch v := v.(*ResponseSettlementTransaction); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2324,7 +3008,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Position); i {
+			switch v := v.(*CounterpartyLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2336,7 +3020,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestPosition); i {
+			switch v := v.(*GetMarketRequestCounterpartyLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2348,7 +3032,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponsePosition); i {
+			switch v := v.(*ResponseCounterpartyLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2360,7 +3044,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Instrument); i {
+			switch v := v.(*Limit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2372,7 +3056,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMarketRequestInstrument); i {
+			switch v := v.(*GetMarketRequestLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2384,7 +3068,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResponseInstrument); i {
+			switch v := v.(*ResponseLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2396,7 +3080,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SettlementRequest_Item); i {
+			switch v := v.(*Position); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2408,7 +3092,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SettlementTransaction_Item); i {
+			switch v := v.(*GetMarketRequestPosition); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2420,7 +3104,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Position_Position); i {
+			switch v := v.(*ResponsePosition); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2432,7 +3116,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Position_Order); i {
+			switch v := v.(*Instrument); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2444,7 +3128,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Position_Settlement); i {
+			switch v := v.(*GetMarketRequestInstrument); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2456,7 +3140,7 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Instrument_Currency); i {
+			switch v := v.(*ResponseInstrument); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2468,6 +3152,102 @@ func file_server_proto_market_proto_init() {
 			}
 		}
 		file_server_proto_market_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MarketDepth_Attributes); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MarketBook_Book); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SettlementRequest_Item); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SettlementTransaction_Item); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Position_Position); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Position_Order); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Position_Settlement); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Instrument_Currency); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_market_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Instrument_Pair); i {
 			case 0:
 				return &v.state
@@ -2486,7 +3266,7 @@ func file_server_proto_market_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_server_proto_market_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -2526,6 +3306,10 @@ type MarketClient interface {
 	GetSettlementTransactions(ctx context.Context, in *GetMarketRequestSettlementTransaction, opts ...grpc.CallOption) (*ResponseSettlementTransaction, error)
 	// Get a snapshot of the specified order book with max 25 levels on each side.
 	GetBook(ctx context.Context, in *GetMarketRequestBook, opts ...grpc.CallOption) (*ResponseBook, error)
+	// Set places an order. Taker can specify order volume instead of order size.
+	SetOrder(ctx context.Context, in *SetMarketRequestOrder, opts ...grpc.CallOption) (*ResponseMarketOrder, error)
+	// Set places an order. Taker can specify order volume instead of order size.
+	GetOrders(ctx context.Context, in *GetMarketRequestOrder, opts ...grpc.CallOption) (*ResponseMarketOrder, error)
 }
 
 type marketClient struct {
@@ -2599,6 +3383,24 @@ func (c *marketClient) GetBook(ctx context.Context, in *GetMarketRequestBook, op
 	return out, nil
 }
 
+func (c *marketClient) SetOrder(ctx context.Context, in *SetMarketRequestOrder, opts ...grpc.CallOption) (*ResponseMarketOrder, error) {
+	out := new(ResponseMarketOrder)
+	err := c.cc.Invoke(ctx, "/proto.Market/SetOrder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *marketClient) GetOrders(ctx context.Context, in *GetMarketRequestOrder, opts ...grpc.CallOption) (*ResponseMarketOrder, error) {
+	out := new(ResponseMarketOrder)
+	err := c.cc.Invoke(ctx, "/proto.Market/GetOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MarketServer is the server API for Market service.
 type MarketServer interface {
 	// Get currencies and instruments available.
@@ -2615,6 +3417,10 @@ type MarketServer interface {
 	GetSettlementTransactions(context.Context, *GetMarketRequestSettlementTransaction) (*ResponseSettlementTransaction, error)
 	// Get a snapshot of the specified order book with max 25 levels on each side.
 	GetBook(context.Context, *GetMarketRequestBook) (*ResponseBook, error)
+	// Set places an order. Taker can specify order volume instead of order size.
+	SetOrder(context.Context, *SetMarketRequestOrder) (*ResponseMarketOrder, error)
+	// Set places an order. Taker can specify order volume instead of order size.
+	GetOrders(context.Context, *GetMarketRequestOrder) (*ResponseMarketOrder, error)
 }
 
 // UnimplementedMarketServer can be embedded to have forward compatible implementations.
@@ -2641,6 +3447,12 @@ func (*UnimplementedMarketServer) GetSettlementTransactions(context.Context, *Ge
 }
 func (*UnimplementedMarketServer) GetBook(context.Context, *GetMarketRequestBook) (*ResponseBook, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBook not implemented")
+}
+func (*UnimplementedMarketServer) SetOrder(context.Context, *SetMarketRequestOrder) (*ResponseMarketOrder, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetOrder not implemented")
+}
+func (*UnimplementedMarketServer) GetOrders(context.Context, *GetMarketRequestOrder) (*ResponseMarketOrder, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrders not implemented")
 }
 
 func RegisterMarketServer(s *grpc.Server, srv MarketServer) {
@@ -2773,6 +3585,42 @@ func _Market_GetBook_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Market_SetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetMarketRequestOrder)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MarketServer).SetOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Market/SetOrder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MarketServer).SetOrder(ctx, req.(*SetMarketRequestOrder))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Market_GetOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMarketRequestOrder)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MarketServer).GetOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Market/GetOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MarketServer).GetOrders(ctx, req.(*GetMarketRequestOrder))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Market_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Market",
 	HandlerType: (*MarketServer)(nil),
@@ -2804,6 +3652,14 @@ var _Market_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBook",
 			Handler:    _Market_GetBook_Handler,
+		},
+		{
+			MethodName: "SetOrder",
+			Handler:    _Market_SetOrder_Handler,
+		},
+		{
+			MethodName: "GetOrders",
+			Handler:    _Market_GetOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
