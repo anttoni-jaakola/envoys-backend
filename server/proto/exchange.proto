@@ -338,7 +338,7 @@ enum Assigning {
     DEFAULT = 3;
 }
 
-// Enum buying at the seller's price or selling at the buyer's price.
+// Enum buying at the seller's price or selling at the buyer's price, side "bid" - "buy" and "ask" - "sell".
 enum Spread {
     ASK = 0;
     BID = 1;

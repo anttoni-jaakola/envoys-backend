@@ -55,6 +55,7 @@ type Context struct {
 	RedisClient              *redis.Client
 
 	MarketKey, MarketSecret string
+	MarketPairs             []string
 	MarketTest              bool
 
 	BrokerClient                               MQTT.Client

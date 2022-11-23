@@ -13,6 +13,7 @@
 
   "MarketKey": "TFNr5sTFWztAAiUmZTfMa81ue8sBrUp7xCbrrsAj2sc",
   "MarketSecret": "8699xKHIYB7WCEKul2yR9oHl6qtVCZRewyGuyY4W2iY",
+  "MarketPairs": ["USDT-USD", "USDT-EUR"],
   "MarketTest": true,
 
   "GrpcAddress": "127.0.0.1:3081",

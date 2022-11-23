@@ -17,56 +17,6 @@ service Market {
             }
         };
     }
-    // Get next deal id, positions, orders and settlement orders snapshot.
-    rpc GetPositions (GetMarketRequestPosition) returns (ResponsePosition) {
-        option (google.api.http) = {
-            post: "/v2/market/get-positions",
-            body: "*"
-            additional_bindings {
-                get: "/v2/market/get-positions"
-            }
-        };
-    }
-    // Get global limits snapshot.
-    rpc GetLimits (GetMarketRequestLimit) returns (ResponseLimit) {
-        option (google.api.http) = {
-            post: "/v2/market/get-limits",
-            body: "*"
-            additional_bindings {
-                get: "/v2/market/get-limits"
-            }
-        };
-    }
-    // Get counterparty limits snapshot.
-    rpc GetCounterpartyLimits (GetMarketRequestCounterpartyLimit) returns (ResponseCounterpartyLimit) {
-        option (google.api.http) = {
-            post: "/v2/market/counterparty/get-limits",
-            body: "*"
-            additional_bindings {
-                get: "/v2/market/counterparty/get-limits"
-            }
-        };
-    }
-    // Get requests for incoming and outgoing settlement.
-    rpc GetSettlementRequests (GetMarketRequestSettlementRequest) returns (ResponseSettlementRequest) {
-        option (google.api.http) = {
-            post: "/v2/market/settlement/get-requests",
-            body: "*"
-            additional_bindings {
-                get: "/v2/market/settlement/get-requests"
-            }
-        };
-    }
-    // Get incoming and outgoing settlement transactions.
-    rpc GetSettlementTransactions (GetMarketRequestSettlementTransaction) returns (ResponseSettlementTransaction) {
-        option (google.api.http) = {
-            post: "/v2/market/settlement/get-transactions",
-            body: "*"
-            additional_bindings {
-                get: "/v2/market/settlement/get-transactions"
-            }
-        };
-    }
     // Get a snapshot of the specified order book with max 25 levels on each side.
     rpc GetBook (GetMarketRequestBook) returns (ResponseBook) {
         option (google.api.http) = {

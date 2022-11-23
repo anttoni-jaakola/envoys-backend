@@ -143,3 +143,44 @@ func (p *Params) block() (block *Block, err error) {
 
 	return block, nil
 }
+
+// Status - Transaction status.
+func (p *Params) Status(tx string) (success bool, err error) {
+
+	switch p.platform {
+	case RpcEthereum:
+		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":[%s]}`, tx), p.rpc}
+	case RpcTron:
+
+		request := struct {
+			Value string `json:"value"`
+		}{
+			Value: tx,
+		}
+
+		marshal, err := json.Marshal(request)
+		if err != nil {
+			return success, err
+		}
+
+		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/gettransactioninfobyid", p.rpc), "-d", string(marshal)}
+	}
+
+	if err := p.commit(); err != nil {
+		return success, err
+	}
+
+	//TODO: ETHEREUM status: QUANTITY either 1 (success) or 0 (failure)
+
+	if result, ok := p.response["result"]; ok {
+		if result.(string) == "FAILED" {
+			message, err := hex.DecodeString(p.response["resMessage"].(string))
+			if err != nil {
+				return success, err
+			}
+			return success, errors.New(fmt.Sprintf("[%v] - %v", result.(string), string(message)))
+		}
+	}
+
+	return true, nil
+}

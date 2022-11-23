@@ -2,6 +2,7 @@
 
 * $ sudo apt-get install build-essential
 * $ sudo apt-get install curl
+* $ sudo apt-get install -y libkrb5-dev // Timescaledb build
 
 **Grpc package:**
 
@@ -24,11 +25,9 @@
 **Install PostgreSQL and create new database and setting timescaledb:**
 
 * https://packagecloud.io/timescale/timescaledb/install#bash-deb
-* $ sudo add-apt-repository ppa:timescale/timescaledb-ppa
-* Or Build https://www.timescale.com/blog/how-to-build-timescaledb-on-docker 
+* Build https://www.timescale.com/blog/how-to-build-timescaledb-on-docker 
 * $ sudo apt update   
-* $ sudo apt -y install postgresql-14 postgresql-client-14 postgresql-server-dev-14 
-* $ sudo apt -y install timescaledb-2-postgresql-14  // Not for the built version  
+* $ sudo apt -y install postgresql-14 postgresql-client-14 postgresql-server-dev-14
 * $ sudo timescaledb-tune  // Not for the built version  
 * $ sudo service postgresql restart  
 * $ sudo su - postgres  
