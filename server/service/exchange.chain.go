@@ -30,9 +30,9 @@ func (e *ExchangeService) depositEthereum(chain *proto.Chain) {
 	}()
 	defer e.done(chain.GetId())
 
-	client := blockchain.Dial(chain.Rpc, blockchain.RpcEthereum)
+	client := blockchain.Dial(chain.GetRpc(), chain.GetPlatform())
 	blockBy, err := client.BlockByNumber(chain.GetBlock())
-	if err != nil {
+	if err != nil { // No debug....
 		return
 	}
 
@@ -161,9 +161,9 @@ func (e *ExchangeService) depositTron(chain *proto.Chain) {
 	}()
 	defer e.done(chain.GetId())
 
-	client := blockchain.Dial(chain.Rpc, blockchain.RpcTron)
+	client := blockchain.Dial(chain.GetRpc(), chain.GetPlatform())
 	blockBy, err := client.BlockByNumber(chain.GetBlock())
-	if err != nil {
+	if err != nil { // No debug....
 		return
 	}
 
@@ -511,7 +511,7 @@ func (e *ExchangeService) transferTron(userId, txId int64, symbol, to string, va
 		wei           *big.Int
 	)
 
-	client := blockchain.Dial(chain.Rpc, blockchain.RpcTron)
+	client := blockchain.Dial(chain.GetRpc(), platform)
 
 	entropy, err := e.getEntropy(userId)
 	if e.Context.Debug(err) {

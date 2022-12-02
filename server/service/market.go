@@ -45,6 +45,12 @@ func (m *MarketService) Initialization() {
 
 // request - new connect to apis.
 func (m *MarketService) request(method string, content map[string]interface{}) (interface{}, error) {
+	defer func() {
+		if r := recover(); m.Context.Debug(r) {
+			return
+		}
+	}()
+
 	if content == nil {
 		content = make(map[string]interface{})
 	}

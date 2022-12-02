@@ -3,6 +3,7 @@
 * $ sudo apt-get install build-essential
 * $ sudo apt-get install curl
 * $ sudo apt-get install -y libkrb5-dev // Timescaledb build
+* $ sudo apt-get install -y cmake // Timescaledb build
 
 **Grpc package:**
 

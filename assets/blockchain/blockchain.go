@@ -3,14 +3,13 @@ package blockchain
 import (
 	"crypto/ecdsa"
 	"encoding/json"
+	"github.com/cryptogateway/backend-envoys/server/proto"
 	"github.com/pkg/errors"
 	"math/big"
 	"os/exec"
 )
 
 const (
-	RpcTron      = 0x00001
-	RpcEthereum  = 0x00002
 	TypeInternal = 0x1000a
 	TypeContract = 0x2000a
 )
@@ -50,7 +49,7 @@ type Transaction struct {
 
 type Params struct {
 	rpc      string
-	platform int
+	platform proto.Platform
 	response map[string]interface{}
 	query    []string
 	private  *ecdsa.PrivateKey
@@ -58,7 +57,7 @@ type Params struct {
 }
 
 // Dial - connect to blockchain.
-func Dial(rpc string, platform int) *Params {
+func Dial(rpc string, platform proto.Platform) *Params {
 	return &Params{
 		rpc:      rpc,
 		platform: platform,

@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/cryptogateway/backend-envoys/server/proto"
 	"github.com/pkg/errors"
 	"strings"
 )
@@ -14,9 +15,9 @@ func (p *Params) BlockByNumber(number int64) (block *Block, err error) {
 	block = new(Block)
 
 	switch p.platform {
-	case RpcEthereum:
+	case proto.Platform_ETHEREUM:
 		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":[%d, true],"id":1}`, number), p.rpc}
-	case RpcTron:
+	case proto.Platform_TRON:
 		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/getblockbynum", p.rpc), "-d", fmt.Sprintf(`{"num": %d}`, number)}
 	default:
 		return block, errors.New("method not found!...")
@@ -35,7 +36,7 @@ func (p *Params) block() (block *Block, err error) {
 	block = new(Block)
 
 	switch p.platform {
-	case RpcEthereum:
+	case proto.Platform_ETHEREUM:
 
 		if result, ok := p.response["result"].(map[string]interface{}); ok {
 
@@ -64,7 +65,7 @@ func (p *Params) block() (block *Block, err error) {
 			return block, errors.New("block not found!...")
 		}
 
-	case RpcTron:
+	case proto.Platform_TRON:
 
 		if err, ok := p.response["Error"]; ok || err != nil {
 			return block, errors.New(err.(string))
@@ -145,12 +146,12 @@ func (p *Params) block() (block *Block, err error) {
 }
 
 // Status - Transaction status.
-func (p *Params) Status(tx string) (success bool, err error) {
+func (p *Params) Status(tx string) (success bool) {
 
 	switch p.platform {
-	case RpcEthereum:
-		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":[%s]}`, tx), p.rpc}
-	case RpcTron:
+	case proto.Platform_ETHEREUM:
+		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["%s"]}`, tx), p.rpc}
+	case proto.Platform_TRON:
 
 		request := struct {
 			Value string `json:"value"`
@@ -160,27 +161,32 @@ func (p *Params) Status(tx string) (success bool, err error) {
 
 		marshal, err := json.Marshal(request)
 		if err != nil {
-			return success, err
+			return success
 		}
 
 		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/gettransactioninfobyid", p.rpc), "-d", string(marshal)}
 	}
 
 	if err := p.commit(); err != nil {
-		return success, err
+		return success
 	}
 
-	//TODO: ETHEREUM status: QUANTITY either 1 (success) or 0 (failure)
-
 	if result, ok := p.response["result"]; ok {
-		if result.(string) == "FAILED" {
-			message, err := hex.DecodeString(p.response["resMessage"].(string))
-			if err != nil {
-				return success, err
+
+		if maps, ok := result.(map[string]interface{}); ok {
+
+			// ETHEREUM status: QUANTITY either 1 (success) or 0 (failure).
+			if maps["status"].(string) == "0x0" {
+				return success
 			}
-			return success, errors.New(fmt.Sprintf("[%v] - %v", result.(string), string(message)))
+		} else {
+
+			// TRON status: SUCCESS (success) or FAILED (failure).
+			if result.(string) == "FAILED" {
+				return success
+			}
 		}
 	}
 
-	return true, nil
+	return true
 }

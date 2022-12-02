@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/cryptogateway/backend-envoys/assets/blockchain"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
@@ -771,45 +772,62 @@ func (e *ExchangeService) replayConfirmation() {
 			return
 		}
 
-		if (chain.GetBlock()-item.GetBlock()) >= chain.GetConfirmation() && item.GetConfirmation() >= chain.GetConfirmation() {
+		if blockchain.Dial(chain.GetRpc(), chain.GetPlatform()).Status(item.Hash) {
 
-			currency, err := e.getCurrency(item.GetSymbol(), false)
-			if e.Context.Debug(err) {
-				return
-			}
+			if (chain.GetBlock()-item.GetBlock()) >= chain.GetConfirmation() && item.GetConfirmation() >= chain.GetConfirmation() {
 
-			if item.GetValue() >= currency.GetMinDeposit() {
-
-				// Crediting a new deposit to the local wallet address.
-				if _, err := e.Context.Db.Exec("update assets set balance = balance + $3 where symbol = $2 and user_id = $1;", item.GetUserId(), item.GetSymbol(), item.GetValue()); e.Context.Debug(err) {
-					continue
-				}
-
-				item.Hook = true
-				item.Status = proto.Status_FILLED
-
-				if err := e.replayPusher(proto.Pusher_DepositPublic, &item); e.Context.Debug(err) {
+				currency, err := e.getCurrency(item.GetSymbol(), false)
+				if e.Context.Debug(err) {
 					return
 				}
 
+				if item.GetValue() >= currency.GetMinDeposit() {
+
+					// Crediting a new deposit to the local wallet address.
+					if _, err := e.Context.Db.Exec("update assets set balance = balance + $3 where symbol = $2 and user_id = $1;", item.GetUserId(), item.GetSymbol(), item.GetValue()); e.Context.Debug(err) {
+						continue
+					}
+
+					item.Hook = true
+					item.Status = proto.Status_FILLED
+
+					if err := e.replayPusher(proto.Pusher_DepositPublic, &item); e.Context.Debug(err) {
+						return
+					}
+
+				} else {
+					item.Status = proto.Status_RESERVE
+				}
+
+				if err := e.setReserve(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), proto.Balance_PLUS); e.Context.Debug(err) {
+					continue
+				}
+
+				// Update deposits pending status to success status.
+				if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), item.GetStatus()); e.Context.Debug(err) {
+					continue
+				}
+
 			} else {
-				item.Status = proto.Status_RESERVE
+				if _, err := e.Context.Db.Exec("update transactions set confirmation = $2 where id = $1;", item.GetId(), chain.GetBlock()-item.GetBlock()); e.Context.Debug(err) {
+					continue
+				}
 			}
 
-			if err := e.setReserve(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), proto.Balance_PLUS); e.Context.Debug(err) {
-				continue
-			}
+		} else {
 
-			// Update deposits pending status to success status.
+			item.Hook = true
+			item.Status = proto.Status_FAILED
+
 			if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), item.GetStatus()); e.Context.Debug(err) {
 				continue
 			}
 
-		} else {
-			if _, err := e.Context.Db.Exec("update transactions set confirmation = $2 where id = $1;", item.GetId(), chain.GetBlock()-item.GetBlock()); e.Context.Debug(err) {
-				continue
+			if err := e.replayPusher(proto.Pusher_DepositPublic, &item); e.Context.Debug(err) {
+				return
 			}
 		}
+
 	}
 }
 
