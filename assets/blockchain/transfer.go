@@ -8,7 +8,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/address"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
-	"github.com/cryptogateway/backend-envoys/server/proto"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -31,9 +31,9 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 	owner := crypto.PubkeyToAddress(*public)
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_sendTransaction","params":["%v"],"id":1}`, "id"), p.rpc}
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 
 		if len(tx.Contract) > 0 {
 
@@ -150,8 +150,8 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 	owner := crypto.PubkeyToAddress(*public)
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
-	case proto.Platform_TRON:
+	case pbspot.Platform_ETHEREUM:
+	case pbspot.Platform_TRON:
 
 		if len(tx.Contract) > 0 {
 
@@ -267,8 +267,8 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 func (p *Params) status(tx string) error {
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
-	case proto.Platform_TRON:
+	case pbspot.Platform_ETHEREUM:
+	case pbspot.Platform_TRON:
 
 		request := struct {
 			Value string `json:"value"`
@@ -306,9 +306,9 @@ func (p *Params) signature() (txID string, err error) {
 
 	// Signing the transfer with a private key.
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 		return txID, nil
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 
 		if err, ok := p.response["Error"]; ok {
 			return txID, errors.New(err.(string))
@@ -345,8 +345,8 @@ func (p *Params) Transaction() error {
 	}
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
-	case proto.Platform_TRON:
+	case pbspot.Platform_ETHEREUM:
+	case pbspot.Platform_TRON:
 
 		if transaction, ok := p.response["transaction"]; ok {
 			p.response = transaction.(map[string]interface{})
@@ -382,7 +382,7 @@ func (p *Params) Transaction() error {
 func (p *Params) Data(to string, amount []byte) (data []byte, err error) {
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 
 		decode, err := hex.DecodeString(address.New(to).Hex())
 		if err != nil {
@@ -393,7 +393,7 @@ func (p *Params) Data(to string, amount []byte) (data []byte, err error) {
 		data = append(data, common.LeftPadBytes(decode, 32)...)
 		data = append(data, common.LeftPadBytes(amount, 32)...)
 
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 
 		decode, err := hex.DecodeString(address.New(to, true).Hex(true)[2:])
 		if err != nil {

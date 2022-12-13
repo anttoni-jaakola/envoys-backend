@@ -3,8 +3,16 @@ package server
 import (
 	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/server/gateway"
-	"github.com/cryptogateway/backend-envoys/server/proto"
-	"github.com/cryptogateway/backend-envoys/server/service"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbauth"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbmarket"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/service/account"
+	"github.com/cryptogateway/backend-envoys/server/service/auth"
+	"github.com/cryptogateway/backend-envoys/server/service/index"
+	"github.com/cryptogateway/backend-envoys/server/service/market"
+	"github.com/cryptogateway/backend-envoys/server/service/spot"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -89,20 +97,20 @@ func Master(option *assets.Context) {
 		srv := grpc.NewServer(opts...)
 
 		// Register the handler object.
-		proto.RegisterIndexServer(srv, &service.IndexService{Context: option})
-		proto.RegisterAuthServer(srv, &service.AuthService{Context: option})
-		proto.RegisterAccountServer(srv, &service.AccountService{Context: option})
+		pbindex.RegisterApiServer(srv, &index.Service{Context: option})
+		pbauth.RegisterApiServer(srv, &auth.Service{Context: option})
+		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
 
 		var (
-			exchange = &service.ExchangeService{Context: option}
-			market   = &service.MarketService{Context: option}
+			spotService   = &spot.Service{Context: option}
+			marketService = &market.Service{Context: option}
 		)
 
-		go exchange.Initialization()
-		go market.Initialization()
+		go spotService.Initialization()
+		go marketService.Initialization()
 
-		proto.RegisterMarketServer(srv, market)
-		proto.RegisterExchangeServer(srv, exchange)
+		pbmarket.RegisterApiServer(srv, marketService)
+		pbspot.RegisterApiServer(srv, spotService)
 
 		reflection.Register(srv)
 

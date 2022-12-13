@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package pbaccount;
+
+option go_package = "server/proto/pbaccount";
+
+import "google/api/annotations.proto";
+
+service Api {
+    // Account info.
+    rpc GetUser (GetRequestUser) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/account/get-user",
+            body: "*"
+        };
+    }
+    // Account info update.
+    rpc SetUser (SetRequestUserManual) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/account/set-user",
+            body: "*"
+        };
+    }
+    // Activities list.
+    rpc GetActivities (GetRequestActivities) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/account/get-activities",
+            body: "*"
+        };
+    }
+
+    // Administration api.
+    // Get accounts.
+    rpc GetAccountsRule (GetRequestUsersRule) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/admin/account/get-accounts",
+            body: "*"
+        };
+    }
+    // Get account.
+    rpc GetAccountRule (GetRequestUserRule) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/admin/account/get-account",
+            body: "*"
+        };
+    }
+    // Set account.
+    rpc SetAccountRule (SetRequestUserManual) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/admin/account/set-account",
+            body: "*"
+        };
+    }
+}
+
+// User structure.
+message User {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    string create_at = 4;
+    bool status = 5;
+    message Counts {
+        int32 transaction = 1;
+        int32 order = 2;
+        int32 asset = 3;
+    }
+    Counts counts = 6;
+    repeated string rules = 7;
+}
+
+// Activity structure.
+message Activity {
+    int64 id = 1;
+    string os = 2;
+    string device = 3;
+    string ip = 4;
+    int64 user_id = 6;
+    repeated string browser = 7;
+    string create_at = 8;
+}
+
+// User structure.
+message GetRequestUser {}
+message GetRequestUserRule {
+    int64 id = 1;
+}
+message GetRequestUsersRule {
+    int64 id = 1;
+    int64 page = 2;
+    int64 limit = 3;
+    string search = 4;
+}
+message SetRequestUserManual {
+    int64 id = 1;
+    string sample = 2;
+    string old_password = 3;
+    string new_password = 4;
+    User user = 5;
+}
+
+// Activity structure.
+message GetRequestActivities {
+    int64 page = 1;
+    int64 limit = 2;
+}
+
+message Response {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    bool status = 4;
+    repeated Activity activities = 5;
+    repeated string sample = 6;
+    repeated string rules = 7;
+    repeated User fields = 8;
+    int32 count = 9;
+}

@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/cryptogateway/backend-envoys/server/proto"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
 	"strings"
 )
@@ -15,9 +15,9 @@ func (p *Params) BlockByNumber(number int64) (block *Block, err error) {
 	block = new(Block)
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":[%d, true],"id":1}`, number), p.rpc}
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/getblockbynum", p.rpc), "-d", fmt.Sprintf(`{"num": %d}`, number)}
 	default:
 		return block, errors.New("method not found!...")
@@ -36,7 +36,7 @@ func (p *Params) block() (block *Block, err error) {
 	block = new(Block)
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 
 		if result, ok := p.response["result"].(map[string]interface{}); ok {
 
@@ -65,7 +65,7 @@ func (p *Params) block() (block *Block, err error) {
 			return block, errors.New("block not found!...")
 		}
 
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 
 		if err, ok := p.response["Error"]; ok || err != nil {
 			return block, errors.New(err.(string))
@@ -149,9 +149,9 @@ func (p *Params) block() (block *Block, err error) {
 func (p *Params) Status(tx string) (success bool) {
 
 	switch p.platform {
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["%s"]}`, tx), p.rpc}
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 
 		request := struct {
 			Value string `json:"value"`

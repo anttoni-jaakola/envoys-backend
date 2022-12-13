@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"github.com/cryptogateway/backend-envoys/server/proto"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
@@ -180,6 +179,11 @@ func (app *Context) Error(err error) error {
 // Publish - pusher send to socket.
 func (app *Context) Publish(data interface{}, topic string, channel ...string) error {
 
+	type Marshal struct {
+		Channel string `json:"channel"`
+		Data    string `json:"data"`
+	}
+
 	for i := 0; i < len(channel); i++ {
 
 		serialize, err := json.Marshal(data)
@@ -187,7 +191,7 @@ func (app *Context) Publish(data interface{}, topic string, channel ...string) e
 			return err
 		}
 
-		serialize, err = json.Marshal(proto.Publish{
+		serialize, err = json.Marshal(Marshal{
 			Channel: channel[i],
 			Data:    string(serialize),
 		})

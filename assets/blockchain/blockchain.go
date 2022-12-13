@@ -3,7 +3,7 @@ package blockchain
 import (
 	"crypto/ecdsa"
 	"encoding/json"
-	"github.com/cryptogateway/backend-envoys/server/proto"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
 	"math/big"
 	"os/exec"
@@ -49,7 +49,7 @@ type Transaction struct {
 
 type Params struct {
 	rpc      string
-	platform proto.Platform
+	platform pbspot.Platform
 	response map[string]interface{}
 	query    []string
 	private  *ecdsa.PrivateKey
@@ -57,7 +57,7 @@ type Params struct {
 }
 
 // Dial - connect to blockchain.
-func Dial(rpc string, platform proto.Platform) *Params {
+func Dial(rpc string, platform pbspot.Platform) *Params {
 	return &Params{
 		rpc:      rpc,
 		platform: platform,

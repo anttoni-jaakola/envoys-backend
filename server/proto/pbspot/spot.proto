@@ -1,0 +1,865 @@
+syntax = "proto3";
+
+package pbspot;
+
+option go_package = "server/proto/pbspot";
+
+import "google/api/annotations.proto";
+
+service Api {
+    // Set asset address.
+    rpc SetAsset (SetRequestAsset) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v2/spot/set-asset",
+            body: "*"
+        };
+    }
+    // Get assets.
+    rpc GetAssets (GetRequestAssetsManual) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-assets",
+            body: "*"
+        };
+    }
+    // Get asset.
+    rpc GetAsset (GetRequestAsset) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-asset",
+            body: "*"
+        };
+    }
+    // Get symbol.
+    rpc GetSymbol (GetRequestSymbol) returns (ResponseSymbol) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-symbol",
+            body: "*"
+        };
+    }
+    // Get analysis.
+    rpc GetAnalysis (GetRequestAnalysis) returns (ResponseAnalysis) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-analysis",
+            body: "*"
+        };
+    }
+    // Get markers.
+    rpc GetMarkers (GetRequestMarkers) returns (ResponseMarker) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-markers",
+            body: "*"
+        };
+    }
+    // Get pairs.
+    rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-pairs",
+            body: "*"
+        };
+    }
+    // Get pair.
+    rpc GetPair (GetRequestPair) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-pair",
+            body: "*"
+        };
+    }
+    // Set order.
+    rpc SetOrder (SetRequestOrder) returns (ResponseOrder) {
+        option (google.api.http) = {
+            post: "/v2/spot/set-order",
+            body: "*"
+        };
+    }
+    // Cancel order.
+    rpc CancelOrder (CancelRequestOrder) returns (ResponseOrder) {
+        option (google.api.http) = {
+            post: "/v2/spot/cancel-order",
+            body: "*"
+        };
+    }
+    // Get order.
+    rpc GetOrders (GetRequestOrdersManual) returns (ResponseOrder) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-orders",
+            body: "*"
+        };
+    }
+    // Get graph.
+    rpc GetGraph (GetRequestGraph) returns (ResponseGraph) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-graph",
+            body: "*"
+            additional_bindings {
+                get: "/v2/spot/get-graph"
+            }
+        };
+    }
+    // Get trade transfers.
+    rpc GetTransfers (GetRequestTransfers) returns (ResponseTransfer) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-transfers",
+            body: "*"
+        };
+    }
+    // Get trades.
+    rpc GetTrades (GetRequestTrades) returns (ResponseTrades) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-trades",
+            body: "*"
+        };
+    }
+    // Get price.
+    rpc GetPrice (GetRequestPriceManual) returns (ResponsePrice) {
+        option (google.api.http) = {
+            get: "/v2/spot/get-price"
+        };
+    }
+    // Get transactions.
+    rpc GetTransactions (GetRequestTransactionsManual) returns (ResponseTransaction) {
+        option (google.api.http) = {
+            post: "/v2/spot/get-transactions",
+            body: "*"
+        };
+    }
+    // Set withdraw.
+    rpc SetWithdraw (SetRequestWithdraw) returns (ResponseWithdraw) {
+        option (google.api.http) = {
+            post: "/v2/spot/set-withdraw",
+            body: "*"
+        };
+    }
+    // Cancel withdraw.
+    rpc CancelWithdraw (CancelRequestWithdraw) returns (ResponseWithdraw) {
+        option (google.api.http) = {
+            post: "/v2/spot/cancel-withdraw",
+            body: "*"
+        };
+    }
+
+    // Administration api.
+    // Get market-price.
+    rpc GetMarketPriceRule (GetRequestPriceManual) returns (ResponsePrice) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-market-price",
+            body: "*"
+        };
+    }
+    // Set currency.
+    rpc SetCurrencyRule (SetRequestCurrencyRule) returns (ResponseCurrency) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/set-currency",
+            body: "*"
+        };
+    }
+    // Get currency.
+    rpc GetCurrencyRule (GetRequestCurrencyRule) returns (ResponseCurrency) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-currency",
+            body: "*"
+        };
+    }
+    // Get currencies.
+    rpc GetCurrenciesRule (GetRequestCurrenciesRule) returns (ResponseCurrency) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-currencies",
+            body: "*"
+        };
+    }
+    // Delete currency.
+    rpc DeleteCurrencyRule (DeleteRequestCurrencyRule) returns (ResponseCurrency) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/delete-currency",
+            body: "*"
+        };
+    }
+    // Get chains.
+    rpc GetChainsRule (GetRequestChainsRule) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-chains",
+            body: "*"
+        };
+    }
+    // Get chain.
+    rpc GetChainRule (GetRequestChainRule) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-chain",
+            body: "*"
+        };
+    }
+    // Set chain.
+    rpc SetChainRule (SetRequestChainRule) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/set-chain",
+            body: "*"
+        };
+    }
+    // Delete chain.
+    rpc DeleteChainRule (DeleteRequestChainRule) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/delete-chain",
+            body: "*"
+        };
+    }
+    // Get pairs.
+    rpc GetPairsRule (GetRequestPairsRule) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-pairs",
+            body: "*"
+        };
+    }
+    // Get pair.
+    rpc GetPairRule (GetRequestPairRule) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-pair",
+            body: "*"
+        };
+    }
+    // Set pair.
+    rpc SetPairRule (SetRequestPairRule) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/set-pair",
+            body: "*"
+        };
+    }
+    // Delete pair.
+    rpc DeletePairRule (DeleteRequestPairRule) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/delete-pair",
+            body: "*"
+        };
+    }
+
+    // Get contracts.
+    rpc GetContractsRule (GetRequestContractsRule) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-contracts",
+            body: "*"
+        };
+    }
+    // Get contract.
+    rpc GetContractRule (GetRequestContractRule) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-contract",
+            body: "*"
+        };
+    }
+    // Set contract.
+    rpc SetContractRule (SetRequestContractRule) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/set-contract",
+            body: "*"
+        };
+    }
+    // Delete contract.
+    rpc DeleteContractRule (DeleteRequestContractRule) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/delete-contract",
+            body: "*"
+        };
+    }
+    // Get transactions.
+    rpc GetTransactionsRule (GetRequestTransactionsManual) returns (ResponseTransaction) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-transactions",
+            body: "*"
+        };
+    }
+    // Get orders.
+    rpc GetOrdersRule (GetRequestOrdersManual) returns (ResponseOrder) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-orders",
+            body: "*"
+        };
+    }
+    // Get assets.
+    rpc GetAssetsRule (GetRequestAssetsManual) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-assets",
+            body: "*"
+        };
+    }
+}
+
+// Enum chain tag structure.
+enum Tag {
+    C_NONE = 0;
+    C_BITCOIN = 1;
+    C_ETHEREUM = 2;
+    C_BINANCE = 3;
+    C_TRON = 4;
+    C_POLYGON = 5;
+    C_CRONOS = 6;
+    C_FANTOM = 7;
+    C_AVALANCHE = 8;
+}
+
+// Enum currency protocol structure.
+enum Protocol {
+    MAINNET = 0;
+    ERC20 = 1;
+    ERC721 = 2;
+    ERC1155 = 3;
+    ERC998 = 4;
+    ERC223 = 5;
+    BEP20 = 6;
+    BEP721 = 7;
+    BEP1155 = 8;
+    TRC20 = 9;
+    TRC721 = 10;
+    BEP998 = 11;
+    BEP223 = 12;
+    PRC20 = 13;
+    PRC721 = 14;
+    PRC1155 = 15;
+    PRC998 = 16;
+    PRC223 = 17;
+    CRC20 = 18;
+    CRC721 = 19;
+    CRC1155 = 20;
+    CRC998 = 21;
+    CRC223 = 22;
+    FRC20 = 23;
+    FRC721 = 24;
+    FRC1155 = 25;
+    FRC998 = 26;
+    FRC223 = 27;
+    ARC20 = 28;
+    ARC721 = 29;
+    ARC1155 = 30;
+    ARC998 = 31;
+    ARC223 = 32;
+}
+
+// Enum purpose of trades to sell or buy, market liquidity of trades.
+enum Assigning {
+    BUY = 0;
+    SELL = 1;
+    MARKET_PRICE = 2;
+    DEFAULT = 3;
+}
+
+// Enum buying at the seller's price or selling at the buyer's price, side "bid" - "buy" and "ask" - "sell".
+enum Side {
+    ASK = 0;
+    BID = 1;
+}
+
+// Enum trading types, the marker type is responsible for
+// selling or buying at the market price,
+// the limit type is buying or selling at the price that the user sets.
+enum TradeType {
+    MARKET = 0;
+    LIMIT = 1;
+}
+
+// Enum transaction type, there are 2 types of deposit and withdrawal.
+enum TxType {
+    DEPOSIT = 0;
+    WITHDRAWS = 1;
+}
+
+// Enum type of finance, is it a type of cryptocurrency or fiat.
+enum FinType {
+    CRYPTO = 0;
+    FIAT = 1;
+}
+
+// Enum order type.
+enum OrderType {
+    SPOT = 0;
+    MARGIN = 1;
+    BROKER = 3;
+}
+
+// Enum statuses, such as order statuses,
+// this list has the status canceled, completed, and pending.
+enum Status {
+    CANCEL = 0;
+    FILLED = 1;
+    PENDING = 2;
+    RESERVE = 3;
+    PROCESSING = 4;
+    FAILED = 5;
+}
+
+// Enum base and quote is the dominance of pair trading,
+// these flags are used for correct conversion and not only.
+enum Summary {
+    BASE = 0;
+    QUOTE = 1;
+}
+
+// Enum cryptocurrency parent platforms, list of underlying platforms.
+enum Platform {
+    BITCOIN = 0;
+    ETHEREUM = 1;
+    TRON = 2;
+    VISA = 3;
+    MASTERCARD = 4;
+}
+
+// Enum pointers to update the user's balance,
+// select the assigned amount or add the assigned amount.
+enum Balance {
+    MINUS = 0;
+    PLUS = 1;
+}
+
+// Enum pusher structure.
+enum Pusher {
+    TradeStatusPublic = 0;
+    TradePublic = 1;
+    DepositPublic = 2;
+    WithdrawPublic = 3;
+    OrderCreatePublic = 4;
+}
+
+// Contract message structure.
+message Contract {
+    int64 id = 1;
+    int64 chain_id = 2;
+    string chain_name = 3;
+    string parent_symbol = 4;
+    string symbol = 5;
+    string address = 6;
+    double fees_withdraw = 7;
+    int32 decimals = 8;
+    Platform platform = 9;
+    Protocol protocol = 10;
+}
+
+// Currency message structure.
+message Currency {
+    int64 id = 1;
+    string name = 2;
+    string symbol = 3;
+    string create_at = 4;
+    double balance = 5;
+    double fees_trade = 6;
+    double fees_discount = 7;
+    double fees_charges = 8;
+    double fees_costs = 9;
+    double min_withdraw = 10;
+    double max_withdraw = 11;
+    double min_deposit = 12;
+    double min_trade = 13;
+    double max_trade = 14;
+    double volume = 15;
+    repeated Chain chains = 16;
+    repeated Pair pairs = 17;
+    repeated int64 chains_ids = 18;
+    bool marker = 19;
+    bool icon = 20;
+    bool status = 21;
+    FinType fin_type = 22;
+}
+
+// Chain message structure.
+message Chain {
+    int64 id = 1;
+    string name = 2;
+    string parent_symbol = 3;
+    string explorer_link = 4;
+    string address = 5;
+    string rpc = 6;
+    string rpc_key = 7;
+    string rpc_user = 8;
+    string rpc_password = 9;
+    int64 block = 10;
+    int64 network = 11;
+    int64 confirmation = 12;
+    int64 time_withdraw = 13;
+    bool status = 14;
+    bool exist = 15;
+    double reserve = 16;
+    double fees_withdraw = 17;
+    Platform platform = 18;
+    Contract contract = 19;
+    Tag tag = 20;
+}
+
+// Pair message structure.
+message Pair {
+    int64 id = 1;
+    string symbol = 2;
+    string base_unit = 3;
+    string quote_unit = 4;
+    string icon = 5;
+    double price = 6;
+    double ratio = 7;
+    double base_decimal = 8;
+    double quote_decimal = 9;
+    bool status = 10;
+    bool graph_clear = 11;
+}
+
+// Graph message structure.
+message Graph {
+    int64 id = 1;
+    int64 time = 2;
+    string base_unit = 3;
+    string quote_unit = 4;
+    double high = 5;
+    double low = 6;
+    double open = 7;
+    double close = 8;
+    double price = 9;
+    double volume = 10;
+    double ask_price = 11;
+    double bid_price = 12;
+}
+
+// Graph stats message structure.
+message Stats {
+    double high = 1;
+    double low = 2;
+    double last = 3;
+    double first = 5;
+    double previous = 4;
+    double volume = 6;
+    int32 count = 7;
+}
+
+// Trade message structure.
+message Trade {
+    int64 id = 1;
+    string base_unit = 2;
+    string quote_unit = 3;
+    string create_at = 4;
+    double price = 5;
+    double quantity = 6;
+    double fees = 7;
+    Assigning assigning = 8;
+}
+
+// Order message structure.
+message Order {
+    // Option message structure.
+    message Param {
+        bool turn = 1;
+        bool maker = 2;
+        bool equal = 3;
+        double fees = 9;
+    }
+    int64 id = 1;
+    int64 user_id = 2;
+    string base_unit = 3;
+    string quote_unit = 4;
+    string create_at = 5;
+    double price = 6;
+    double value = 7;
+    double quantity = 8;
+    int32 count = 9;
+    Param param = 10;
+    Assigning assigning = 11;
+    Status status = 12;
+}
+
+// Transaction message structure.
+message Transaction {
+    // Transaction internal ID.
+    int64 id = 1;
+    // Chain/Blockchain internal ID.
+    int64 chain_id = 2;
+    // Account user internal ID.
+    int64 user_id = 3;
+    // Currency symbol.
+    string symbol = 4;
+    // Blockchain hash ID.
+    string hash = 5;
+    // Transaction creation time.
+    string create_at = 6;
+    // Recipient's address.
+    string to = 7;
+    // Address from whom the transfer was made.
+    string from = 8;
+    // Number of funds.
+    double value = 9;
+    // Blockchain network fee for transferring funds.
+    double fees = 10;
+    // Freeze currency conversion price.
+    double price = 11;
+    // Blockchain network confirmations.
+    int64 confirmation = 12;
+    // Number of blocks in the blockchain network.
+    int64 block = 13;
+    // Data update via socket gateway [true - update, false - create].
+    bool hook = 14;
+    // Requiring commission for withdrawal of funds.
+    bool claim = 15;
+    TxType tx_type = 16;
+    FinType fin_type = 17;
+    Platform platform = 18;
+    Protocol protocol = 19;
+    Status status = 20;
+    Chain chain = 21;
+}
+
+// Analysis message structure.
+message Analysis {
+    int64 id = 1;
+    string base_unit = 2;
+    string quote_unit = 3;
+    double price = 4;
+    double buy_ratio = 5;
+    double sel_ratio = 6;
+    repeated double chart = 7;
+}
+
+// Transfer message structure.
+message Transfer {
+    int64 id = 1;
+    int64 user_id = 2;
+    string base_unit = 3;
+    string quote_unit = 4;
+    string create_at = 5;
+    double price = 6;
+    double quantity = 7;
+    double fees = 8;
+    Assigning assigning = 9;
+}
+
+// Price structure.
+message GetRequestPriceManual {
+    string base_unit = 1;
+    string quote_unit = 2;
+}
+message ResponsePrice {
+    double price = 1;
+}
+
+// Contract structure.
+message GetRequestContractsRule {
+    int64 limit = 1;
+    int64 page = 2;
+    string search = 3;
+}
+message GetRequestContractRule {
+    int64 id = 1;
+}
+message SetRequestContractRule {
+    int64 id = 1;
+    Contract contract = 2;
+}
+message DeleteRequestContractRule {
+    int64 id = 1;
+}
+message ResponseContract {
+    repeated Contract fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}
+
+// Chain structure.
+message GetRequestChainsRule {
+    int64 limit = 1;
+    int64 page = 2;
+}
+message GetRequestChainRule {
+    int64 id = 1;
+}
+message SetRequestChainRule {
+    int64 id = 1;
+    Chain chain = 2;
+}
+message DeleteRequestChainRule {
+    int64 id = 1;
+}
+message ResponseChain {
+    repeated Chain fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}
+
+// Currency structure.
+message GetRequestCurrenciesRule {
+    string search = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
+message GetRequestCurrencyRule {
+    string symbol = 1;
+}
+message SetRequestCurrencyRule {
+    string symbol = 1;
+    bytes image = 2;
+    Currency currency = 3;
+}
+message DeleteRequestCurrencyRule {
+    string symbol = 1;
+}
+message ResponseCurrency {
+    repeated Currency fields = 1;
+    int32 count = 2;
+}
+
+// Pair structure.
+message GetRequestPairs {
+    string symbol = 1;
+}
+message GetRequestPair {
+    string base_unit = 1;
+    string quote_unit = 2;
+}
+message GetRequestPairsRule {
+    int64 limit = 1;
+    int64 page = 2;
+    string search = 3;
+}
+message GetRequestPairRule {
+    int64 id = 1;
+}
+message SetRequestPairRule {
+    int64 id = 1;
+    Pair pair = 2;
+}
+message DeleteRequestPairRule {
+    int64 id = 1;
+}
+message ResponsePair {
+    repeated Pair fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}
+
+// Asset structure.
+message GetRequestAssetsManual {}
+message GetRequestAsset {
+    string symbol = 1;
+}
+message SetRequestAsset {
+    string symbol = 1;
+    Platform platform = 2;
+    Protocol protocol = 3;
+    FinType fin_type = 4;
+}
+message ResponseAsset {
+    repeated Currency fields = 1;
+    string address = 2;
+    bool success = 3;
+}
+
+// Symbol structure.
+message GetRequestSymbol {
+    string base_unit = 1;
+    string quote_unit = 2;
+}
+message ResponseSymbol {
+    bool success = 1;
+}
+
+// Analysis structure.
+message GetRequestAnalysis {
+    int64 limit = 1;
+    int64 page = 2;
+}
+message ResponseAnalysis {
+    repeated Analysis fields = 1;
+    int32 count = 2;
+}
+
+// Marker structure.
+message GetRequestMarkers {}
+message ResponseMarker {
+    repeated string fields = 1;
+}
+
+// Order structure.
+message SetRequestOrder {
+    double price = 1;
+    double quantity = 2;
+    string base_unit = 3;
+    string quote_unit = 4;
+    TradeType trade_type = 5;
+    Assigning assigning = 6;
+}
+message GetRequestOrdersManual {
+    bool owner = 1;
+    int64 user_id = 2;
+    int64 limit = 3;
+    int64 page = 4;
+    double decimal = 5;
+    string base_unit = 6;
+    string quote_unit = 7;
+    Assigning assigning = 8;
+    Status status = 9;
+}
+message CancelRequestOrder {
+    int64 id = 1;
+}
+message ResponseOrder {
+    repeated Order fields = 1;
+    double volume = 2;
+    int32 count = 3;
+    bool success = 4;
+}
+
+// Graph structure.
+message GetRequestGraph {
+    int64 limit = 1;
+    int64 from = 2;
+    int64 to = 3;
+    string base_unit = 4;
+    string quote_unit = 5;
+    string resolution = 6;
+}
+message ResponseGraph {
+    repeated Graph fields = 1;
+    Stats stats = 2;
+}
+
+// Transfer structure.
+message GetRequestTransfers {
+    bool owner = 1;
+    int64 limit = 2;
+    int64 order_id = 3;
+    Assigning assigning = 4;
+}
+message ResponseTransfer {
+    repeated Transfer fields = 1;
+}
+
+// Trade structure.
+message GetRequestTrades {
+    int64 limit = 1;
+    int64 page = 2;
+    string base_unit = 3;
+    string quote_unit = 4;
+    Assigning assigning = 11;
+}
+message ResponseTrades {
+    repeated Trade fields = 1;
+    int32 count = 2;
+}
+
+// Transaction structure.
+message GetRequestTransactionsManual {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+    string symbol = 4;
+    string search = 5;
+    TxType tx_type = 6;
+}
+message ResponseTransaction {
+    repeated Transaction fields = 1;
+    int32 count = 2;
+}
+
+// Withdraw structure.
+message SetRequestWithdraw {
+    int64 id = 1;
+    string symbol = 2;
+    string address = 3;
+    string secure = 4;
+    double price = 5;
+    double quantity = 6;
+    bool refresh = 7;
+    Platform platform = 8;
+}
+message CancelRequestWithdraw {
+    int64 id = 1;
+}
+message ResponseWithdraw {
+    bool success = 1;
+}

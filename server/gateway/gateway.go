@@ -5,7 +5,11 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets"
-	"github.com/cryptogateway/backend-envoys/server/proto"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbauth"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbmarket"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/http2"
 	"google.golang.org/grpc"
@@ -200,11 +204,11 @@ func (o *Options) gateway(ctx context.Context, connect *grpc.ClientConn, opts []
 	route := runtime.NewServeMux(opts...)
 
 	for _, f := range []func(context.Context, *runtime.ServeMux, *grpc.ClientConn) error{
-		proto.RegisterIndexHandler,
-		proto.RegisterAuthHandler,
-		proto.RegisterAccountHandler,
-		proto.RegisterExchangeHandler,
-		proto.RegisterMarketHandler,
+		pbindex.RegisterApiHandler,
+		pbauth.RegisterApiHandler,
+		pbaccount.RegisterApiHandler,
+		pbspot.RegisterApiHandler,
+		pbmarket.RegisterApiHandler,
 	} {
 		if err := f(ctx, route, connect); err != nil {
 			return nil, err

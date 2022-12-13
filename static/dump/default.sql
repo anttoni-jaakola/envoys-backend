@@ -1,4 +1,4 @@
 SET TimeZone= 'Etc/UTC';
 show timezone;
 
-SELECT create_hypertable('trades', 'create_at');
+SELECT create_hypertable('spot_trades', 'create_at');

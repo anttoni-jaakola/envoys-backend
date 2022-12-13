@@ -6,7 +6,7 @@ import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/cryptogateway/backend-envoys/server/proto"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
@@ -20,7 +20,7 @@ type CrossChain struct {
 }
 
 // New - new generate address.
-func (s *CrossChain) New(secret string, bytea []byte, platform proto.Platform) (a, p string, err error) {
+func (s *CrossChain) New(secret string, bytea []byte, platform pbspot.Platform) (a, p string, err error) {
 
 	//e = bytea
 
@@ -38,7 +38,7 @@ func (s *CrossChain) New(secret string, bytea []byte, platform proto.Platform) (
 	switch platform {
 
 	// BITCOIN Generate address.
-	case proto.Platform_BITCOIN:
+	case pbspot.Platform_BITCOIN:
 		private, err := s.master(seed, 44, 0, 0, 0, 0)
 		if err != nil {
 			return a, p, err
@@ -53,7 +53,7 @@ func (s *CrossChain) New(secret string, bytea []byte, platform proto.Platform) (
 		return address.String(), hexutil.Encode(privateKeyBytes), nil
 
 	// ETHEREUM Generate address.
-	case proto.Platform_ETHEREUM:
+	case pbspot.Platform_ETHEREUM:
 		private, err := s.master(seed, 44, 60, 0, 0, 0)
 		if err != nil {
 			return a, p, err
@@ -63,7 +63,7 @@ func (s *CrossChain) New(secret string, bytea []byte, platform proto.Platform) (
 		return strings.ToLower(crypto.PubkeyToAddress(private.PublicKey).String()), hexutil.Encode(privateKeyBytes), nil
 
 	// TRON Generate address.
-	case proto.Platform_TRON:
+	case pbspot.Platform_TRON:
 		private, err := s.master(seed, 44, 195, 0, 0, 0)
 		if err != nil {
 			return a, p, err
