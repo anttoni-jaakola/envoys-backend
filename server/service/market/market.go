@@ -27,7 +27,7 @@ type Service struct {
 
 // Initialization - perform actions.
 func (m *Service) Initialization() {
-	if m.Context.MarketTest {
+	if m.Context.Finery.Test {
 		m.host = "https://test.finerymarkets.com/api/"
 	} else {
 		m.host = "https://trade.finerymarkets.com/api/"
@@ -62,7 +62,7 @@ func (m *Service) request(method string, content map[string]interface{}) (interf
 		return nil, err
 	}
 
-	hasher := hmac.New(sha512.New384, []byte(m.Context.MarketSecret))
+	hasher := hmac.New(sha512.New384, []byte(m.Context.Finery.Secret))
 	hasher.Write([]byte(method))
 	hasher.Write(contentString)
 	signature := hasher.Sum(nil)
@@ -73,7 +73,7 @@ func (m *Service) request(method string, content map[string]interface{}) (interf
 	}
 	defer request.Body.Close()
 
-	request.Header.Add("EFX-Key", m.Context.MarketKey)
+	request.Header.Add("EFX-Key", m.Context.Finery.Key)
 	request.Header.Add("EFX-Sign", base64.StdEncoding.EncodeToString(signature[:]))
 	request.Header.Add("Content-Type", "application/json")
 
@@ -111,7 +111,7 @@ func (m *Service) message(data interface{}) {
 
 func (m *Service) WebsocketConnector() (*WebsocketConnector, error) {
 
-	if m.Context.MarketTest {
+	if m.Context.Finery.Test {
 		m.socket = "wss://test.finerymarkets.com/ws"
 	} else {
 		m.socket = "wss://trade.finerymarkets.com/ws"
@@ -124,13 +124,13 @@ func (m *Service) WebsocketConnector() (*WebsocketConnector, error) {
 	}
 	contentString, _ := json.Marshal(content)
 
-	hasher := hmac.New(sha512.New384, []byte(m.Context.MarketSecret))
+	hasher := hmac.New(sha512.New384, []byte(m.Context.Finery.Secret))
 	hasher.Write(contentString)
 	signature := hasher.Sum(nil)
 
 	// Add authentication headers to ws connection request
 	header := http.Header{}
-	header.Add("EFX-Key", m.Context.MarketKey)
+	header.Add("EFX-Key", m.Context.Finery.Key)
 	header.Add("EFX-Sign", base64.StdEncoding.EncodeToString(signature[:]))
 	header.Add("EFX-Content", string(contentString))
 
@@ -141,8 +141,8 @@ func (m *Service) WebsocketConnector() (*WebsocketConnector, error) {
 	}
 
 	result := &WebsocketConnector{
-		key:        m.Context.MarketKey,
-		secret:     m.Context.MarketSecret,
+		key:        m.Context.Finery.Key,
+		secret:     m.Context.Finery.Secret,
 		m:          m,
 		connection: connection,
 	}

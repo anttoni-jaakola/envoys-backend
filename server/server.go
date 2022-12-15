@@ -45,13 +45,13 @@ func Master(option *assets.Context) {
 		grpclogrus.ReplaceGrpcLogger(logrus.NewEntry(option.Logger))
 
 		// Create the channel to listen on.
-		lis, err := net.Listen("tcp", option.GrpcAddress)
+		lis, err := net.Listen("tcp", option.Server.Host)
 		if err != nil {
 			option.Logger.Fatal(err)
 		}
 
 		// Create the TLS credentials.
-		certificate, err := credentials.NewServerTLSFromFile(option.CredentialsCrt, option.CredentialsKey)
+		certificate, err := credentials.NewServerTLSFromFile(option.Credentials.Crt, option.Credentials.Key)
 		if err != nil {
 			option.Logger.Fatal(err)
 		}
@@ -129,9 +129,9 @@ func Master(option *assets.Context) {
 	}
 
 	if err := gateway.Run(gateway.Options{
-		Addr: option.GrpcGatewayAddress,
+		Addr: option.Server.Proxy,
 		GRPCServer: gateway.Endpoint{
-			Addr: option.GrpcAddress,
+			Addr: option.Server.Host,
 		},
 		Context: option,
 		Mux:     MuxOptions,

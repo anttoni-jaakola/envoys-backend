@@ -54,7 +54,7 @@ func Run(params Options) error {
 	defer cancel()
 
 	// Create the TLS credentials.
-	certificate, err := credentials.NewClientTLSFromFile(params.Context.CredentialsCrt, params.Context.CredentialsOverride)
+	certificate, err := credentials.NewClientTLSFromFile(params.Context.Credentials.Crt, params.Context.Credentials.Override)
 	if err != nil {
 		return err
 	}
@@ -70,19 +70,19 @@ func Run(params Options) error {
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(4194304)),
 	}
 
-	params.Context.GrpcConnect, err = grpc.DialContext(ctx, params.GRPCServer.Addr, opts...)
+	params.Context.GrpcClient, err = grpc.DialContext(ctx, params.GRPCServer.Addr, opts...)
 	if err != nil {
 		return err
 	}
 
 	go func() {
 		<-ctx.Done()
-		if err := params.Context.GrpcConnect.Close(); err != nil {
+		if err := params.Context.GrpcClient.Close(); err != nil {
 			params.Context.Logger.Fatal(err)
 		}
 	}()
 
-	if err := params.headers(ctx, params.Context.GrpcConnect); err != nil {
+	if err := params.headers(ctx, params.Context.GrpcClient); err != nil {
 		return err
 	}
 
@@ -157,12 +157,12 @@ func (o *Options) headers(ctx context.Context, conn *grpc.ClientConn) error {
 		// and to encrypt all the data exchanged between the client and the server.
 		// Optional mechanisms are available for clients to provide certificates for mutual authentication.
 		TLSConfig: func(o *Options) *tls.Config {
-			cert, err := ioutil.ReadFile(o.Context.CredentialsCrt)
+			cert, err := ioutil.ReadFile(o.Context.Credentials.Crt)
 			if err != nil {
 				o.Context.Logger.Error(err)
 			}
 
-			key, err := ioutil.ReadFile(o.Context.CredentialsKey)
+			key, err := ioutil.ReadFile(o.Context.Credentials.Key)
 			if err != nil {
 				o.Context.Logger.Error(err)
 			}

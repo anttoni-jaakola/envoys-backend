@@ -22,6 +22,12 @@ import (
 	"text/template"
 )
 
+const (
+	RoleDefault = 0
+	RoleSpot    = 1
+	RoleStock   = 2
+)
+
 type Query struct {
 	Id                                       int64
 	Email, Subject, Text, Name, Type, Symbol string
@@ -57,17 +63,33 @@ func (q *Migrate) User(id int64) (*pbaccount.Response, error) {
 }
 
 // Rules - user role admin.
-func (q *Migrate) Rules(userId int64, name string) bool {
+func (q *Migrate) Rules(id int64, name string, tag int) bool {
 
 	var (
 		response Query
+		roles    []string
+		rules    pbaccount.Rules
 	)
 
-	if err := q.Context.Db.QueryRow("select rules from accounts where id = $1", userId).Scan(&response.Rules); q.Context.Debug(err) {
+	if err := q.Context.Db.QueryRow("select rules from accounts where id = $1", id).Scan(&response.Rules); q.Context.Debug(err) {
 		return false
 	}
 
-	if help.Comparable(response.Rules, name) {
+	err := json.Unmarshal(response.Rules, &rules)
+	if err != nil {
+		return false
+	}
+
+	switch tag {
+	case RoleDefault:
+		roles = rules.Default
+	case RoleSpot:
+		roles = rules.Spot
+	case RoleStock:
+		roles = rules.Stock
+	}
+
+	if help.IndexOf(roles, name) {
 		return true
 	}
 
@@ -205,12 +227,12 @@ func (q *Migrate) SamplePosts(userId int64, name string, params ...interface{}) 
 	if help.Comparable(response.Sample, name, "secure") {
 
 		m := gomail.NewMessage()
-		m.SetHeader("From", q.Context.SmtpSender)
+		m.SetHeader("From", q.Context.Smtp.Sender)
 		m.SetHeader("To", response.Email)
 		m.SetHeader("Subject", response.Subject)
 		m.SetBody("text/html", buffer.String())
 
-		d := gomail.NewDialer(q.Context.SmtpHost, q.Context.SmtpPort, q.Context.SmtpSender, q.Context.SmtpPassword)
+		d := gomail.NewDialer(q.Context.Smtp.Host, q.Context.Smtp.Port, q.Context.Smtp.Sender, q.Context.Smtp.Password)
 		if err := d.DialAndSend(m); q.Context.Debug(err) {
 			return
 		}

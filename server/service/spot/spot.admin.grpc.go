@@ -28,7 +28,7 @@ func (e *Service) GetMarketPriceRule(ctx context.Context, req *pbspot.GetRequest
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "pairs") {
+	if !migrate.Rules(account, "pairs", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -55,7 +55,7 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "currencies") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "currencies", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -165,7 +165,7 @@ func (e *Service) GetCurrencyRule(ctx context.Context, req *pbspot.GetRequestCur
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "currencies") {
+	if !migrate.Rules(account, "currencies", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -196,7 +196,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "currencies") {
+	if !migrate.Rules(account, "currencies", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -272,7 +272,7 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "currencies") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "currencies", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -316,7 +316,7 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "chains") {
+	if !migrate.Rules(account, "chains", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -371,7 +371,7 @@ func (e *Service) GetChainRule(ctx context.Context, req *pbspot.GetRequestChainR
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "chains") {
+	if !migrate.Rules(account, "chains", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -397,7 +397,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "chains") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "chains", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -481,7 +481,7 @@ func (e *Service) DeleteChainRule(ctx context.Context, req *pbspot.DeleteRequest
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "currencies") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "currencies", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -514,7 +514,7 @@ func (e *Service) GetPairsRule(ctx context.Context, req *pbspot.GetRequestPairsR
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "pairs") {
+	if !migrate.Rules(account, "pairs", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -581,7 +581,7 @@ func (e *Service) GetPairRule(ctx context.Context, req *pbspot.GetRequestPairRul
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "pairs") {
+	if !migrate.Rules(account, "pairs", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -608,7 +608,7 @@ func (e *Service) SetPairRule(ctx context.Context, req *pbspot.SetRequestPairRul
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "pairs") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "pairs", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -676,7 +676,7 @@ func (e *Service) DeletePairRule(ctx context.Context, req *pbspot.DeleteRequestP
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "pairs") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "pairs", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -711,7 +711,7 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "contracts") {
+	if !migrate.Rules(account, "contracts", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -783,7 +783,7 @@ func (e *Service) GetContractRule(ctx context.Context, req *pbspot.GetRequestCon
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "contracts") {
+	if !migrate.Rules(account, "contracts", query.RoleSpot) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -809,7 +809,7 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "contracts") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "contracts", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -869,7 +869,7 @@ func (e *Service) DeleteContractRule(ctx context.Context, req *pbspot.DeleteRequ
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "contracts") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "contracts", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -904,7 +904,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "accounts") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "accounts", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 

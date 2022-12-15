@@ -27,7 +27,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 		return &response, a.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "accounts") {
+	if !migrate.Rules(account, "accounts", query.RoleDefault) {
 		return &response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -104,7 +104,7 @@ func (a *Service) GetAccountRule(ctx context.Context, req *pbaccount.GetRequestU
 		return &response, a.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "accounts") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "accounts", query.RoleDefault) {
 		return &response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
@@ -134,7 +134,7 @@ func (a *Service) SetAccountRule(ctx context.Context, req *pbaccount.SetRequestU
 		return &response, a.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "accounts") || migrate.Rules(account, "deny-record") {
+	if !migrate.Rules(account, "accounts", query.RoleDefault) || migrate.Rules(account, "deny-record", query.RoleDefault) {
 		return &response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 

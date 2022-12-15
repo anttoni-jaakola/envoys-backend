@@ -51,6 +51,19 @@ service Api {
             body: "*"
         };
     }
+    rpc SetTOTPs (SetRequestUserManual) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/admin/account/set-factor",
+            body: "*"
+        };
+    }
+}
+
+// Rule structure.
+message Rules {
+    repeated string default = 1;
+    repeated string spot = 2;
+    repeated string stock = 3;
 }
 
 // User structure.
@@ -66,7 +79,7 @@ message User {
         int32 asset = 3;
     }
     Counts counts = 6;
-    repeated string rules = 7;
+    Rules rules = 7;
 }
 
 // Activity structure.
@@ -112,7 +125,7 @@ message Response {
     bool status = 4;
     repeated Activity activities = 5;
     repeated string sample = 6;
-    repeated string rules = 7;
-    repeated User fields = 8;
-    int32 count = 9;
+    repeated User fields = 7;
+    int32 count = 8;
+    Rules rules = 9;
 }

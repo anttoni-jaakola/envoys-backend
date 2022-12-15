@@ -78,7 +78,7 @@ func (e *Service) replayPriceScale() {
 func (e *Service) replayMarket() {
 
 	// Loading at a specific time interval.
-	ticker := time.NewTicker(time.Minute * e.Context.IntervalMarket)
+	ticker := time.NewTicker(time.Minute * e.Context.Intervals.Market)
 	for range ticker.C {
 
 		func() {
@@ -123,7 +123,7 @@ func (e *Service) replayMarket() {
 func (e *Service) replayChainStatus() {
 
 	// Loading at a specific time interval.
-	ticker := time.NewTicker(time.Minute * e.Context.IntervalChainStatus)
+	ticker := time.NewTicker(time.Minute * e.Context.Intervals.Chain)
 	for range ticker.C {
 
 		func() {
