@@ -904,7 +904,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 		return &response, e.Context.Error(err)
 	}
 
-	if !migrate.Rules(account, "accounts", query.RoleSpot) || migrate.Rules(account, "deny-record", query.RoleDefault) {
+	if !migrate.Rules(account, "accounts", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
