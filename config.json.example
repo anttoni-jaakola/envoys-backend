@@ -1,0 +1,53 @@
+{
+  "Development": true,
+  "Timezones": "Etc/UTC",
+  "StoragePath": "/home/paymex/go/src/github.com/cryptogateway/backend-envoys",
+  "Postgres": "postgres://envoys:envoys@localhost/envoys?sslmode=disable",
+  "Secrets": [
+    "yx5ySJ;5_H~3Cd6e!%jh7)&8GyER57",
+    "ngrk!nM;4(vyB8V9;&25LE5(U6M^2h"
+  ],
+
+  "Finery": {
+    "Key": "TFNr5sTFWztAAiUmZTfMa81ue8sBrUp7xCbrrsAj2sc",
+    "Secret": "8699xKHIYB7WCEKul2yR9oHl6qtVCZRewyGuyY4W2iY",
+    "Pairs": ["USDT-USD", "USDT-EUR"],
+    "Test": true
+  },
+
+  "Intervals": {
+    "Market": 1,
+    "Chain": 1
+  },
+
+  "Server": {
+    "Host": "127.0.0.1:3081",
+    "Proxy": ":3082"
+  },
+
+  "Smtp": {
+    "Host": "smtp.gmail.com",
+    "Sender": "paymex.center@gmail.com",
+    "Password": "vontpkmdtzslulyc",
+    "Port": 587
+  },
+
+  "Redis": {
+    "Host": "localhost:6379",
+    "Password": "",
+    "DB": 0
+  },
+
+  "Broker": {
+    "Host": "ws://localhost:15675/ws",
+    "Username": "",
+    "Password": "",
+    "CleanSession": true
+  },
+
+  "Credentials": {
+    "Crt": "./cert/localhost.crt",
+    "Key": "./cert/localhost.key",
+    "Override": "localhost"
+  }
+}

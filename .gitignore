@@ -2,3 +2,6 @@
 .vscode/
 swagger
 writer.log
+config.json
+./main
+pgdata/

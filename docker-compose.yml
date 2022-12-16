@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  server:
+    restart: always
+    build: .
+    depends_on:
+      - pg
+      - rabbit
+    environment:
+      - POSTGRES_CONNECTION=postgres://postgres:123123@pg/envoys?sslmode=disable
+    volumes:
+      - ./config.json:/var/app_config.json
+  pg:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.PostgreSQL
+    environment:
+      - POSTGRES_PASSWORD=123123
+    ports:
+      - 53:53
+      - 5432:5432
+    volumes:
+      - ./static/dump:/docker-entrypoint-initdb.d
+      - ./pgdata:/var/lib/postgresql/data
+  
+  rabbit:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.RabbitMQ
+    ports:
+      - 15675:15675
