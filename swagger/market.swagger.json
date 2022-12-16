@@ -1,0 +1,530 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "server/proto/pbmarket/market.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v2/market/get-book": {
+      "get": {
+        "summary": "Get a snapshot of the specified order book with max 25 levels on each side.",
+        "operationId": "Api_GetBook2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseBook"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "instrument",
+            "description": "Instrument name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tradable",
+            "description": "Whether to return Tradable order book. By default method returns Global order book.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "summary": "Get a snapshot of the specified order book with max 25 levels on each side.",
+        "operationId": "Api_GetBook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseBook"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketGetRequestBook"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/market/get-instruments": {
+      "get": {
+        "summary": "Get currencies and instruments available.",
+        "operationId": "Api_GetInstruments2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseInstrument"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "summary": "Get currencies and instruments available.",
+        "operationId": "Api_GetInstruments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseInstrument"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketGetRequestInstrument"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/market/get-orders": {
+      "get": {
+        "summary": "Set places an order. Taker can specify order volume instead of order size.",
+        "operationId": "Api_GetOrders2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Instrument name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "summary": "Set places an order. Taker can specify order volume instead of order size.",
+        "operationId": "Api_GetOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketGetRequestOrder"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/market/set-order": {
+      "post": {
+        "summary": "Set places an order. Taker can specify order volume instead of order size.",
+        "operationId": "Api_SetOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketSetRequestOrder"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "InstrumentCurrency": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Currency id."
+        },
+        "name": {
+          "type": "string",
+          "description": "Currency name."
+        },
+        "size": {
+          "type": "number",
+          "format": "double",
+          "description": "Balance Step, minimum fraction of currency. From 1 to 1000000."
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "Current USD valuation for risk control."
+        }
+      }
+    },
+    "InstrumentPair": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "Instrument id"
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Instrument name."
+        },
+        "base_name": {
+          "type": "string",
+          "description": "Asset currency name."
+        },
+        "quote_name": {
+          "type": "string",
+          "description": "Balance currency name."
+        }
+      }
+    },
+    "ReceptionBook": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "Level price."
+        },
+        "size": {
+          "type": "number",
+          "format": "double",
+          "description": "Level total size."
+        }
+      }
+    },
+    "pbmarketGetRequestBook": {
+      "type": "object",
+      "properties": {
+        "instrument": {
+          "type": "string",
+          "description": "Instrument name."
+        },
+        "tradable": {
+          "type": "boolean",
+          "description": "Whether to return Tradable order book. By default method returns Global order book."
+        }
+      }
+    },
+    "pbmarketGetRequestInstrument": {
+      "type": "object",
+      "description": "Market instrument."
+    },
+    "pbmarketGetRequestOrder": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Instrument name."
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbmarketInstrument": {
+      "type": "object",
+      "properties": {
+        "currencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstrumentCurrency"
+          }
+        },
+        "pairs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstrumentPair"
+          }
+        }
+      },
+      "description": "Instrument."
+    },
+    "pbmarketOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Order id."
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Instrument name."
+        },
+        "uid": {
+          "type": "string",
+          "format": "int64",
+          "description": "Internal client id."
+        },
+        "cid": {
+          "type": "string",
+          "format": "int64",
+          "description": "Counterparty Id."
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "Order price."
+        },
+        "volume": {
+          "type": "number",
+          "format": "double",
+          "description": "Order volume."
+        },
+        "size": {
+          "type": "number",
+          "format": "double",
+          "description": "Quantity value."
+        },
+        "side": {
+          "type": "string",
+          "description": "Order side, \"bid\" - buy and \"ask\" - sell."
+        },
+        "type": {
+          "type": "string",
+          "description": "Order types \"limitIOC\", \"limitFOK\", \"marketIOC\", \"marketFOK\"."
+        },
+        "create_at": {
+          "type": "string",
+          "description": "Create order at."
+        }
+      },
+      "description": "Market set order."
+    },
+    "pbmarketReception": {
+      "type": "object",
+      "properties": {
+        "bid": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ReceptionBook"
+          }
+        },
+        "ask": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ReceptionBook"
+          }
+        }
+      },
+      "description": "Market book."
+    },
+    "pbmarketResponseBook": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "$ref": "#/definitions/pbmarketReception"
+        }
+      }
+    },
+    "pbmarketResponseInstrument": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "$ref": "#/definitions/pbmarketInstrument"
+        }
+      }
+    },
+    "pbmarketResponseOrder": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbmarketOrder"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbmarketSetRequestOrder": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Instrument name."
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "Order limit price (for postOnly and limit orders)."
+        },
+        "size": {
+          "type": "number",
+          "format": "double",
+          "description": "Order size. If specified - volume shouldn't be used."
+        },
+        "volume": {
+          "type": "number",
+          "format": "double",
+          "description": "Order volume to be filled. Can be used by takers only. If specified - size shouldn't be used."
+        },
+        "side": {
+          "type": "string",
+          "description": "Order side, use \"bid\" to buy and \"ask\" to sell."
+        },
+        "type": {
+          "type": "string",
+          "description": "Order types \"limitIOC\", \"limitFOK\", \"marketIOC\", \"marketFOK\" can only be used by market takers. \"postOnly\" and \"limit\" can only be used by market makers.."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
