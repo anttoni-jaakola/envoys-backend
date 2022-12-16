@@ -31,8 +31,8 @@ func (m *Service) GetInstruments(_ context.Context, _ *pbmarket.GetRequestInstru
 			)
 
 			columns := fields[0].([]interface{})[i].([]interface{})
-			for i := 0; i < len(m.Context.MarketPairs); i++ {
-				if strings.HasPrefix(m.Context.MarketPairs[i], columns[0].(string)) || strings.HasSuffix(m.Context.MarketPairs[i], columns[0].(string)) {
+			for i := 0; i < len(m.Context.Finery.Pairs); i++ {
+				if strings.HasPrefix(m.Context.Finery.Pairs[i], columns[0].(string)) || strings.HasSuffix(m.Context.Finery.Pairs[i], columns[0].(string)) {
 					disable = true
 				}
 			}
@@ -54,8 +54,8 @@ func (m *Service) GetInstruments(_ context.Context, _ *pbmarket.GetRequestInstru
 			)
 
 			columns := fields[1].([]interface{})[i].([]interface{})
-			for i := 0; i < len(m.Context.MarketPairs); i++ {
-				if strings.HasPrefix(m.Context.MarketPairs[i], columns[0].(string)) || strings.HasSuffix(m.Context.MarketPairs[i], columns[0].(string)) {
+			for i := 0; i < len(m.Context.Finery.Pairs); i++ {
+				if strings.HasPrefix(m.Context.Finery.Pairs[i], columns[0].(string)) || strings.HasSuffix(m.Context.Finery.Pairs[i], columns[0].(string)) {
 					disable = true
 				}
 			}

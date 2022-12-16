@@ -16,10 +16,10 @@
 ****
 
 **Gateway build:**
-> $ protoc -I=. -I/usr/local/include -I=$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway -I=$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. server/proto/*.proto
+> $ ./proto.sh
 
 **Gateway+Swagger build:**
-> $ protoc -I=. -I/usr/local/include -I=$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway -I=$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:./swagger server/proto/*.proto
+> $ ./swagger.sh
 
 ****
 
@@ -75,6 +75,3 @@
 **Install Redis:**
 
 * $ sudo apt install redis-server
-
-**Rules admin:**
-* ["currencies", "chains", "pairs", "accounts", "contracts", "listing", "news", "support", "advertising"].

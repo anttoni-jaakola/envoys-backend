@@ -23,43 +23,63 @@ import (
 	"time"
 )
 
+type Smtp struct {
+	Host, Sender, Password string
+	Port                   int
+}
+
+type Server struct {
+	Host, Proxy string
+}
+
+type Redis struct {
+	Host, Password string
+	DB             int
+}
+
+type Broker struct {
+	Host, Username, Password string
+	CleanSession             bool
+}
+
+type Credentials struct {
+	Crt, Key, Override string
+}
+
+type Intervals struct {
+	Market, Chain time.Duration
+}
+
+type Finery struct {
+	Key, Secret string
+	Pairs       []string
+	Test        bool
+}
+
 type Context struct {
 	Development bool
 
 	Logger *logrus.Logger
 	Mutex  sync.Mutex
 
+	Secrets     []string
 	StoragePath string
+	Postgres    string
+	Timezones   string
 
-	Postgres string
+	Finery *Finery
 
-	GrpcAddress, GrpcGatewayAddress string
-	GrpcConnect                     *grpc.ClientConn
+	Smtp        *Smtp
+	Server      *Server
+	Redis       *Redis
+	Broker      *Broker
+	Intervals   *Intervals
+	Credentials *Credentials
 
-	Secrets []string
-
-	IntervalMarket, IntervalChainStatus time.Duration
-
-	CredentialsCrt, CredentialsKey, CredentialsOverride string
-
-	Db *sql.DB
-
-	Timezones string
-
-	SmtpHost, SmtpSender, SmtpPassword string
-	SmtpPort                           int
-
-	RedisHost, RedisPassword string
-	RedisDB                  int
-	RedisClient              *redis.Client
-
-	MarketKey, MarketSecret string
-	MarketPairs             []string
-	MarketTest              bool
-
-	BrokerClient                               MQTT.Client
-	BrokerHost, BrokerUsername, BrokerPassword string
-	BrokerCleanSession                         bool
+	BrokerClient MQTT.Client
+	RedisClient  *redis.Client
+	GrpcClient   *grpc.ClientConn
+	Db           *sql.DB
 }
 
 func (app *Context) Write() *Context {
@@ -115,19 +135,18 @@ func (app *Context) Write() *Context {
 	}
 
 	app.RedisClient = redis.NewClient(&redis.Options{
-		Addr:     app.RedisHost,
-		Password: app.RedisPassword,
-		DB:       app.RedisDB,
+		Addr:     app.Redis.Host,
+		Password: app.Redis.Password,
+		DB:       app.Redis.DB,
 	})
 
-	options := MQTT.NewClientOptions().
-		AddBroker(app.BrokerHost).
-		SetUsername(app.BrokerUsername).
-		SetPassword(app.BrokerPassword).
-		SetCleanSession(app.BrokerCleanSession).
+	app.BrokerClient = MQTT.NewClient(MQTT.NewClientOptions().
+		AddBroker(app.Broker.Host).
+		SetUsername(app.Broker.Username).
+		SetPassword(app.Broker.Password).
+		SetCleanSession(app.Broker.CleanSession).
 		SetKeepAlive(2 * time.Second).
-		SetPingTimeout(1 * time.Second)
-	app.BrokerClient = MQTT.NewClient(options)
+		SetPingTimeout(1 * time.Second))
 	if connect := app.BrokerClient.Connect(); connect.Wait() && connect.Error() != nil {
 		logrus.Fatal(connect.Error())
 	}

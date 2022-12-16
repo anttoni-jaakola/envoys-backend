@@ -1,0 +1,2792 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "server/proto/pbspot/spot.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v2/admin/spot/delete-chain": {
+      "post": {
+        "summary": "Delete chain.",
+        "operationId": "Api_DeleteChainRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseChain"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotDeleteRequestChainRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/delete-contract": {
+      "post": {
+        "summary": "Delete contract.",
+        "operationId": "Api_DeleteContractRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseContract"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotDeleteRequestContractRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/delete-currency": {
+      "post": {
+        "summary": "Delete currency.",
+        "operationId": "Api_DeleteCurrencyRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseCurrency"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotDeleteRequestCurrencyRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/delete-pair": {
+      "post": {
+        "summary": "Delete pair.",
+        "operationId": "Api_DeletePairRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePair"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotDeleteRequestPairRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-assets": {
+      "post": {
+        "summary": "Get assets.",
+        "operationId": "Api_GetAssetsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseAsset"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestAssetsManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-chain": {
+      "post": {
+        "summary": "Get chain.",
+        "operationId": "Api_GetChainRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseChain"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestChainRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-chains": {
+      "post": {
+        "summary": "Get chains.",
+        "operationId": "Api_GetChainsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseChain"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestChainsRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-contract": {
+      "post": {
+        "summary": "Get contract.",
+        "operationId": "Api_GetContractRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseContract"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestContractRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-contracts": {
+      "post": {
+        "summary": "Get contracts.",
+        "operationId": "Api_GetContractsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseContract"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestContractsRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-currencies": {
+      "post": {
+        "summary": "Get currencies.",
+        "operationId": "Api_GetCurrenciesRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseCurrency"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestCurrenciesRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-currency": {
+      "post": {
+        "summary": "Get currency.",
+        "operationId": "Api_GetCurrencyRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseCurrency"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestCurrencyRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-market-price": {
+      "post": {
+        "summary": "Administration api.\nGet market-price.",
+        "operationId": "Api_GetMarketPriceRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePrice"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestPriceManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-orders": {
+      "post": {
+        "summary": "Get orders.",
+        "operationId": "Api_GetOrdersRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestOrdersManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-pair": {
+      "post": {
+        "summary": "Get pair.",
+        "operationId": "Api_GetPairRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePair"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestPairRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-pairs": {
+      "post": {
+        "summary": "Get pairs.",
+        "operationId": "Api_GetPairsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePair"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestPairsRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/get-transactions": {
+      "post": {
+        "summary": "Get transactions.",
+        "operationId": "Api_GetTransactionsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseTransaction"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestTransactionsManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/set-chain": {
+      "post": {
+        "summary": "Set chain.",
+        "operationId": "Api_SetChainRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseChain"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestChainRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/set-contract": {
+      "post": {
+        "summary": "Set contract.",
+        "operationId": "Api_SetContractRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseContract"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestContractRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/set-currency": {
+      "post": {
+        "summary": "Set currency.",
+        "operationId": "Api_SetCurrencyRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseCurrency"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestCurrencyRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/spot/set-pair": {
+      "post": {
+        "summary": "Set pair.",
+        "operationId": "Api_SetPairRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePair"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestPairRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/cancel-order": {
+      "post": {
+        "summary": "Cancel order.",
+        "operationId": "Api_CancelOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotCancelRequestOrder"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/cancel-withdraw": {
+      "post": {
+        "summary": "Cancel withdraw.",
+        "operationId": "Api_CancelWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseWithdraw"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotCancelRequestWithdraw"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-analysis": {
+      "post": {
+        "summary": "Get analysis.",
+        "operationId": "Api_GetAnalysis",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseAnalysis"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestAnalysis"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-asset": {
+      "post": {
+        "summary": "Get asset.",
+        "operationId": "Api_GetAsset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseAsset"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestAsset"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-assets": {
+      "post": {
+        "summary": "Get assets.",
+        "operationId": "Api_GetAssets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseAsset"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestAssetsManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-graph": {
+      "get": {
+        "summary": "Get graph.",
+        "operationId": "Api_GetGraph2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseGraph"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "base_unit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "quote_unit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resolution",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "summary": "Get graph.",
+        "operationId": "Api_GetGraph",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseGraph"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestGraph"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-markers": {
+      "post": {
+        "summary": "Get markers.",
+        "operationId": "Api_GetMarkers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseMarker"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestMarkers"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-orders": {
+      "post": {
+        "summary": "Get order.",
+        "operationId": "Api_GetOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestOrdersManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-pair": {
+      "post": {
+        "summary": "Get pair.",
+        "operationId": "Api_GetPair",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePair"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestPair"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-pairs": {
+      "post": {
+        "summary": "Get pairs.",
+        "operationId": "Api_GetPairs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePair"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestPairs"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-price": {
+      "get": {
+        "summary": "Get price.",
+        "operationId": "Api_GetPrice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponsePrice"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "base_unit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "quote_unit",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-symbol": {
+      "post": {
+        "summary": "Get symbol.",
+        "operationId": "Api_GetSymbol",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseSymbol"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestSymbol"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-trades": {
+      "post": {
+        "summary": "Get trades.",
+        "operationId": "Api_GetTrades",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseTrades"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestTrades"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-transactions": {
+      "post": {
+        "summary": "Get transactions.",
+        "operationId": "Api_GetTransactions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseTransaction"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestTransactionsManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/get-transfers": {
+      "post": {
+        "summary": "Get trade transfers.",
+        "operationId": "Api_GetTransfers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseTransfer"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotGetRequestTransfers"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/set-asset": {
+      "post": {
+        "summary": "Set asset address.",
+        "operationId": "Api_SetAsset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseAsset"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestAsset"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/set-order": {
+      "post": {
+        "summary": "Set order.",
+        "operationId": "Api_SetOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseOrder"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestOrder"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/spot/set-withdraw": {
+      "post": {
+        "summary": "Set withdraw.",
+        "operationId": "Api_SetWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbspotResponseWithdraw"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbspotSetRequestWithdraw"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "OrderParam": {
+      "type": "object",
+      "properties": {
+        "turn": {
+          "type": "boolean"
+        },
+        "maker": {
+          "type": "boolean"
+        },
+        "equal": {
+          "type": "boolean"
+        },
+        "fees": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "description": "Option message structure."
+    },
+    "pbspotAnalysis": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "buy_ratio": {
+          "type": "number",
+          "format": "double"
+        },
+        "sel_ratio": {
+          "type": "number",
+          "format": "double"
+        },
+        "chart": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "description": "Analysis message structure."
+    },
+    "pbspotAssigning": {
+      "type": "string",
+      "enum": [
+        "BUY",
+        "SELL",
+        "MARKET_PRICE",
+        "DEFAULT"
+      ],
+      "default": "BUY",
+      "description": "Enum purpose of trades to sell or buy, market liquidity of trades."
+    },
+    "pbspotCancelRequestOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotCancelRequestWithdraw": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotChain": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent_symbol": {
+          "type": "string"
+        },
+        "explorer_link": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "rpc": {
+          "type": "string"
+        },
+        "rpc_key": {
+          "type": "string"
+        },
+        "rpc_user": {
+          "type": "string"
+        },
+        "rpc_password": {
+          "type": "string"
+        },
+        "block": {
+          "type": "string",
+          "format": "int64"
+        },
+        "network": {
+          "type": "string",
+          "format": "int64"
+        },
+        "confirmation": {
+          "type": "string",
+          "format": "int64"
+        },
+        "time_withdraw": {
+          "type": "string",
+          "format": "int64"
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "exist": {
+          "type": "boolean"
+        },
+        "reserve": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees_withdraw": {
+          "type": "number",
+          "format": "double"
+        },
+        "platform": {
+          "$ref": "#/definitions/pbspotPlatform"
+        },
+        "contract": {
+          "$ref": "#/definitions/pbspotContract"
+        },
+        "tag": {
+          "$ref": "#/definitions/pbspotTag"
+        }
+      },
+      "description": "Chain message structure."
+    },
+    "pbspotContract": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "chain_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "chain_name": {
+          "type": "string"
+        },
+        "parent_symbol": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "fees_withdraw": {
+          "type": "number",
+          "format": "double"
+        },
+        "decimals": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "platform": {
+          "$ref": "#/definitions/pbspotPlatform"
+        },
+        "protocol": {
+          "$ref": "#/definitions/pbspotProtocol"
+        }
+      },
+      "description": "Contract message structure."
+    },
+    "pbspotCurrency": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "create_at": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees_trade": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees_discount": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees_charges": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees_costs": {
+          "type": "number",
+          "format": "double"
+        },
+        "min_withdraw": {
+          "type": "number",
+          "format": "double"
+        },
+        "max_withdraw": {
+          "type": "number",
+          "format": "double"
+        },
+        "min_deposit": {
+          "type": "number",
+          "format": "double"
+        },
+        "min_trade": {
+          "type": "number",
+          "format": "double"
+        },
+        "max_trade": {
+          "type": "number",
+          "format": "double"
+        },
+        "volume": {
+          "type": "number",
+          "format": "double"
+        },
+        "chains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotChain"
+          }
+        },
+        "pairs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotPair"
+          }
+        },
+        "chains_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "marker": {
+          "type": "boolean"
+        },
+        "icon": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "fin_type": {
+          "$ref": "#/definitions/pbspotFinType"
+        }
+      },
+      "description": "Currency message structure."
+    },
+    "pbspotDeleteRequestChainRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotDeleteRequestContractRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotDeleteRequestCurrencyRule": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "pbspotDeleteRequestPairRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotFinType": {
+      "type": "string",
+      "enum": [
+        "CRYPTO",
+        "FIAT"
+      ],
+      "default": "CRYPTO",
+      "description": "Enum type of finance, is it a type of cryptocurrency or fiat."
+    },
+    "pbspotGetRequestAnalysis": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "description": "Analysis structure."
+    },
+    "pbspotGetRequestAsset": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "pbspotGetRequestAssetsManual": {
+      "type": "object",
+      "description": "Asset structure."
+    },
+    "pbspotGetRequestChainRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotGetRequestChainsRule": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "description": "Chain structure."
+    },
+    "pbspotGetRequestContractRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotGetRequestContractsRule": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        },
+        "search": {
+          "type": "string"
+        }
+      },
+      "description": "Contract structure."
+    },
+    "pbspotGetRequestCurrenciesRule": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "description": "Currency structure."
+    },
+    "pbspotGetRequestCurrencyRule": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "pbspotGetRequestGraph": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "from": {
+          "type": "string",
+          "format": "int64"
+        },
+        "to": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "resolution": {
+          "type": "string"
+        }
+      },
+      "description": "Graph structure."
+    },
+    "pbspotGetRequestMarkers": {
+      "type": "object",
+      "description": "Marker structure."
+    },
+    "pbspotGetRequestOrdersManual": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "boolean"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        },
+        "decimal": {
+          "type": "number",
+          "format": "double"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        },
+        "status": {
+          "$ref": "#/definitions/pbspotStatus"
+        }
+      }
+    },
+    "pbspotGetRequestPair": {
+      "type": "object",
+      "properties": {
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        }
+      }
+    },
+    "pbspotGetRequestPairRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbspotGetRequestPairs": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        }
+      },
+      "description": "Pair structure."
+    },
+    "pbspotGetRequestPairsRule": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        },
+        "search": {
+          "type": "string"
+        }
+      }
+    },
+    "pbspotGetRequestPriceManual": {
+      "type": "object",
+      "properties": {
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        }
+      },
+      "description": "Price structure."
+    },
+    "pbspotGetRequestSymbol": {
+      "type": "object",
+      "properties": {
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        }
+      },
+      "description": "Symbol structure."
+    },
+    "pbspotGetRequestTrades": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        }
+      },
+      "description": "Trade structure."
+    },
+    "pbspotGetRequestTransactionsManual": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        },
+        "tx_type": {
+          "$ref": "#/definitions/pbspotTxType"
+        }
+      },
+      "description": "Transaction structure."
+    },
+    "pbspotGetRequestTransfers": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "order_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        }
+      },
+      "description": "Transfer structure."
+    },
+    "pbspotGraph": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "time": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "high": {
+          "type": "number",
+          "format": "double"
+        },
+        "low": {
+          "type": "number",
+          "format": "double"
+        },
+        "open": {
+          "type": "number",
+          "format": "double"
+        },
+        "close": {
+          "type": "number",
+          "format": "double"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "volume": {
+          "type": "number",
+          "format": "double"
+        },
+        "ask_price": {
+          "type": "number",
+          "format": "double"
+        },
+        "bid_price": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "description": "Graph message structure."
+    },
+    "pbspotOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "create_at": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        },
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "param": {
+          "$ref": "#/definitions/OrderParam"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        },
+        "status": {
+          "$ref": "#/definitions/pbspotStatus"
+        }
+      },
+      "description": "Order message structure."
+    },
+    "pbspotPair": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double"
+        },
+        "base_decimal": {
+          "type": "number",
+          "format": "double"
+        },
+        "quote_decimal": {
+          "type": "number",
+          "format": "double"
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "graph_clear": {
+          "type": "boolean"
+        }
+      },
+      "description": "Pair message structure."
+    },
+    "pbspotPlatform": {
+      "type": "string",
+      "enum": [
+        "BITCOIN",
+        "ETHEREUM",
+        "TRON",
+        "VISA",
+        "MASTERCARD"
+      ],
+      "default": "BITCOIN",
+      "description": "Enum cryptocurrency parent platforms, list of underlying platforms."
+    },
+    "pbspotProtocol": {
+      "type": "string",
+      "enum": [
+        "MAINNET",
+        "ERC20",
+        "ERC721",
+        "ERC1155",
+        "ERC998",
+        "ERC223",
+        "BEP20",
+        "BEP721",
+        "BEP1155",
+        "TRC20",
+        "TRC721",
+        "BEP998",
+        "BEP223",
+        "PRC20",
+        "PRC721",
+        "PRC1155",
+        "PRC998",
+        "PRC223",
+        "CRC20",
+        "CRC721",
+        "CRC1155",
+        "CRC998",
+        "CRC223",
+        "FRC20",
+        "FRC721",
+        "FRC1155",
+        "FRC998",
+        "FRC223",
+        "ARC20",
+        "ARC721",
+        "ARC1155",
+        "ARC998",
+        "ARC223"
+      ],
+      "default": "MAINNET",
+      "description": "Enum currency protocol structure."
+    },
+    "pbspotResponseAnalysis": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotAnalysis"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbspotResponseAsset": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotCurrency"
+          }
+        },
+        "address": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotResponseChain": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotChain"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotResponseContract": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotContract"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotResponseCurrency": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotCurrency"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbspotResponseGraph": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotGraph"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/pbspotStats"
+        }
+      }
+    },
+    "pbspotResponseMarker": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pbspotResponseOrder": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotOrder"
+          }
+        },
+        "volume": {
+          "type": "number",
+          "format": "double"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotResponsePair": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotPair"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotResponsePrice": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "pbspotResponseSymbol": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotResponseTrades": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotTrade"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbspotResponseTransaction": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotTransaction"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbspotResponseTransfer": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbspotTransfer"
+          }
+        }
+      }
+    },
+    "pbspotResponseWithdraw": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pbspotSetRequestAsset": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "platform": {
+          "$ref": "#/definitions/pbspotPlatform"
+        },
+        "protocol": {
+          "$ref": "#/definitions/pbspotProtocol"
+        },
+        "fin_type": {
+          "$ref": "#/definitions/pbspotFinType"
+        }
+      }
+    },
+    "pbspotSetRequestChainRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "chain": {
+          "$ref": "#/definitions/pbspotChain"
+        }
+      }
+    },
+    "pbspotSetRequestContractRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "contract": {
+          "$ref": "#/definitions/pbspotContract"
+        }
+      }
+    },
+    "pbspotSetRequestCurrencyRule": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string",
+          "format": "byte"
+        },
+        "currency": {
+          "$ref": "#/definitions/pbspotCurrency"
+        }
+      }
+    },
+    "pbspotSetRequestOrder": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "trade_type": {
+          "$ref": "#/definitions/pbspotTradeType"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        }
+      },
+      "description": "Order structure."
+    },
+    "pbspotSetRequestPairRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "pair": {
+          "$ref": "#/definitions/pbspotPair"
+        }
+      }
+    },
+    "pbspotSetRequestWithdraw": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "secure": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "refresh": {
+          "type": "boolean"
+        },
+        "platform": {
+          "$ref": "#/definitions/pbspotPlatform"
+        }
+      },
+      "description": "Withdraw structure."
+    },
+    "pbspotStats": {
+      "type": "object",
+      "properties": {
+        "high": {
+          "type": "number",
+          "format": "double"
+        },
+        "low": {
+          "type": "number",
+          "format": "double"
+        },
+        "last": {
+          "type": "number",
+          "format": "double"
+        },
+        "first": {
+          "type": "number",
+          "format": "double"
+        },
+        "previous": {
+          "type": "number",
+          "format": "double"
+        },
+        "volume": {
+          "type": "number",
+          "format": "double"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "description": "Graph stats message structure."
+    },
+    "pbspotStatus": {
+      "type": "string",
+      "enum": [
+        "CANCEL",
+        "FILLED",
+        "PENDING",
+        "RESERVE",
+        "PROCESSING",
+        "FAILED"
+      ],
+      "default": "CANCEL",
+      "description": "Enum statuses, such as order statuses,\nthis list has the status canceled, completed, and pending."
+    },
+    "pbspotTag": {
+      "type": "string",
+      "enum": [
+        "C_NONE",
+        "C_BITCOIN",
+        "C_ETHEREUM",
+        "C_BINANCE",
+        "C_TRON",
+        "C_POLYGON",
+        "C_CRONOS",
+        "C_FANTOM",
+        "C_AVALANCHE"
+      ],
+      "default": "C_NONE",
+      "description": "Enum chain tag structure."
+    },
+    "pbspotTrade": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "create_at": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees": {
+          "type": "number",
+          "format": "double"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        }
+      },
+      "description": "Trade message structure."
+    },
+    "pbspotTradeType": {
+      "type": "string",
+      "enum": [
+        "MARKET",
+        "LIMIT"
+      ],
+      "default": "MARKET",
+      "description": "Enum trading types, the marker type is responsible for\nselling or buying at the market price,\nthe limit type is buying or selling at the price that the user sets."
+    },
+    "pbspotTransaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Transaction internal ID."
+        },
+        "chain_id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Chain/Blockchain internal ID."
+        },
+        "user_id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Account user internal ID."
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Currency symbol."
+        },
+        "hash": {
+          "type": "string",
+          "description": "Blockchain hash ID."
+        },
+        "create_at": {
+          "type": "string",
+          "description": "Transaction creation time."
+        },
+        "to": {
+          "type": "string",
+          "description": "Recipient's address."
+        },
+        "from": {
+          "type": "string",
+          "description": "Address from whom the transfer was made."
+        },
+        "value": {
+          "type": "number",
+          "format": "double",
+          "description": "Number of funds."
+        },
+        "fees": {
+          "type": "number",
+          "format": "double",
+          "description": "Blockchain network fee for transferring funds."
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "Freeze currency conversion price."
+        },
+        "confirmation": {
+          "type": "string",
+          "format": "int64",
+          "description": "Blockchain network confirmations."
+        },
+        "block": {
+          "type": "string",
+          "format": "int64",
+          "description": "Number of blocks in the blockchain network."
+        },
+        "hook": {
+          "type": "boolean",
+          "description": "Data update via socket gateway [true - update, false - create]."
+        },
+        "claim": {
+          "type": "boolean",
+          "description": "Requiring commission for withdrawal of funds."
+        },
+        "tx_type": {
+          "$ref": "#/definitions/pbspotTxType"
+        },
+        "fin_type": {
+          "$ref": "#/definitions/pbspotFinType"
+        },
+        "platform": {
+          "$ref": "#/definitions/pbspotPlatform"
+        },
+        "protocol": {
+          "$ref": "#/definitions/pbspotProtocol"
+        },
+        "status": {
+          "$ref": "#/definitions/pbspotStatus"
+        },
+        "chain": {
+          "$ref": "#/definitions/pbspotChain"
+        }
+      },
+      "description": "Transaction message structure."
+    },
+    "pbspotTransfer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "base_unit": {
+          "type": "string"
+        },
+        "quote_unit": {
+          "type": "string"
+        },
+        "create_at": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "fees": {
+          "type": "number",
+          "format": "double"
+        },
+        "assigning": {
+          "$ref": "#/definitions/pbspotAssigning"
+        }
+      },
+      "description": "Transfer message structure."
+    },
+    "pbspotTxType": {
+      "type": "string",
+      "enum": [
+        "DEPOSIT",
+        "WITHDRAWS"
+      ],
+      "default": "DEPOSIT",
+      "description": "Enum transaction type, there are 2 types of deposit and withdrawal."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
