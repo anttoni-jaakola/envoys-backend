@@ -205,7 +205,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 					}
 				}
 
-				if _, err = a.Context.Db.Exec("insert into activities (user_id, os, device, browser, ip) values ($1, $2, $3, $4, $5)", params.id, strings.ToLower(agent.OS), agent.Device, browser, params.ip); err != nil {
+				if _, err = a.Context.Db.Exec("insert into actions (user_id, os, device, browser, ip) values ($1, $2, $3, $4, $5)", params.id, strings.ToLower(agent.OS), agent.Device, browser, params.ip); err != nil {
 					return &response, a.Context.Error(err)
 				}
 			}

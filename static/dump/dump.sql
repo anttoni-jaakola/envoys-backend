@@ -1,65 +1,3 @@
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 14.5 (Ubuntu 14.5-1ubuntu1)
--- Dumped by pg_dump version 14.5 (Ubuntu 14.5-1ubuntu1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-DROP DATABASE IF EXISTS envoys;
---
--- Name: envoys; Type: DATABASE; Schema: -; Owner: postgres
---
-
-CREATE DATABASE envoys WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.UTF-8';
-
-
-ALTER DATABASE envoys OWNER TO postgres;
-
-\connect envoys
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: timescaledb; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS timescaledb WITH SCHEMA public;
-
-
---
--- Name: EXTENSION timescaledb; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION timescaledb IS 'Enables scalable inserts and complex queries for time-series data';
-
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- Name: accounts; Type: TABLE; Schema: public; Owner: envoys
---
 
 CREATE TABLE public.accounts (
     id integer NOT NULL,
@@ -69,17 +7,12 @@ CREATE TABLE public.accounts (
     password character varying,
     entropy bytea,
     sample jsonb DEFAULT '[]'::jsonb NOT NULL,
-    rules jsonb DEFAULT '[]'::jsonb NOT NULL,
+    rules jsonb DEFAULT '{}'::jsonb NOT NULL,
     status boolean DEFAULT false NOT NULL,
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-
 ALTER TABLE public.accounts OWNER TO envoys;
-
---
--- Name: accounts_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
 
 CREATE SEQUENCE public.accounts_id_seq
     AS integer
@@ -89,21 +22,10 @@ CREATE SEQUENCE public.accounts_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
 ALTER TABLE public.accounts_id_seq OWNER TO envoys;
-
---
--- Name: accounts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
 ALTER SEQUENCE public.accounts_id_seq OWNED BY public.accounts.id;
 
-
---
--- Name: activities; Type: TABLE; Schema: public; Owner: envoys
---
-
-CREATE TABLE public.activities (
+CREATE TABLE public.actions (
     id integer NOT NULL,
     os character varying(20),
     device character varying(10),
@@ -113,14 +35,9 @@ CREATE TABLE public.activities (
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE public.actions OWNER TO envoys;
 
-ALTER TABLE public.activities OWNER TO envoys;
-
---
--- Name: activities_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.activities_id_seq
+CREATE SEQUENCE public.actions_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -129,18 +46,8 @@ CREATE SEQUENCE public.activities_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.activities_id_seq OWNER TO envoys;
-
---
--- Name: activities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.activities_id_seq OWNED BY public.activities.id;
-
-
---
--- Name: spot_assets; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.actions_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.actions_id_seq OWNED BY public.actions.id;
 
 CREATE TABLE public.spot_assets (
     id integer NOT NULL,
@@ -149,14 +56,9 @@ CREATE TABLE public.spot_assets (
     balance numeric(32,16) DEFAULT 0.0000000000000000 NOT NULL
 );
 
-
 ALTER TABLE public.spot_assets OWNER TO envoys;
 
---
--- Name: assets_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.assets_id_seq
+CREATE SEQUENCE public.spot_assets_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -164,19 +66,8 @@ CREATE SEQUENCE public.assets_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE public.assets_id_seq OWNER TO envoys;
-
---
--- Name: assets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.assets_id_seq OWNED BY public.spot_assets.id;
-
-
---
--- Name: spot_chains; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.spot_assets_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_assets_id_seq OWNED BY public.spot_assets.id;
 
 CREATE TABLE public.spot_chains (
     id integer NOT NULL,
@@ -198,14 +89,9 @@ CREATE TABLE public.spot_chains (
     status boolean DEFAULT false NOT NULL
 );
 
-
 ALTER TABLE public.spot_chains OWNER TO envoys;
 
---
--- Name: chains_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.chains_id_seq
+CREATE SEQUENCE public.spot_chains_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -213,19 +99,8 @@ CREATE SEQUENCE public.chains_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE public.chains_id_seq OWNER TO envoys;
-
---
--- Name: chains_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.chains_id_seq OWNED BY public.spot_chains.id;
-
-
---
--- Name: spot_contracts; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.spot_chains_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_chains_id_seq OWNED BY public.spot_chains.id;
 
 CREATE TABLE public.spot_contracts (
     id integer NOT NULL,
@@ -237,14 +112,9 @@ CREATE TABLE public.spot_contracts (
     decimals integer DEFAULT 18 NOT NULL
 );
 
-
 ALTER TABLE public.spot_contracts OWNER TO envoys;
 
---
--- Name: contracts_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.contracts_id_seq
+CREATE SEQUENCE public.spot_contracts_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -253,18 +123,8 @@ CREATE SEQUENCE public.contracts_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.contracts_id_seq OWNER TO envoys;
-
---
--- Name: contracts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.contracts_id_seq OWNED BY public.spot_contracts.id;
-
-
---
--- Name: spot_currencies; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.spot_contracts_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_contracts_id_seq OWNED BY public.spot_contracts.id;
 
 CREATE TABLE public.spot_currencies (
     id integer NOT NULL,
@@ -286,22 +146,12 @@ CREATE TABLE public.spot_currencies (
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-
 ALTER TABLE public.spot_currencies OWNER TO envoys;
-
---
--- Name: COLUMN spot_currencies.fin_type; Type: COMMENT; Schema: public; Owner: envoys
---
 
 COMMENT ON COLUMN public.spot_currencies.fin_type IS '0 - crypto
 1 - fiat';
 
-
---
--- Name: currencies_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.currencies_id_seq
+CREATE SEQUENCE public.spot_currencies_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -309,19 +159,8 @@ CREATE SEQUENCE public.currencies_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE public.currencies_id_seq OWNER TO envoys;
-
---
--- Name: currencies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.currencies_id_seq OWNED BY public.spot_currencies.id;
-
-
---
--- Name: market_orders; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.spot_currencies_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_currencies_id_seq OWNED BY public.spot_currencies.id;
 
 CREATE TABLE public.market_orders (
     symbol character varying,
@@ -336,12 +175,7 @@ CREATE TABLE public.market_orders (
     volume numeric(32,16) DEFAULT 0.0000000000000000
 );
 
-
 ALTER TABLE public.market_orders OWNER TO envoys;
-
---
--- Name: spot_orders; Type: TABLE; Schema: public; Owner: envoys
---
 
 CREATE TABLE public.spot_orders (
     id integer NOT NULL,
@@ -357,28 +191,12 @@ CREATE TABLE public.spot_orders (
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-
 ALTER TABLE public.spot_orders OWNER TO envoys;
 
---
--- Name: COLUMN spot_orders.assigning; Type: COMMENT; Schema: public; Owner: envoys
---
-
 COMMENT ON COLUMN public.spot_orders.assigning IS 'Buy = 0 or Sell = 1 type.';
-
-
---
--- Name: COLUMN spot_orders.status; Type: COMMENT; Schema: public; Owner: envoys
---
-
 COMMENT ON COLUMN public.spot_orders.status IS 'CANCEL = 0, FILLED = 1, PENDING = 2';
 
-
---
--- Name: orders_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.orders_id_seq
+CREATE SEQUENCE public.spot_orders_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -386,19 +204,8 @@ CREATE SEQUENCE public.orders_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE public.orders_id_seq OWNER TO envoys;
-
---
--- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.orders_id_seq OWNED BY public.spot_orders.id;
-
-
---
--- Name: spot_pairs; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.spot_orders_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_orders_id_seq OWNED BY public.spot_orders.id;
 
 CREATE TABLE public.spot_pairs (
     id integer NOT NULL,
@@ -410,14 +217,8 @@ CREATE TABLE public.spot_pairs (
     status boolean DEFAULT false NOT NULL
 );
 
-
 ALTER TABLE public.spot_pairs OWNER TO envoys;
-
---
--- Name: pairs_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.pairs_id_seq
+CREATE SEQUENCE public.spot_pairs_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -426,19 +227,8 @@ CREATE SEQUENCE public.pairs_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.pairs_id_seq OWNER TO envoys;
-
---
--- Name: pairs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.pairs_id_seq OWNED BY public.spot_pairs.id;
-
-
---
--- Name: spot_reserves; Type: TABLE; Schema: public; Owner: envoys
---
-
+ALTER TABLE public.spot_pairs_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_pairs_id_seq OWNED BY public.spot_pairs.id;
 CREATE TABLE public.spot_reserves (
     id integer NOT NULL,
     user_id integer,
@@ -450,14 +240,9 @@ CREATE TABLE public.spot_reserves (
     lock boolean DEFAULT false NOT NULL
 );
 
-
 ALTER TABLE public.spot_reserves OWNER TO envoys;
 
---
--- Name: reserves_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.reserves_id_seq
+CREATE SEQUENCE public.spot_reserves_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -466,18 +251,8 @@ CREATE SEQUENCE public.reserves_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.reserves_id_seq OWNER TO envoys;
-
---
--- Name: reserves_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.reserves_id_seq OWNED BY public.spot_reserves.id;
-
-
---
--- Name: spot_trades; Type: TABLE; Schema: public; Owner: envoys
---
+ALTER TABLE public.spot_reserves_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_reserves_id_seq OWNED BY public.spot_reserves.id;
 
 CREATE TABLE public.spot_trades (
     id integer NOT NULL,
@@ -490,13 +265,7 @@ CREATE TABLE public.spot_trades (
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-
 ALTER TABLE public.spot_trades OWNER TO envoys;
-
---
--- Name: spot_transactions; Type: TABLE; Schema: public; Owner: envoys
---
-
 CREATE TABLE public.spot_transactions (
     id integer NOT NULL,
     symbol character varying,
@@ -518,13 +287,7 @@ CREATE TABLE public.spot_transactions (
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-
 ALTER TABLE public.spot_transactions OWNER TO envoys;
-
---
--- Name: spot_transfers; Type: TABLE; Schema: public; Owner: envoys
---
-
 CREATE TABLE public.spot_transfers (
     id integer NOT NULL,
     user_id integer,
@@ -538,12 +301,7 @@ CREATE TABLE public.spot_transfers (
     create_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-
 ALTER TABLE public.spot_transfers OWNER TO envoys;
-
---
--- Name: spot_wallets; Type: TABLE; Schema: public; Owner: envoys
---
 
 CREATE TABLE public.spot_wallets (
     id integer NOT NULL,
@@ -557,11 +315,7 @@ CREATE TABLE public.spot_wallets (
 
 ALTER TABLE public.spot_wallets OWNER TO envoys;
 
---
--- Name: trades_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.trades_id_seq
+CREATE SEQUENCE public.spot_trades_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -570,20 +324,10 @@ CREATE SEQUENCE public.trades_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.trades_id_seq OWNER TO envoys;
+ALTER TABLE public.spot_trades_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_trades_id_seq OWNED BY public.spot_trades.id;
 
---
--- Name: trades_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.trades_id_seq OWNED BY public.spot_trades.id;
-
-
---
--- Name: transactions_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.transactions_id_seq
+CREATE SEQUENCE public.spot_transactions_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -592,20 +336,10 @@ CREATE SEQUENCE public.transactions_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.transactions_id_seq OWNER TO envoys;
+ALTER TABLE public.spot_transactions_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_transactions_id_seq OWNED BY public.spot_transactions.id;
 
---
--- Name: transactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.transactions_id_seq OWNED BY public.spot_transactions.id;
-
-
---
--- Name: transfers_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.transfers_id_seq
+CREATE SEQUENCE public.spot_transfers_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -614,20 +348,10 @@ CREATE SEQUENCE public.transfers_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.transfers_id_seq OWNER TO envoys;
+ALTER TABLE public.spot_transfers_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_transfers_id_seq OWNED BY public.spot_transfers.id;
 
---
--- Name: transfers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.transfers_id_seq OWNED BY public.spot_transfers.id;
-
-
---
--- Name: wallets_id_seq; Type: SEQUENCE; Schema: public; Owner: envoys
---
-
-CREATE SEQUENCE public.wallets_id_seq
+CREATE SEQUENCE public.spot_wallets_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -636,322 +360,56 @@ CREATE SEQUENCE public.wallets_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wallets_id_seq OWNER TO envoys;
-
---
--- Name: wallets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: envoys
---
-
-ALTER SEQUENCE public.wallets_id_seq OWNED BY public.spot_wallets.id;
-
-
---
--- Name: accounts id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
+ALTER TABLE public.spot_wallets_id_seq OWNER TO envoys;
+ALTER SEQUENCE public.spot_wallets_id_seq OWNED BY public.spot_wallets.id;
 ALTER TABLE ONLY public.accounts ALTER COLUMN id SET DEFAULT nextval('public.accounts_id_seq'::regclass);
-
-
---
--- Name: activities id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.activities ALTER COLUMN id SET DEFAULT nextval('public.activities_id_seq'::regclass);
-
-
---
--- Name: spot_assets id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_assets ALTER COLUMN id SET DEFAULT nextval('public.assets_id_seq'::regclass);
-
-
---
--- Name: spot_chains id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_chains ALTER COLUMN id SET DEFAULT nextval('public.chains_id_seq'::regclass);
-
-
---
--- Name: spot_contracts id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_contracts ALTER COLUMN id SET DEFAULT nextval('public.contracts_id_seq'::regclass);
-
-
---
--- Name: spot_currencies id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_currencies ALTER COLUMN id SET DEFAULT nextval('public.currencies_id_seq'::regclass);
-
-
---
--- Name: spot_orders id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_orders ALTER COLUMN id SET DEFAULT nextval('public.orders_id_seq'::regclass);
-
-
---
--- Name: spot_pairs id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_pairs ALTER COLUMN id SET DEFAULT nextval('public.pairs_id_seq'::regclass);
-
-
---
--- Name: spot_reserves id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_reserves ALTER COLUMN id SET DEFAULT nextval('public.reserves_id_seq'::regclass);
-
-
---
--- Name: spot_trades id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_trades ALTER COLUMN id SET DEFAULT nextval('public.trades_id_seq'::regclass);
-
-
---
--- Name: spot_transactions id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_transactions ALTER COLUMN id SET DEFAULT nextval('public.transactions_id_seq'::regclass);
-
-
---
--- Name: spot_transfers id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_transfers ALTER COLUMN id SET DEFAULT nextval('public.transfers_id_seq'::regclass);
-
-
---
--- Name: spot_wallets id; Type: DEFAULT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.spot_wallets ALTER COLUMN id SET DEFAULT nextval('public.wallets_id_seq'::regclass);
-
-
---
--- Data for Name: cache_inval_bgw_job; Type: TABLE DATA; Schema: _timescaledb_cache; Owner: postgres
---
-
-
-
---
--- Data for Name: cache_inval_extension; Type: TABLE DATA; Schema: _timescaledb_cache; Owner: postgres
---
-
-
-
---
--- Data for Name: cache_inval_hypertable; Type: TABLE DATA; Schema: _timescaledb_cache; Owner: postgres
---
-
-
-
---
--- Data for Name: hypertable; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: chunk; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: dimension; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: dimension_slice; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: chunk_constraint; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: chunk_data_node; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: chunk_index; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: compression_chunk_size; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_agg; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_agg_migrate_plan; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_agg_migrate_plan_step; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_aggs_bucket_function; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_aggs_hypertable_invalidation_log; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_aggs_invalidation_threshold; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: continuous_aggs_materialization_invalidation_log; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: dimension_partition; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: hypertable_compression; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: hypertable_data_node; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: metadata; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-INSERT INTO _timescaledb_catalog.metadata (key, value, include_in_telemetry) VALUES ('exported_uuid', '332bb807-0060-4627-ba72-befed1ebda1e', true);
-
-
---
--- Data for Name: remote_txn; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: tablespace; Type: TABLE DATA; Schema: _timescaledb_catalog; Owner: postgres
---
-
-
-
---
--- Data for Name: bgw_job; Type: TABLE DATA; Schema: _timescaledb_config; Owner: postgres
---
-
-
-
---
--- Data for Name: job_errors; Type: TABLE DATA; Schema: _timescaledb_internal; Owner: postgres
---
-
-
-
---
--- Data for Name: accounts; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (1, 'goodman', 'aigarnetwork@gmail.com', '', 'bnHvxWP8NyX1Pgm9mrzQRHkMYwqcDp18jcimJP4oQNI=', '\xfdf03535be97bed878f109dc3412534e', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-06-21 18:30:31.221068+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (2, 'Eatrin', 'Eatrin88@outlook.com', '', 'uwxCWTvwlwyHguXps0By0sx1-po15BqbBFVgL31qDeo=', '\x2c9ab6bc8557b8b90373ee8e0fc58702', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-20 12:27:43.630222+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (3, 'Александр', 'ssashakravchuk@gmail.com', '', 'EdsRsFy0oRmmV1o3d1i8C17j77ovDsWEi1gVSRc8NQE=', '\xe7239ef774ea4beaaf494d3664555f29', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-26 15:54:59.3257+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (4, 'Александр Михайлов', 'alexpro401@gmail.com', '', 'bnHvxWP8NyX1Pgm9mrzQRHkMYwqcDp18jcimJP4oQNI=', '\x423876f9ad055e1398aab8cb54ce6743', '[]', '["currencies", "chains", "pairs", "accounts", "deny-record", "contracts"]', true, '2022-08-02 18:03:54.729619+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (5, 'papaRimskiy', 'dibayok569@bongcs.com', '', '533E4PWiqCjHt7t-xCRq4hV8EeinsKtJ3Ble_V89xP0=', '\x01499131704bfe69181849165b211ab3', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-09-27 09:45:27.874286+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (6, 'Дядя Жора', 'paym.sssss@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', '\xf2304cc95eddd28783110ec054c96615', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-08-14 18:22:09.304902+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (7, 'Ismail', 'ismailnidjat@gmail.com', '', 'cZFWpKvo5R8ADCs0n93SCmhh9izTqPaBbyUH_f30KLA=', '\xbbbd7115b40c084703f3b0c8365475bf', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-27 09:49:24.253192+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (8, 'Алмаз', 'ashabdanov@gmail.com', '', '1JA2FJRx968_Nh90TZp9V7gdzVEzBuFr0YMG_Fg9xV8=', '\x7ef503960ddb0cb43336f2f54699ad3a', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-10-10 12:00:29.265412+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (9, 'qwerty', 'jotey78758@ishyp.com', '', '533E4PWiqCjHt7t-xCRq4hV8EeinsKtJ3Ble_V89xP0=', '\xee759d5e184a7586a60bfeacdb872abd', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-09-29 13:26:26.377088+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (10, 'Arslan', 'aturdaliev22@gmail.com', '', 'EsuWU1W3PZPkWm8slRflrjKf6WclOdzBH4FSTS9KxyA=', '\x399ea639f1f16d5a7b0b096510befd88', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', false, '2022-07-27 06:52:21.050145+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (11, 'Nursultan ', 'nursultanmatkaziev@gmail.com', '', 'NfuUcnzOUIt1SDDBedDQwCUv9DD0UjXbzfn7HcG6ZaM=', '\xbb91eb48171657b899bf2c07bdd92c6a', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-27 09:46:04.98095+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (12, 'Nursultan M', 'whitebus321@gmail.com', '', '54hGXRe8nMWidYoR3kduphHNLCIacvQndeCx8AXv4L0=', '\x7641b154e8ea1a30337ad08dce88fdfe', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-10-10 12:02:11.810563+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (13, 'Aleks Konot', 'sdfsdfsddsf@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', '\x25c73ff5f746822c361623403e6fcd2e', '["login", "news"]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-26 15:53:36.105267+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (14, 'dexis', 'nosecor617@ukgent.com', '', 'dA1pS9BF1u_IpZf2RxMbdrVDyp7hQQ28Gcvi5MMJT5Q=', '\x08a606a4ad33446f86d48214ffed29ef', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', false, '2022-08-11 16:42:16.633402+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (15, 'Dmitry Comarov', 'aleksandekonot25@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', '\xafc2f7a6f341b6341e2aa2646eb21615', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-06-05 15:36:36.493874+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (17, 'qwerty', 'koyid53367@cebaike.com', '', 'blEXHj49mEKDGp4oeSJ1v_FtW1yAYevw03KvhGeyyhI=', '\x818606b34c7d69ea6553e652b29d7cd7', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-10-03 06:28:47.397879+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (18, 'arsgay', 'fawite5843@ploneix.com', '', '533E4PWiqCjHt7t-xCRq4hV8EeinsKtJ3Ble_V89xP0=', '\xdd02a1bc9aa217bcac86d3fd3e49f45b', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-09-27 11:37:22.238933+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (19, 'Almaz', 'a.melisbekov@rpg.kg', '', 's2MWJ2AP8gShYzBaDK-TF4q-4W7kfD0nmXHPke5WpR4=', '\x1b33967be215e2ab179985653630ff58', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-26 14:52:58.487291+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (20, 'Arstanbek', 'a.abdikaparov@rpg.kg', '', 'aoS0vSzWQIaldzSSbnxLr2eqHffL0cEqO4gPeBajBKQ=', '\x77aeec6ece6c7f792fc122fd81053885', '[]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-07-26 14:43:14.701753+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (21, 'Alekdsds', 'admins@envoys.vision', '', 'ehpDFRC5ieU2GNznH92qbigGOHCBGprrLp-TZGgj2D8=', '\x2b7463d82a1fb10051fcd50da8b7b0f2', '["news", "login", "withdrawal", "order_filled"]', '["currencies", "chains", "pairs", "accounts", "contracts", "deny-record"]', true, '2022-08-03 06:55:39.55301+03');
-INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (16, 'Aleksandr Konotopskiy', 'paymex.center@gmail.com', '', 'METU-dMG21lHzumRUuGkF_6WOF6hqXmPz3XxWl7Q4x4=', '\x34c9c7411729a47624e50dea7e0df7d5', '["news"]', '["currencies", "chains", "pairs", "accounts", "contracts", "listing", "news", "support", "advertising"]', true, '2022-06-05 15:33:37.234748+03');
-
-
---
--- Data for Name: activities; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (1, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "107.0.0.0"]', '2022-11-25 02:52:46.530983+02');
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (2, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-02 11:02:03.881996+02');
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (3, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-02 15:04:05.52597+02');
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (4, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-08 15:24:36.262159+02');
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (5, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-09 11:37:23.78959+02');
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (6, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-10 12:05:35.419422+02');
-INSERT INTO public.activities (id, os, device, ip, user_id, browser, create_at) VALUES (7, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-10 23:33:05.316878+02');
-
-
---
--- Data for Name: market_orders; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
-
-
---
--- Data for Name: spot_assets; Type: TABLE DATA; Schema: public; Owner: envoys
---
+ALTER TABLE ONLY public.actions ALTER COLUMN id SET DEFAULT nextval('public.actions_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_assets ALTER COLUMN id SET DEFAULT nextval('public.spot_assets_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_chains ALTER COLUMN id SET DEFAULT nextval('public.spot_chains_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_contracts ALTER COLUMN id SET DEFAULT nextval('public.spot_contracts_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_currencies ALTER COLUMN id SET DEFAULT nextval('public.spot_currencies_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_orders ALTER COLUMN id SET DEFAULT nextval('public.spot_orders_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_pairs ALTER COLUMN id SET DEFAULT nextval('public.spot_pairs_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_reserves ALTER COLUMN id SET DEFAULT nextval('public.spot_reserves_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_trades ALTER COLUMN id SET DEFAULT nextval('public.spot_trades_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_transactions ALTER COLUMN id SET DEFAULT nextval('public.spot_transactions_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_transfers ALTER COLUMN id SET DEFAULT nextval('public.spot_transfers_id_seq'::regclass);
+ALTER TABLE ONLY public.spot_wallets ALTER COLUMN id SET DEFAULT nextval('public.spot_wallets_id_seq'::regclass);
+
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (1, 'goodman', 'aigarnetwork@gmail.com', '', 'bnHvxWP8NyX1Pgm9mrzQRHkMYwqcDp18jcimJP4oQNI=', '\xfdf03535be97bed878f109dc3412534e', '[]', '{}', true, '2022-06-21 18:30:31.221068+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (2, 'Eatrin', 'Eatrin88@outlook.com', '', 'uwxCWTvwlwyHguXps0By0sx1-po15BqbBFVgL31qDeo=', '\x2c9ab6bc8557b8b90373ee8e0fc58702', '[]', '{}', true, '2022-07-20 12:27:43.630222+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (3, 'Александр', 'ssashakravchuk@gmail.com', '', 'EdsRsFy0oRmmV1o3d1i8C17j77ovDsWEi1gVSRc8NQE=', '\xe7239ef774ea4beaaf494d3664555f29', '[]', '{}', true, '2022-07-26 15:54:59.3257+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (4, 'Александр Михайлов', 'alexpro401@gmail.com', '', 'bnHvxWP8NyX1Pgm9mrzQRHkMYwqcDp18jcimJP4oQNI=', '\x423876f9ad055e1398aab8cb54ce6743', '[]', '{}', true, '2022-08-02 18:03:54.729619+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (5, 'papaRimskiy', 'dibayok569@bongcs.com', '', '533E4PWiqCjHt7t-xCRq4hV8EeinsKtJ3Ble_V89xP0=', '\x01499131704bfe69181849165b211ab3', '[]', '{}', true, '2022-09-27 09:45:27.874286+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (6, 'Дядя Жора', 'paym.sssss@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', '\xf2304cc95eddd28783110ec054c96615', '[]', '{}', true, '2022-08-14 18:22:09.304902+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (7, 'Ismail', 'ismailnidjat@gmail.com', '', 'cZFWpKvo5R8ADCs0n93SCmhh9izTqPaBbyUH_f30KLA=', '\xbbbd7115b40c084703f3b0c8365475bf', '[]', '{}', true, '2022-07-27 09:49:24.253192+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (8, 'Алмаз', 'ashabdanov@gmail.com', '', '1JA2FJRx968_Nh90TZp9V7gdzVEzBuFr0YMG_Fg9xV8=', '\x7ef503960ddb0cb43336f2f54699ad3a', '[]', '{}', true, '2022-10-10 12:00:29.265412+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (9, 'qwerty', 'jotey78758@ishyp.com', '', '533E4PWiqCjHt7t-xCRq4hV8EeinsKtJ3Ble_V89xP0=', '\xee759d5e184a7586a60bfeacdb872abd', '[]', '{}', true, '2022-09-29 13:26:26.377088+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (10, 'Arslan', 'aturdaliev22@gmail.com', '', 'EsuWU1W3PZPkWm8slRflrjKf6WclOdzBH4FSTS9KxyA=', '\x399ea639f1f16d5a7b0b096510befd88', '[]', '{}', false, '2022-07-27 06:52:21.050145+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (11, 'Nursultan ', 'nursultanmatkaziev@gmail.com', '', 'NfuUcnzOUIt1SDDBedDQwCUv9DD0UjXbzfn7HcG6ZaM=', '\xbb91eb48171657b899bf2c07bdd92c6a', '[]', '{}', true, '2022-07-27 09:46:04.98095+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (12, 'Nursultan M', 'whitebus321@gmail.com', '', '54hGXRe8nMWidYoR3kduphHNLCIacvQndeCx8AXv4L0=', '\x7641b154e8ea1a30337ad08dce88fdfe', '[]', '{}', true, '2022-10-10 12:02:11.810563+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (13, 'Aleks Konot', 'sdfsdfsddsf@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', '\x25c73ff5f746822c361623403e6fcd2e', '["login", "news"]', '{}', true, '2022-07-26 15:53:36.105267+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (14, 'dexis', 'nosecor617@ukgent.com', '', 'dA1pS9BF1u_IpZf2RxMbdrVDyp7hQQ28Gcvi5MMJT5Q=', '\x08a606a4ad33446f86d48214ffed29ef', '[]', '{}', false, '2022-08-11 16:42:16.633402+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (15, 'Dmitry Comarov', 'aleksandekonot25@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', '\xafc2f7a6f341b6341e2aa2646eb21615', '[]', '{}', true, '2022-06-05 15:36:36.493874+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (17, 'qwerty', 'koyid53367@cebaike.com', '', 'blEXHj49mEKDGp4oeSJ1v_FtW1yAYevw03KvhGeyyhI=', '\x818606b34c7d69ea6553e652b29d7cd7', '[]', '{}', true, '2022-10-03 06:28:47.397879+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (18, 'arsgay', 'fawite5843@ploneix.com', '', '533E4PWiqCjHt7t-xCRq4hV8EeinsKtJ3Ble_V89xP0=', '\xdd02a1bc9aa217bcac86d3fd3e49f45b', '[]', '{}', true, '2022-09-27 11:37:22.238933+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (19, 'Almaz', 'a.melisbekov@rpg.kg', '', 's2MWJ2AP8gShYzBaDK-TF4q-4W7kfD0nmXHPke5WpR4=', '\x1b33967be215e2ab179985653630ff58', '[]', '{}', true, '2022-07-26 14:52:58.487291+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (20, 'Arstanbek', 'a.abdikaparov@rpg.kg', '', 'aoS0vSzWQIaldzSSbnxLr2eqHffL0cEqO4gPeBajBKQ=', '\x77aeec6ece6c7f792fc122fd81053885', '[]', '{}', true, '2022-07-26 14:43:14.701753+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (21, 'Alekdsds', 'admins@envoys.vision', '', 'ehpDFRC5ieU2GNznH92qbigGOHCBGprrLp-TZGgj2D8=', '\x2b7463d82a1fb10051fcd50da8b7b0f2', '["news", "login", "withdrawal", "order_filled"]', '{}', true, '2022-08-03 06:55:39.55301+03');
+INSERT INTO public.accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at) VALUES (16, 'Aleksandr Konotopskiy', 'paymex.center@gmail.com', '', 'METU-dMG21lHzumRUuGkF_6WOF6hqXmPz3XxWl7Q4x4=', '\x34c9c7411729a47624e50dea7e0df7d5', '["news"]', '{"spot": ["currencies", "chains", "pairs", "contracts", "listing"], "default": ["accounts", "news", "support", "advertising"]}', true, '2022-06-05 15:33:37.234748+03');
+
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (1, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "107.0.0.0"]', '2022-11-25 02:52:46.530983+02');
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (2, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-02 11:02:03.881996+02');
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (3, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-02 15:04:05.52597+02');
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (4, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-08 15:24:36.262159+02');
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (5, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-09 11:37:23.78959+02');
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (6, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-10 12:05:35.419422+02');
+INSERT INTO public.actions (id, os, device, ip, user_id, browser, create_at)VALUES (7, 'linux', 'desktop', '127.0.0.1', 16, '["chrome", "108.0.0.0"]', '2022-12-10 23:33:05.316878+02');
 
 INSERT INTO public.spot_assets (id, user_id, symbol, balance) VALUES (2, 16, 'usdt', 0.0000000000000000);
 INSERT INTO public.spot_assets (id, user_id, symbol, balance) VALUES (1, 16, 'trx', 9001.0000000000000000);
 INSERT INTO public.spot_assets (id, user_id, symbol, balance) VALUES (4, 16, 'usd', 0.0000000000000000);
 INSERT INTO public.spot_assets (id, user_id, symbol, balance) VALUES (3, 16, 'eth', 1.1250000200000000);
-
-
---
--- Data for Name: spot_chains; Type: TABLE DATA; Schema: public; Owner: envoys
---
 
 INSERT INTO public.spot_chains (id, name, rpc, rpc_key, rpc_user, rpc_password, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status) VALUES (7, 'MC Gateway', 'https://github.com/', '', '', '', 0, 0, '', 4, 0, 10, 0, '', 0, '', false);
 INSERT INTO public.spot_chains (id, name, rpc, rpc_key, rpc_user, rpc_password, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status) VALUES (3, 'Binance Smart Chain', 'https://bsc-dataseed.binance.org', '', '', '', 0, 56, 'https://bscscan.com/tx', 1, 12, 10, 0.0008, '', 3, 'bnb', false);
@@ -959,11 +417,6 @@ INSERT INTO public.spot_chains (id, name, rpc, rpc_key, rpc_user, rpc_password, 
 INSERT INTO public.spot_chains (id, name, rpc, rpc_key, rpc_user, rpc_password, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status) VALUES (1, 'Tron Chain', 'http://127.0.0.1:8090', '', '', '', 3771, 0, 'https://tronscan.org/#/transaction', 2, 5, 30, 1, '', 4, 'trx', false);
 INSERT INTO public.spot_chains (id, name, rpc, rpc_key, rpc_user, rpc_password, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status) VALUES (4, 'Bitcoin Chain', 'https://google.com', '', '', '', 0, 0, 'https://www.blockchain.com/btc/tx', 0, 3, 60, 0.0002, '', 1, 'btc', false);
 INSERT INTO public.spot_chains (id, name, rpc, rpc_key, rpc_user, rpc_password, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status) VALUES (6, 'Visa Gateway', 'https://github.com', '', '', '', 0, 0, '', 3, 0, 10, 0, '', 0, '', false);
-
-
---
--- Data for Name: spot_contracts; Type: TABLE DATA; Schema: public; Owner: envoys
---
 
 INSERT INTO public.spot_contracts (id, symbol, chain_id, address, fees_withdraw, protocol, decimals) VALUES (1, 'link', 2, '0x514910771af9ca656af840dff83e8264ecf986ca', 2.24, 1, 18);
 INSERT INTO public.spot_contracts (id, symbol, chain_id, address, fees_withdraw, protocol, decimals) VALUES (2, 'bnb', 2, '0xB8c77482e45F1F44dE1745F52C74426C631bDD52', 0.01, 1, 18);
@@ -975,11 +428,6 @@ INSERT INTO public.spot_contracts (id, symbol, chain_id, address, fees_withdraw,
 INSERT INTO public.spot_contracts (id, symbol, chain_id, address, fees_withdraw, protocol, decimals) VALUES (8, 'usdt', 3, '0x55d398326f99059ff775485246999027b3197955', 0.0001, 6, 18);
 INSERT INTO public.spot_contracts (id, symbol, chain_id, address, fees_withdraw, protocol, decimals) VALUES (9, 'usdt', 2, '0xdac17f958d2ee523a2206206994597c13d831ec7', 0.001, 1, 18);
 INSERT INTO public.spot_contracts (id, symbol, chain_id, address, fees_withdraw, protocol, decimals) VALUES (10, 'usdt', 1, 'TZ7XYSbGhxPKquYp8reVrNn22g7YS58JXa', 6, 9, 8);
-
-
---
--- Data for Name: spot_currencies; Type: TABLE DATA; Schema: public; Owner: envoys
---
 
 INSERT INTO public.spot_currencies (id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, fin_type, create_at) VALUES (1, 'Omisego', 'omg', 0.0100, 100.00000000, 0.0100, 0.0100, 1000000.00000000, 0.1500, 0.0500, 0.0000000000000000, 0.0000000000000000, false, '[2]', true, 0, '2021-12-26 12:27:02.914683+02');
 INSERT INTO public.spot_currencies (id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, fin_type, create_at) VALUES (2, 'Binance', 'bnb', 0.0100, 100.00000000, 0.0100, 0.0010, 1000000.00000000, 0.1500, 0.0500, 0.0000000000000000, 0.0000000000000000, true, '[3, 2]', true, 0, '2021-12-26 12:27:02.914683+02');
@@ -997,19 +445,9 @@ INSERT INTO public.spot_currencies (id, name, symbol, min_withdraw, max_withdraw
 INSERT INTO public.spot_currencies (id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, fin_type, create_at) VALUES (14, 'Tether USD', 'usdt', 10.0000, 1000.00000000, 5.0000, 1.0000, 1000000.00000000, 0.1500, 0.0500, 0.0000000000000000, 0.0000000000000000, false, '[1, 2, 3]', true, 0, '2021-12-26 12:27:02.914683+02');
 INSERT INTO public.spot_currencies (id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, fin_type, create_at) VALUES (15, 'Tron', 'trx', 100.0000, 1000000.00000000, 100.0000, 0.0001, 1000000.00000000, 0.1500, 0.0500, 0.0000000000000000, 0.0000000000000000, true, '[1]', true, 0, '2021-12-26 12:27:02.914683+02');
 
-
---
--- Data for Name: spot_orders; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
 INSERT INTO public.spot_orders (id, assigning, price, value, quantity, base_unit, quote_unit, user_id, type, status, create_at) VALUES (1, 1, 1254.90731441, 1.9999999000000000, 1.9999999000000000, 'eth', 'usd', 16, 0, 0, '2022-12-08 15:26:16.774524+02');
 INSERT INTO public.spot_orders (id, assigning, price, value, quantity, base_unit, quote_unit, user_id, type, status, create_at) VALUES (2, 1, 1254.90731441, 0.4999999900000000, 0.4999999900000000, 'eth', 'usd', 16, 0, 2, '2022-12-08 15:26:27.242877+02');
 INSERT INTO public.spot_orders (id, assigning, price, value, quantity, base_unit, quote_unit, user_id, type, status, create_at) VALUES (3, 1, 1254.90731441, 0.3749999900000000, 0.3749999900000000, 'eth', 'usd', 16, 0, 2, '2022-12-08 15:26:29.011507+02');
-
-
---
--- Data for Name: spot_pairs; Type: TABLE DATA; Schema: public; Owner: envoys
---
 
 INSERT INTO public.spot_pairs (id, base_unit, quote_unit, price, base_decimal, quote_decimal, status) VALUES (1, 'eth', 'link', 220.16359184, 6, 4, false);
 INSERT INTO public.spot_pairs (id, base_unit, quote_unit, price, base_decimal, quote_decimal, status) VALUES (2, 'eth', 'omg', 736.91967577, 6, 4, false);
@@ -1039,24 +477,8 @@ INSERT INTO public.spot_pairs (id, base_unit, quote_unit, price, base_decimal, q
 INSERT INTO public.spot_pairs (id, base_unit, quote_unit, price, base_decimal, quote_decimal, status) VALUES (23, 'rub', 'kgs', 1.31000000, 2, 8, true);
 INSERT INTO public.spot_pairs (id, base_unit, quote_unit, price, base_decimal, quote_decimal, status) VALUES (24, 'eur', 'rub', 62.42266735, 2, 4, true);
 
-
---
--- Data for Name: spot_reserves; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
 INSERT INTO public.spot_reserves (id, user_id, address, symbol, platform, protocol, value, lock) VALUES (2, 16, '0xc560f3ca3d81a81f3e97464290bcca8c8267643a', 'eth', 1, 0, 2.0000000000000000, false);
 INSERT INTO public.spot_reserves (id, user_id, address, symbol, platform, protocol, value, lock) VALUES (1, 16, 'TRHnDwy6qmnZE3PvPdpuZMN7PqRBk28vGe', 'trx', 2, 0, 9001.0000000000000000, false);
-
-
---
--- Data for Name: spot_trades; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
-
-
---
--- Data for Name: spot_transactions; Type: TABLE DATA; Schema: public; Owner: envoys
---
 
 INSERT INTO public.spot_transactions (id, symbol, hash, value, fees, confirmation, "to", block, chain_id, user_id, tx_type, fin_type, platform, protocol, claim, price, status, create_at) VALUES (12, 'eth', '0x04b59878df90cce3e162e35e672a74b9b708f9ab088294c7bee7ee1bc6a8ef74', 1.0000000000000000, 0, 0, '0xc560f3ca3d81a81f3e97464290bcca8c8267643a', 39, 2, 16, 0, 0, 1, 0, false, 0, 5, '2022-12-02 14:03:57.543933+02');
 INSERT INTO public.spot_transactions (id, symbol, hash, value, fees, confirmation, "to", block, chain_id, user_id, tx_type, fin_type, platform, protocol, claim, price, status, create_at) VALUES (13, 'eth', '0x5052f7b506ef6b7c65dd74d9876df7daade5acb500031840d00de14afdd5a80a', 1.0000000000000000, 0, 0, '0xc560f3ca3d81a81f3e97464290bcca8c8267643a', 44, 2, 16, 0, 0, 1, 0, false, 0, 5, '2022-12-02 14:05:12.729836+02');
@@ -1079,388 +501,67 @@ INSERT INTO public.spot_transactions (id, symbol, hash, value, fees, confirmatio
 INSERT INTO public.spot_transactions (id, symbol, hash, value, fees, confirmation, "to", block, chain_id, user_id, tx_type, fin_type, platform, protocol, claim, price, status, create_at) VALUES (19, 'eth', '0xe466bb58f935e3b731eb84d4aee0db032144c0f4ee69ac91226d6a22c2b2d744', 1.0000000000000000, 0, 3, '0xc560f3ca3d81a81f3e97464290bcca8c8267643a', 325, 2, 16, 0, 0, 1, 0, false, 0, 1, '2022-12-02 15:15:31.760811+02');
 INSERT INTO public.spot_transactions (id, symbol, hash, value, fees, confirmation, "to", block, chain_id, user_id, tx_type, fin_type, platform, protocol, claim, price, status, create_at) VALUES (20, 'trx', 'be7f0d483357f35e4a3978ef4b3a52352b549473f9c0a8c18434eae3a63ff922', 1000.0000000000000000, 0, 5, 'TRHnDwy6qmnZE3PvPdpuZMN7PqRBk28vGe', 3063, 1, 16, 0, 0, 2, 0, false, 0, 1, '2022-12-02 15:16:31.088611+02');
 
-
---
--- Data for Name: spot_transfers; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
-
-
---
--- Data for Name: spot_wallets; Type: TABLE DATA; Schema: public; Owner: envoys
---
-
 INSERT INTO public.spot_wallets (id, address, user_id, platform, protocol, symbol) VALUES (1, 'TRHnDwy6qmnZE3PvPdpuZMN7PqRBk28vGe', 16, 2, 0, 'trx');
 INSERT INTO public.spot_wallets (id, address, user_id, platform, protocol, symbol) VALUES (2, 'TRHnDwy6qmnZE3PvPdpuZMN7PqRBk28vGe', 16, 2, 9, 'usdt');
 INSERT INTO public.spot_wallets (id, address, user_id, platform, protocol, symbol) VALUES (3, '0xc560f3ca3d81a81f3e97464290bcca8c8267643a', 16, 1, 6, 'eth');
 INSERT INTO public.spot_wallets (id, address, user_id, platform, protocol, symbol) VALUES (4, '0xc560f3ca3d81a81f3e97464290bcca8c8267643a', 16, 1, 0, 'eth');
 
-
---
--- Name: chunk_constraint_name; Type: SEQUENCE SET; Schema: _timescaledb_catalog; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_catalog.chunk_constraint_name', 1, false);
-
-
---
--- Name: chunk_id_seq; Type: SEQUENCE SET; Schema: _timescaledb_catalog; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_catalog.chunk_id_seq', 4, true);
-
-
---
--- Name: continuous_agg_migrate_plan_step_step_id_seq; Type: SEQUENCE SET; Schema: _timescaledb_catalog; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_catalog.continuous_agg_migrate_plan_step_step_id_seq', 1, false);
-
-
---
--- Name: dimension_id_seq; Type: SEQUENCE SET; Schema: _timescaledb_catalog; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_catalog.dimension_id_seq', 1, true);
-
-
---
--- Name: dimension_slice_id_seq; Type: SEQUENCE SET; Schema: _timescaledb_catalog; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_catalog.dimension_slice_id_seq', 4, true);
-
-
---
--- Name: hypertable_id_seq; Type: SEQUENCE SET; Schema: _timescaledb_catalog; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_catalog.hypertable_id_seq', 1, true);
-
-
---
--- Name: bgw_job_id_seq; Type: SEQUENCE SET; Schema: _timescaledb_config; Owner: postgres
---
-
-SELECT pg_catalog.setval('_timescaledb_config.bgw_job_id_seq', 1000, false);
-
-
---
--- Name: accounts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
 SELECT pg_catalog.setval('public.accounts_id_seq', 21, true);
-
-
---
--- Name: activities_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.activities_id_seq', 7, true);
-
-
---
--- Name: assets_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.assets_id_seq', 4, true);
-
-
---
--- Name: chains_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.chains_id_seq', 7, true);
-
-
---
--- Name: contracts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.contracts_id_seq', 10, true);
-
-
---
--- Name: currencies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.currencies_id_seq', 15, true);
-
-
---
--- Name: orders_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.orders_id_seq', 3, true);
-
-
---
--- Name: pairs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.pairs_id_seq', 27, true);
-
-
---
--- Name: reserves_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.reserves_id_seq', 2, true);
-
-
---
--- Name: trades_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.trades_id_seq', 17528, true);
-
-
---
--- Name: transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.transactions_id_seq', 20, true);
-
-
---
--- Name: transfers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.transfers_id_seq', 1, false);
-
-
---
--- Name: wallets_id_seq; Type: SEQUENCE SET; Schema: public; Owner: envoys
---
-
-SELECT pg_catalog.setval('public.wallets_id_seq', 4, true);
-
-
---
--- Name: accounts accounts_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
+SELECT pg_catalog.setval('public.actions_id_seq', 7, true);
+SELECT pg_catalog.setval('public.spot_assets_id_seq', 4, true);
+SELECT pg_catalog.setval('public.spot_chains_id_seq', 7, true);
+SELECT pg_catalog.setval('public.spot_contracts_id_seq', 10, true);
+SELECT pg_catalog.setval('public.spot_currencies_id_seq', 15, true);
+SELECT pg_catalog.setval('public.spot_orders_id_seq', 3, true);
+SELECT pg_catalog.setval('public.spot_pairs_id_seq', 27, true);
+SELECT pg_catalog.setval('public.spot_reserves_id_seq', 2, true);
+SELECT pg_catalog.setval('public.spot_trades_id_seq', 17528, true);
+SELECT pg_catalog.setval('public.spot_transactions_id_seq', 20, true);
+SELECT pg_catalog.setval('public.spot_transfers_id_seq', 1, false);
+SELECT pg_catalog.setval('public.spot_wallets_id_seq', 4, true);
 
 ALTER TABLE ONLY public.accounts
-    ADD CONSTRAINT accounts_pk PRIMARY KEY (id);
-
-
---
--- Name: activities activities_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
-ALTER TABLE ONLY public.activities
-    ADD CONSTRAINT activities_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_assets assets_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_accounts_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.actions
+    ADD CONSTRAINT spot_activities_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_assets
-    ADD CONSTRAINT assets_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_chains chains_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_assets_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_chains
-    ADD CONSTRAINT chains_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_contracts contracts_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_chains_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_contracts
-    ADD CONSTRAINT contracts_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_currencies currencies_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_contracts_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_currencies
-    ADD CONSTRAINT currencies_pk PRIMARY KEY (id);
-
-
---
--- Name: market_orders market_orders_id_key; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_currencies_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.market_orders
     ADD CONSTRAINT market_orders_id_key UNIQUE (id);
-
-
---
--- Name: spot_orders orders_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
 ALTER TABLE ONLY public.spot_orders
-    ADD CONSTRAINT orders_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_pairs pairs_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_orders_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_pairs
-    ADD CONSTRAINT pairs_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_reserves reserves_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_pairs_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_reserves
-    ADD CONSTRAINT reserves_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_transactions transactions_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_reserves_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_transactions
-    ADD CONSTRAINT transactions_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_transfers transfers_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_transactions_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_transfers
-    ADD CONSTRAINT transfers_pk PRIMARY KEY (id);
-
-
---
--- Name: spot_wallets wallets_pk; Type: CONSTRAINT; Schema: public; Owner: envoys
---
-
+    ADD CONSTRAINT spot_transfers_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.spot_wallets
-    ADD CONSTRAINT wallets_pk PRIMARY KEY (id);
-
-
---
--- Name: accounts_email_uindex; Type: INDEX; Schema: public; Owner: envoys
---
+    ADD CONSTRAINT spot_wallets_pk PRIMARY KEY (id);
 
 CREATE UNIQUE INDEX accounts_email_uindex ON public.accounts USING btree (email);
-
-
---
--- Name: accounts_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
 CREATE UNIQUE INDEX accounts_id_uindex ON public.accounts USING btree (id);
-
-
---
--- Name: assets_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX assets_id_uindex ON public.spot_assets USING btree (id);
-
-
---
--- Name: chains_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX chains_id_uindex ON public.spot_chains USING btree (id);
-
-
---
--- Name: chains_name_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX chains_name_uindex ON public.spot_chains USING btree (name);
-
-
---
--- Name: contracts_address_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX contracts_address_uindex ON public.spot_contracts USING btree (address);
-
-
---
--- Name: contracts_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX contracts_id_uindex ON public.spot_contracts USING btree (id);
-
-
---
--- Name: currencies_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX currencies_id_uindex ON public.spot_currencies USING btree (id);
-
-
---
--- Name: currencies_symbol_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX currencies_symbol_uindex ON public.spot_currencies USING btree (symbol);
-
-
---
--- Name: orders_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX orders_id_uindex ON public.spot_orders USING btree (id);
-
-
---
--- Name: pairs_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX pairs_id_uindex ON public.spot_pairs USING btree (id);
-
-
---
--- Name: reserves_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX reserves_id_uindex ON public.spot_reserves USING btree (id);
-
-
---
--- Name: trades_create_at_idx; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE INDEX trades_create_at_idx ON public.spot_trades USING btree (create_at DESC);
-
-
---
--- Name: transactions_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX transactions_id_uindex ON public.spot_transactions USING btree (id);
-
-
---
--- Name: transfers_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX transfers_id_uindex ON public.spot_transfers USING btree (id);
-
-
---
--- Name: wallets_id_uindex; Type: INDEX; Schema: public; Owner: envoys
---
-
-CREATE UNIQUE INDEX wallets_id_uindex ON public.spot_wallets USING btree (id);
-
-
-
---
--- Name: DATABASE envoys; Type: ACL; Schema: -; Owner: postgres
---
+CREATE UNIQUE INDEX spot_assets_id_uindex ON public.spot_assets USING btree (id);
+CREATE UNIQUE INDEX spot_chains_id_uindex ON public.spot_chains USING btree (id);
+CREATE UNIQUE INDEX spot_chains_name_uindex ON public.spot_chains USING btree (name);
+CREATE UNIQUE INDEX spot_contracts_address_uindex ON public.spot_contracts USING btree (address);
+CREATE UNIQUE INDEX spot_contracts_id_uindex ON public.spot_contracts USING btree (id);
+CREATE UNIQUE INDEX spot_currencies_id_uindex ON public.spot_currencies USING btree (id);
+CREATE UNIQUE INDEX spot_currencies_symbol_uindex ON public.spot_currencies USING btree (symbol);
+CREATE UNIQUE INDEX spot_orders_id_uindex ON public.spot_orders USING btree (id);
+CREATE UNIQUE INDEX spot_pairs_id_uindex ON public.spot_pairs USING btree (id);
+CREATE UNIQUE INDEX spot_reserves_id_uindex ON public.spot_reserves USING btree (id);
+CREATE INDEX spot_trades_create_at_idx ON public.spot_trades USING btree (create_at DESC);
+CREATE UNIQUE INDEX spot_transactions_id_uindex ON public.spot_transactions USING btree (id);
+CREATE UNIQUE INDEX spot_transfers_id_uindex ON public.spot_transfers USING btree (id);
+CREATE UNIQUE INDEX spot_wallets_id_uindex ON public.spot_wallets USING btree (id);
 
 GRANT ALL ON DATABASE envoys TO envoys;
-
-
---
--- PostgreSQL database dump complete
---
-
