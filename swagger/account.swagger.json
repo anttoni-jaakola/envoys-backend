@@ -208,6 +208,38 @@
           "Api"
         ]
       }
+    },
+    "/v2/admin/account/set-factor": {
+      "post": {
+        "operationId": "Api_SetTOTPs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbaccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbaccountSetRequestUserManual"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "definitions": {

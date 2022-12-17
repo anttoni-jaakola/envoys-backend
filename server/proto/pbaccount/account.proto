@@ -21,10 +21,10 @@ service Api {
             body: "*"
         };
     }
-    // Actions list.
-    rpc GetActions (GetRequestActions) returns (Response) {
+    // Activities list.
+    rpc GetActivities (GetRequestActivities) returns (Response) {
         option (google.api.http) = {
-            post: "/v2/account/get-actions",
+            post: "/v2/account/get-activities",
             body: "*"
         };
     }
@@ -48,6 +48,12 @@ service Api {
     rpc SetAccountRule (SetRequestUserManual) returns (Response) {
         option (google.api.http) = {
             post: "/v2/admin/account/set-account",
+            body: "*"
+        };
+    }
+    rpc SetTOTPs (SetRequestUserManual) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/admin/account/set-factor",
             body: "*"
         };
     }
@@ -76,8 +82,8 @@ message User {
     Rules rules = 7;
 }
 
-// Action structure.
-message Action {
+// Activity structure.
+message Activity {
     int64 id = 1;
     string os = 2;
     string device = 3;
@@ -106,8 +112,8 @@ message SetRequestUserManual {
     User user = 5;
 }
 
-// Action structure.
-message GetRequestActions {
+// Activity structure.
+message GetRequestActivities {
     int64 page = 1;
     int64 limit = 2;
 }
@@ -117,7 +123,7 @@ message Response {
     string name = 2;
     string email = 3;
     bool status = 4;
-    repeated Action actions = 5;
+    repeated Activity activities = 5;
     repeated string sample = 6;
     repeated User fields = 7;
     int32 count = 8;

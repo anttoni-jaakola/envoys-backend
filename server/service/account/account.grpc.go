@@ -56,8 +56,8 @@ func (a *Service) GetUser(ctx context.Context, _ *pbaccount.GetRequestUser) (*pb
 	return migrate.User(account)
 }
 
-// GetActions - get actions list.
-func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActions) (*pbaccount.Response, error) {
+// GetActivities - get activities list.
+func (a *Service) GetActivities(ctx context.Context, req *pbaccount.GetRequestActivities) (*pbaccount.Response, error) {
 
 	var (
 		response pbaccount.Response
@@ -69,7 +69,7 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 		return &response, a.Context.Error(err)
 	}
 
-	if err := a.Context.Db.QueryRow("select count(*) from actions where user_id = $1", account).Scan(&response.Count); err != nil {
+	if err := a.Context.Db.QueryRow("select count(*) from activities where user_id = $1", account).Scan(&response.Count); err != nil {
 		return &response, a.Context.Error(err)
 	}
 
@@ -80,7 +80,7 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 			offset = req.GetLimit() * (req.GetPage() - 1)
 		}
 
-		rows, err := a.Context.Db.Query("select id, os, device, ip, browser, create_at from actions where user_id = $1 order by id desc limit $2 offset $3", account, req.GetLimit(), offset)
+		rows, err := a.Context.Db.Query("select id, os, device, ip, browser, create_at from activities where user_id = $1 order by id desc limit $2 offset $3", account, req.GetLimit(), offset)
 		if err != nil {
 			return &response, a.Context.Error(err)
 		}
@@ -88,7 +88,7 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 
 		for rows.Next() {
 
-			var item pbaccount.Action
+			var item pbaccount.Activity
 			if err := rows.Scan(&item.Id, &item.Os, &item.Device, &item.Ip, &browser, &item.CreateAt); err != nil {
 				return &response, a.Context.Error(err)
 			}
@@ -97,7 +97,7 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 				return &response, a.Context.Error(err)
 			}
 
-			response.Actions = append(response.Actions, &item)
+			response.Activities = append(response.Activities, &item)
 		}
 
 		if err = rows.Err(); err != nil {
