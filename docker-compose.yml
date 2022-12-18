@@ -1,5 +1,5 @@
 version: '3'
-
+#
 services:
   server:
     restart: always
@@ -17,12 +17,13 @@ services:
       dockerfile: ./Dockerfile.PostgreSQL
     environment:
       - POSTGRES_PASSWORD=123123
+      - POSTGRES_USER=envoys
     ports:
       - 53:53
       - 5432:5432
     volumes:
       - ./static/dump:/docker-entrypoint-initdb.d
-      - ./pgdata:/var/lib/postgresql/data
+      - ./pgdata:/home/postgres/pgdata/data
   
   rabbit:
     build:

@@ -1,10 +1,10 @@
 FROM timescale/timescaledb-ha:pg14-latest as builder
 
-RUN apt-get update
-RUN apt install -y curl
+# RUN apt-get update
+# RUN apt install -y curl
 
-RUN curl -s https://packagecloud.io/install/repositories/timescale/timescaledb/script.deb.sh | bash
-RUN apt-get install -y timescaledb-2-postgresql-12
+# RUN curl -s https://packagecloud.io/install/repositories/timescale/timescaledb/script.deb.sh | bash
+# RUN apt-get install -y timescaledb-2-postgresql-12
 
 # put config file
 COPY ./postgresql.conf /etc/postgresql/postgresql.conf

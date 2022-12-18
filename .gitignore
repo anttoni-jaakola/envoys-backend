@@ -1,8 +1,7 @@
 .idea/
 .vscode/
-swagger
 writer.log
-config.json
 ./main
 pgdata/
 writer.log
+config.json
