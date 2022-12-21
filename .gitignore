@@ -2,6 +2,6 @@
 .vscode/
 writer.log
 ./main
-pgdata/
+data/
 writer.log
 config.json
