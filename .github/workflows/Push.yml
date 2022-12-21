@@ -11,6 +11,8 @@ jobs:
     steps:
       - run: sudo apt-get update && sudo apt install -y python3.10-venv
       - uses: chrislennon/action-aws-cli@v1.1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       - uses: actions/checkout@v2
 
       - run: docker build --tag envoys-backend-pg -f Dockerfile.PostgreSQL .
