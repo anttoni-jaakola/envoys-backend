@@ -11,6 +11,8 @@ services:
       - POSTGRES_CONNECTION=postgres://postgres:123123@pg/envoys?sslmode=disable
     volumes:
       - ./config.json:/var/app_config.json
+    ports:
+      - 3082:3082
   pg:
     build:
       context: .
