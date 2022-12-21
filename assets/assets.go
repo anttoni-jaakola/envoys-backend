@@ -5,6 +5,15 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"io"
+	"io/ioutil"
+	"os"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
+
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
@@ -14,13 +23,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"io"
-	"io/ioutil"
-	"os"
-	"runtime"
-	"strings"
-	"sync"
-	"time"
 )
 
 type Smtp struct {
@@ -249,12 +251,20 @@ func (app *Context) Debug(expr interface{}) bool {
 }
 
 // ConfigPath - config path.
-func (app *Context) ConfigPath() string {
-
+func (app *Context) ConfigPath() (path string) {
 	dir, _ := os.Getwd()
 	if strings.Contains(dir, "cross") {
-		return "../config.json"
+		path = "../config.json"
 	}
 
-	return "./config.json"
+	path = "./config.json"
+
+	if _, err := os.Stat(path); err == nil {
+		return path
+	} else if errors.Is(err, os.ErrNotExist) {
+		panic("Config not found")
+	} else {
+		panic(err)
+	}
+
 }
