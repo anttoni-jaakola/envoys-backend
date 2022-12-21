@@ -18,8 +18,8 @@ jobs:
         id: ecr
         uses: jwalton/gh-ecr-push@v1.3.6
         with:
-          access-key-id: ${{ AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ AWS_SECRET_ACCESS_KEY }}
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: envoys-backend-pg
           image: envoys-backend-pg:${{ github.sha }}, envoys-backend-pg:latest
@@ -29,8 +29,8 @@ jobs:
         id: ecr
         uses: jwalton/gh-ecr-push@v1.3.6
         with:
-          access-key-id: ${{ AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ AWS_SECRET_ACCESS_KEY }}
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: envoys-backend-rabbit
           image: envoys-backend-rabbit:${{ github.sha }}, envoys-backend-rabbit:latest
@@ -40,8 +40,8 @@ jobs:
         id: ecr
         uses: jwalton/gh-ecr-push@v1.3.6
         with:
-          access-key-id: ${{ AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ AWS_SECRET_ACCESS_KEY }}
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: envoys-backend-redis
           image: envoys-backend-redis:${{ github.sha }}, envoys-backend-redis:latest
@@ -51,8 +51,8 @@ jobs:
         id: ecr
         uses: jwalton/gh-ecr-push@v1.3.6
         with:
-          access-key-id: ${{ AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ AWS_SECRET_ACCESS_KEY }}
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: envoys-backend
           image: envoys-backend:${{ github.sha }}, envoys-backend:latest
