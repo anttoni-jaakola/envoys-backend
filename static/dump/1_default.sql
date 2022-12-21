@@ -13,8 +13,8 @@ alter table spot_transfers
     add unique (id);
 alter table spot_transactions
     add unique (id);
-alter table spot_trades
-    add unique (id);
+-- alter table spot_trades
+--     add unique (id);
 alter table spot_reserves
     add unique (id);
 alter table spot_pairs
