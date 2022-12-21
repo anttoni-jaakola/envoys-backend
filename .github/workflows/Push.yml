@@ -6,10 +6,10 @@ on:
       - main
 
 jobs:
-  pg:
+  push:
     runs-on: ubuntu-latest
     steps:
-      - run: apt-get update && apt install -y python3.10-venv
+      - run: sudo apt-get update && sudo apt install -y python3.10-venv
       - uses: chrislennon/action-aws-cli@v1.1
       - uses: actions/checkout@v2
 
