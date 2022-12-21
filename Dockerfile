@@ -2,8 +2,8 @@ FROM golang:1.18.9 as builder
 
 RUN apt-get update
 
-COPY . "$GOPATH/src/github.com/cryptogateway/backend-envoys"
-WORKDIR "$GOPATH/src/github.com/cryptogateway/backend-envoys"
+COPY . "/app"
+WORKDIR "/app"
 
 # Install tools
 RUN apt-get install -y build-essential curl libkrb5-dev cmake

@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+writer.log
+./main
+data/
+writer.log
+Dockerfile.*
+config.json
