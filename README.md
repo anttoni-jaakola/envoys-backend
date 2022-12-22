@@ -75,3 +75,6 @@
 **Install Redis:**
 
 * $ sudo apt install redis-server
+
+## Docker
+`docker-compose up -d`
