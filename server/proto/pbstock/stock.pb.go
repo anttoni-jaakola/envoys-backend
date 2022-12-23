@@ -8,10 +8,14 @@ package pbstock
 
 import (
 	context "context"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -21,24 +25,1652 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Exchange int32
+
+const (
+	Exchange_E_DIGITAL         Exchange = 0
+	Exchange_E_FREEDOM_FINANCE Exchange = 1
+	Exchange_E_EXANTE          Exchange = 2
+)
+
+// Enum value maps for Exchange.
+var (
+	Exchange_name = map[int32]string{
+		0: "E_DIGITAL",
+		1: "E_FREEDOM_FINANCE",
+		2: "E_EXANTE",
+	}
+	Exchange_value = map[string]int32{
+		"E_DIGITAL":         0,
+		"E_FREEDOM_FINANCE": 1,
+		"E_EXANTE":          2,
+	}
+)
+
+func (x Exchange) Enum() *Exchange {
+	p := new(Exchange)
+	*p = x
+	return p
+}
+
+func (x Exchange) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Exchange) Descriptor() protoreflect.EnumDescriptor {
+	return file_server_proto_pbstock_stock_proto_enumTypes[0].Descriptor()
+}
+
+func (Exchange) Type() protoreflect.EnumType {
+	return &file_server_proto_pbstock_stock_proto_enumTypes[0]
+}
+
+func (x Exchange) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Exchange.Descriptor instead.
+func (Exchange) EnumDescriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{0}
+}
+
+type Method int32
+
+const (
+	Method_M_COUNTER_BIDDING Method = 0
+	Method_M_FRANKFURT       Method = 1
+)
+
+// Enum value maps for Method.
+var (
+	Method_name = map[int32]string{
+		0: "M_COUNTER_BIDDING",
+		1: "M_FRANKFURT",
+	}
+	Method_value = map[string]int32{
+		"M_COUNTER_BIDDING": 0,
+		"M_FRANKFURT":       1,
+	}
+)
+
+func (x Method) Enum() *Method {
+	p := new(Method)
+	*p = x
+	return p
+}
+
+func (x Method) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Method) Descriptor() protoreflect.EnumDescriptor {
+	return file_server_proto_pbstock_stock_proto_enumTypes[1].Descriptor()
+}
+
+func (Method) Type() protoreflect.EnumType {
+	return &file_server_proto_pbstock_stock_proto_enumTypes[1]
+}
+
+func (x Method) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Method.Descriptor instead.
+func (Method) EnumDescriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{1}
+}
+
+type Kind int32
+
+const (
+	Kind_K_SECURITIES Kind = 0
+	Kind_K_FUNDS      Kind = 1
+	Kind_K_BONDS      Kind = 2
+	Kind_K_BLOCKS     Kind = 3
+)
+
+// Enum value maps for Kind.
+var (
+	Kind_name = map[int32]string{
+		0: "K_SECURITIES",
+		1: "K_FUNDS",
+		2: "K_BONDS",
+		3: "K_BLOCKS",
+	}
+	Kind_value = map[string]int32{
+		"K_SECURITIES": 0,
+		"K_FUNDS":      1,
+		"K_BONDS":      2,
+		"K_BLOCKS":     3,
+	}
+)
+
+func (x Kind) Enum() *Kind {
+	p := new(Kind)
+	*p = x
+	return p
+}
+
+func (x Kind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Kind) Descriptor() protoreflect.EnumDescriptor {
+	return file_server_proto_pbstock_stock_proto_enumTypes[2].Descriptor()
+}
+
+func (Kind) Type() protoreflect.EnumType {
+	return &file_server_proto_pbstock_stock_proto_enumTypes[2]
+}
+
+func (x Kind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Kind.Descriptor instead.
+func (Kind) EnumDescriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{2}
+}
+
+type Type int32
+
+const (
+	Type_T_ORDINARY_SHARES   Type = 0
+	Type_T_PREFERENCE_SHARES Type = 1
+)
+
+// Enum value maps for Type.
+var (
+	Type_name = map[int32]string{
+		0: "T_ORDINARY_SHARES",
+		1: "T_PREFERENCE_SHARES",
+	}
+	Type_value = map[string]int32{
+		"T_ORDINARY_SHARES":   0,
+		"T_PREFERENCE_SHARES": 1,
+	}
+)
+
+func (x Type) Enum() *Type {
+	p := new(Type)
+	*p = x
+	return p
+}
+
+func (x Type) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Type) Descriptor() protoreflect.EnumDescriptor {
+	return file_server_proto_pbstock_stock_proto_enumTypes[3].Descriptor()
+}
+
+func (Type) Type() protoreflect.EnumType {
+	return &file_server_proto_pbstock_stock_proto_enumTypes[3]
+}
+
+func (x Type) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Type.Descriptor instead.
+func (Type) EnumDescriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{3}
+}
+
+// Sector structures.
+type Sector struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id     int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Symbol string `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Status bool   `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`
+}
+
+func (x *Sector) Reset() {
+	*x = Sector{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Sector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sector) ProtoMessage() {}
+
+func (x *Sector) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sector.ProtoReflect.Descriptor instead.
+func (*Sector) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Sector) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Sector) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Sector) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *Sector) GetStatus() bool {
+	if x != nil {
+		return x.Status
+	}
+	return false
+}
+
+// Market structure.
+type Market struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id          int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name        string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Symbol      string   `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Unit        string   `protobuf:"bytes,4,opt,name=unit,proto3" json:"unit,omitempty"`
+	Code        string   `protobuf:"bytes,5,opt,name=code,proto3" json:"code,omitempty"`
+	Address     string   `protobuf:"bytes,6,opt,name=address,proto3" json:"address,omitempty"`
+	StartAt     string   `protobuf:"bytes,7,opt,name=start_at,json=startAt,proto3" json:"start_at,omitempty"`
+	StopAt      string   `protobuf:"bytes,8,opt,name=stop_at,json=stopAt,proto3" json:"stop_at,omitempty"`
+	CreateAt    string   `protobuf:"bytes,9,opt,name=create_at,json=createAt,proto3" json:"create_at,omitempty"`
+	QtyShares   float64  `protobuf:"fixed64,10,opt,name=qty_shares,json=qtyShares,proto3" json:"qty_shares,omitempty"`
+	PriceBuy    float64  `protobuf:"fixed64,11,opt,name=price_buy,json=priceBuy,proto3" json:"price_buy,omitempty"`
+	PriceSell   float64  `protobuf:"fixed64,12,opt,name=price_sell,json=priceSell,proto3" json:"price_sell,omitempty"`
+	PriceMarket float64  `protobuf:"fixed64,13,opt,name=price_market,json=priceMarket,proto3" json:"price_market,omitempty"`
+	Sector      string   `protobuf:"bytes,14,opt,name=sector,proto3" json:"sector,omitempty"`
+	Icon        bool     `protobuf:"varint,15,opt,name=icon,proto3" json:"icon,omitempty"`
+	Status      bool     `protobuf:"varint,16,opt,name=status,proto3" json:"status,omitempty"`
+	Exchange    Exchange `protobuf:"varint,17,opt,name=exchange,proto3,enum=pbstock.Exchange" json:"exchange,omitempty"`
+	Method      Method   `protobuf:"varint,18,opt,name=method,proto3,enum=pbstock.Method" json:"method,omitempty"`
+	Kind        Kind     `protobuf:"varint,19,opt,name=kind,proto3,enum=pbstock.Kind" json:"kind,omitempty"`
+	Type        Type     `protobuf:"varint,20,opt,name=type,proto3,enum=pbstock.Type" json:"type,omitempty"`
+}
+
+func (x *Market) Reset() {
+	*x = Market{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Market) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Market) ProtoMessage() {}
+
+func (x *Market) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Market.ProtoReflect.Descriptor instead.
+func (*Market) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Market) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Market) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Market) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *Market) GetUnit() string {
+	if x != nil {
+		return x.Unit
+	}
+	return ""
+}
+
+func (x *Market) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *Market) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *Market) GetStartAt() string {
+	if x != nil {
+		return x.StartAt
+	}
+	return ""
+}
+
+func (x *Market) GetStopAt() string {
+	if x != nil {
+		return x.StopAt
+	}
+	return ""
+}
+
+func (x *Market) GetCreateAt() string {
+	if x != nil {
+		return x.CreateAt
+	}
+	return ""
+}
+
+func (x *Market) GetQtyShares() float64 {
+	if x != nil {
+		return x.QtyShares
+	}
+	return 0
+}
+
+func (x *Market) GetPriceBuy() float64 {
+	if x != nil {
+		return x.PriceBuy
+	}
+	return 0
+}
+
+func (x *Market) GetPriceSell() float64 {
+	if x != nil {
+		return x.PriceSell
+	}
+	return 0
+}
+
+func (x *Market) GetPriceMarket() float64 {
+	if x != nil {
+		return x.PriceMarket
+	}
+	return 0
+}
+
+func (x *Market) GetSector() string {
+	if x != nil {
+		return x.Sector
+	}
+	return ""
+}
+
+func (x *Market) GetIcon() bool {
+	if x != nil {
+		return x.Icon
+	}
+	return false
+}
+
+func (x *Market) GetStatus() bool {
+	if x != nil {
+		return x.Status
+	}
+	return false
+}
+
+func (x *Market) GetExchange() Exchange {
+	if x != nil {
+		return x.Exchange
+	}
+	return Exchange_E_DIGITAL
+}
+
+func (x *Market) GetMethod() Method {
+	if x != nil {
+		return x.Method
+	}
+	return Method_M_COUNTER_BIDDING
+}
+
+func (x *Market) GetKind() Kind {
+	if x != nil {
+		return x.Kind
+	}
+	return Kind_K_SECURITIES
+}
+
+func (x *Market) GetType() Type {
+	if x != nil {
+		return x.Type
+	}
+	return Type_T_ORDINARY_SHARES
+}
+
+// Registrar structures.
+type Registrar struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id      int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name    string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Chapter string `protobuf:"bytes,3,opt,name=chapter,proto3" json:"chapter,omitempty"`
+	Invoice int64  `protobuf:"varint,4,opt,name=invoice,proto3" json:"invoice,omitempty"`
+	Rate    int64  `protobuf:"varint,5,opt,name=rate,proto3" json:"rate,omitempty"`
+}
+
+func (x *Registrar) Reset() {
+	*x = Registrar{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Registrar) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Registrar) ProtoMessage() {}
+
+func (x *Registrar) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Registrar.ProtoReflect.Descriptor instead.
+func (*Registrar) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Registrar) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Registrar) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Registrar) GetChapter() string {
+	if x != nil {
+		return x.Chapter
+	}
+	return ""
+}
+
+func (x *Registrar) GetInvoice() int64 {
+	if x != nil {
+		return x.Invoice
+	}
+	return 0
+}
+
+func (x *Registrar) GetRate() int64 {
+	if x != nil {
+		return x.Rate
+	}
+	return 0
+}
+
+// Market structures.
+type SetRequestMarketRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string  `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Image  []byte  `protobuf:"bytes,2,opt,name=image,proto3" json:"image,omitempty"`
+	Market *Market `protobuf:"bytes,3,opt,name=market,proto3" json:"market,omitempty"`
+}
+
+func (x *SetRequestMarketRule) Reset() {
+	*x = SetRequestMarketRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetRequestMarketRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRequestMarketRule) ProtoMessage() {}
+
+func (x *SetRequestMarketRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRequestMarketRule.ProtoReflect.Descriptor instead.
+func (*SetRequestMarketRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SetRequestMarketRule) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SetRequestMarketRule) GetImage() []byte {
+	if x != nil {
+		return x.Image
+	}
+	return nil
+}
+
+func (x *SetRequestMarketRule) GetMarket() *Market {
+	if x != nil {
+		return x.Market
+	}
+	return nil
+}
+
+type GetRequestMarketRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Symbol string `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+}
+
+func (x *GetRequestMarketRule) Reset() {
+	*x = GetRequestMarketRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequestMarketRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequestMarketRule) ProtoMessage() {}
+
+func (x *GetRequestMarketRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequestMarketRule.ProtoReflect.Descriptor instead.
+func (*GetRequestMarketRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetRequestMarketRule) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+type GetRequestMarketsRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Search string `protobuf:"bytes,1,opt,name=search,proto3" json:"search,omitempty"`
+	Limit  int64  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Page   int64  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+}
+
+func (x *GetRequestMarketsRule) Reset() {
+	*x = GetRequestMarketsRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequestMarketsRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequestMarketsRule) ProtoMessage() {}
+
+func (x *GetRequestMarketsRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequestMarketsRule.ProtoReflect.Descriptor instead.
+func (*GetRequestMarketsRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetRequestMarketsRule) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
+func (x *GetRequestMarketsRule) GetLimit() int64 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetRequestMarketsRule) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+type DeleteRequestMarketRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *DeleteRequestMarketRule) Reset() {
+	*x = DeleteRequestMarketRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteRequestMarketRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequestMarketRule) ProtoMessage() {}
+
+func (x *DeleteRequestMarketRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequestMarketRule.ProtoReflect.Descriptor instead.
+func (*DeleteRequestMarketRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DeleteRequestMarketRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ResponseMarket struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Fields []*Market `protobuf:"bytes,1,rep,name=fields,proto3" json:"fields,omitempty"`
+	Count  int32     `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+}
+
+func (x *ResponseMarket) Reset() {
+	*x = ResponseMarket{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ResponseMarket) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResponseMarket) ProtoMessage() {}
+
+func (x *ResponseMarket) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResponseMarket.ProtoReflect.Descriptor instead.
+func (*ResponseMarket) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ResponseMarket) GetFields() []*Market {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *ResponseMarket) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+// Sector structures.
+type SetRequestSectorRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id     int64   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Sector *Sector `protobuf:"bytes,2,opt,name=sector,proto3" json:"sector,omitempty"`
+}
+
+func (x *SetRequestSectorRule) Reset() {
+	*x = SetRequestSectorRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetRequestSectorRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRequestSectorRule) ProtoMessage() {}
+
+func (x *SetRequestSectorRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRequestSectorRule.ProtoReflect.Descriptor instead.
+func (*SetRequestSectorRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SetRequestSectorRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SetRequestSectorRule) GetSector() *Sector {
+	if x != nil {
+		return x.Sector
+	}
+	return nil
+}
+
+type GetRequestSectorRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *GetRequestSectorRule) Reset() {
+	*x = GetRequestSectorRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequestSectorRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequestSectorRule) ProtoMessage() {}
+
+func (x *GetRequestSectorRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequestSectorRule.ProtoReflect.Descriptor instead.
+func (*GetRequestSectorRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetRequestSectorRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeleteRequestSectorRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *DeleteRequestSectorRule) Reset() {
+	*x = DeleteRequestSectorRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteRequestSectorRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequestSectorRule) ProtoMessage() {}
+
+func (x *DeleteRequestSectorRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequestSectorRule.ProtoReflect.Descriptor instead.
+func (*DeleteRequestSectorRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *DeleteRequestSectorRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetRequestSectorsRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Limit int64 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Page  int64 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+}
+
+func (x *GetRequestSectorsRule) Reset() {
+	*x = GetRequestSectorsRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequestSectorsRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequestSectorsRule) ProtoMessage() {}
+
+func (x *GetRequestSectorsRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequestSectorsRule.ProtoReflect.Descriptor instead.
+func (*GetRequestSectorsRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetRequestSectorsRule) GetLimit() int64 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetRequestSectorsRule) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+type ResponseSector struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Fields []*Sector `protobuf:"bytes,1,rep,name=fields,proto3" json:"fields,omitempty"`
+	Count  int32     `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+}
+
+func (x *ResponseSector) Reset() {
+	*x = ResponseSector{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ResponseSector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResponseSector) ProtoMessage() {}
+
+func (x *ResponseSector) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResponseSector.ProtoReflect.Descriptor instead.
+func (*ResponseSector) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ResponseSector) GetFields() []*Sector {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *ResponseSector) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+// Registrar structures.
+type SetRequestRegistrarRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *SetRequestRegistrarRule) Reset() {
+	*x = SetRequestRegistrarRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetRequestRegistrarRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRequestRegistrarRule) ProtoMessage() {}
+
+func (x *SetRequestRegistrarRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRequestRegistrarRule.ProtoReflect.Descriptor instead.
+func (*SetRequestRegistrarRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SetRequestRegistrarRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetRequestRegistrarRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *GetRequestRegistrarRule) Reset() {
+	*x = GetRequestRegistrarRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequestRegistrarRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequestRegistrarRule) ProtoMessage() {}
+
+func (x *GetRequestRegistrarRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequestRegistrarRule.ProtoReflect.Descriptor instead.
+func (*GetRequestRegistrarRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetRequestRegistrarRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetRequestRegistrarsRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Search string `protobuf:"bytes,1,opt,name=search,proto3" json:"search,omitempty"`
+	Limit  int64  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Page   int64  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+}
+
+func (x *GetRequestRegistrarsRule) Reset() {
+	*x = GetRequestRegistrarsRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequestRegistrarsRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequestRegistrarsRule) ProtoMessage() {}
+
+func (x *GetRequestRegistrarsRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequestRegistrarsRule.ProtoReflect.Descriptor instead.
+func (*GetRequestRegistrarsRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetRequestRegistrarsRule) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
+func (x *GetRequestRegistrarsRule) GetLimit() int64 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetRequestRegistrarsRule) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+type DeleteRequestRegistrarRule struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *DeleteRequestRegistrarRule) Reset() {
+	*x = DeleteRequestRegistrarRule{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteRequestRegistrarRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequestRegistrarRule) ProtoMessage() {}
+
+func (x *DeleteRequestRegistrarRule) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequestRegistrarRule.ProtoReflect.Descriptor instead.
+func (*DeleteRequestRegistrarRule) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DeleteRequestRegistrarRule) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ResponseRegistrar struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Fields []*Registrar `protobuf:"bytes,1,rep,name=fields,proto3" json:"fields,omitempty"`
+	Count  int32        `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+}
+
+func (x *ResponseRegistrar) Reset() {
+	*x = ResponseRegistrar{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_server_proto_pbstock_stock_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ResponseRegistrar) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResponseRegistrar) ProtoMessage() {}
+
+func (x *ResponseRegistrar) ProtoReflect() protoreflect.Message {
+	mi := &file_server_proto_pbstock_stock_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResponseRegistrar.ProtoReflect.Descriptor instead.
+func (*ResponseRegistrar) Descriptor() ([]byte, []int) {
+	return file_server_proto_pbstock_stock_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ResponseRegistrar) GetFields() []*Registrar {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *ResponseRegistrar) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
 var File_server_proto_pbstock_stock_proto protoreflect.FileDescriptor
 
 var file_server_proto_pbstock_stock_proto_rawDesc = []byte{
 	0x0a, 0x20, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x70,
 	0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x12, 0x07, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x32, 0x06, 0x0a, 0x04, 0x53,
-	0x70, 0x6f, 0x74, 0x42, 0x16, 0x5a, 0x14, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2f, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x74, 0x6f, 0x12, 0x07, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x1a, 0x1c, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x5c, 0x0a, 0x06, 0x53, 0x65, 0x63,
+	0x74, 0x6f, 0x72, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f,
+	0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12,
+	0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52,
+	0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0xb7, 0x04, 0x0a, 0x06, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02,
+	0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x12,
+	0x0a, 0x04, 0x75, 0x6e, 0x69, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x6e,
+	0x69, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x12, 0x19, 0x0a, 0x08, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x61, 0x74, 0x18, 0x07, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x73, 0x74, 0x61, 0x72, 0x74, 0x41, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x73,
+	0x74, 0x6f, 0x70, 0x5f, 0x61, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74,
+	0x6f, 0x70, 0x41, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x5f, 0x61,
+	0x74, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x41,
+	0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x71, 0x74, 0x79, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x73, 0x18,
+	0x0a, 0x20, 0x01, 0x28, 0x01, 0x52, 0x09, 0x71, 0x74, 0x79, 0x53, 0x68, 0x61, 0x72, 0x65, 0x73,
+	0x12, 0x1b, 0x0a, 0x09, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x62, 0x75, 0x79, 0x18, 0x0b, 0x20,
+	0x01, 0x28, 0x01, 0x52, 0x08, 0x70, 0x72, 0x69, 0x63, 0x65, 0x42, 0x75, 0x79, 0x12, 0x1d, 0x0a,
+	0x0a, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x73, 0x65, 0x6c, 0x6c, 0x18, 0x0c, 0x20, 0x01, 0x28,
+	0x01, 0x52, 0x09, 0x70, 0x72, 0x69, 0x63, 0x65, 0x53, 0x65, 0x6c, 0x6c, 0x12, 0x21, 0x0a, 0x0c,
+	0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x18, 0x0d, 0x20, 0x01,
+	0x28, 0x01, 0x52, 0x0b, 0x70, 0x72, 0x69, 0x63, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x12,
+	0x16, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x06, 0x73, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x69, 0x63, 0x6f, 0x6e, 0x18,
+	0x0f, 0x20, 0x01, 0x28, 0x08, 0x52, 0x04, 0x69, 0x63, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x10, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x73, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x12, 0x2d, 0x0a, 0x08, 0x65, 0x78, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x18,
+	0x11, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x11, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e,
+	0x45, 0x78, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x08, 0x65, 0x78, 0x63, 0x68, 0x61, 0x6e,
+	0x67, 0x65, 0x12, 0x27, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x12, 0x20, 0x01,
+	0x28, 0x0e, 0x32, 0x0f, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x4d, 0x65, 0x74,
+	0x68, 0x6f, 0x64, 0x52, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x21, 0x0a, 0x04, 0x6b,
+	0x69, 0x6e, 0x64, 0x18, 0x13, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0d, 0x2e, 0x70, 0x62, 0x73, 0x74,
+	0x6f, 0x63, 0x6b, 0x2e, 0x4b, 0x69, 0x6e, 0x64, 0x52, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x12, 0x21,
+	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x14, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0d, 0x2e, 0x70,
+	0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70,
+	0x65, 0x22, 0x77, 0x0a, 0x09, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x70, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x68, 0x61, 0x70, 0x74, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07,
+	0x69, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x69,
+	0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x72, 0x61, 0x74, 0x65, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x72, 0x61, 0x74, 0x65, 0x22, 0x6d, 0x0a, 0x14, 0x53, 0x65,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x75,
+	0x6c, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6d,
+	0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65,
+	0x12, 0x27, 0x0a, 0x06, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0f, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x4d, 0x61, 0x72, 0x6b, 0x65,
+	0x74, 0x52, 0x06, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x22, 0x2e, 0x0a, 0x14, 0x47, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x75, 0x6c,
+	0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x22, 0x59, 0x0a, 0x15, 0x47, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x73, 0x52, 0x75,
+	0x6c, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x61, 0x72, 0x63, 0x68, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x61, 0x72, 0x63, 0x68, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69,
+	0x6d, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74,
+	0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04,
+	0x70, 0x61, 0x67, 0x65, 0x22, 0x29, 0x0a, 0x17, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x75, 0x6c, 0x65, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x22,
+	0x4f, 0x0a, 0x0e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65,
+	0x74, 0x12, 0x27, 0x0a, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f,
+	0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74,
+	0x22, 0x4f, 0x0a, 0x14, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x65,
+	0x63, 0x74, 0x6f, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x27, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x74,
+	0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f,
+	0x63, 0x6b, 0x2e, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x06, 0x73, 0x65, 0x63, 0x74, 0x6f,
+	0x72, 0x22, 0x26, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53,
+	0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x22, 0x29, 0x0a, 0x17, 0x44, 0x65, 0x6c,
+	0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72,
+	0x52, 0x75, 0x6c, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x02, 0x69, 0x64, 0x22, 0x41, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x14, 0x0a,
+	0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x6c, 0x69,
+	0x6d, 0x69, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x04, 0x70, 0x61, 0x67, 0x65, 0x22, 0x4f, 0x0a, 0x0e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x27, 0x0a, 0x06, 0x66, 0x69, 0x65,
+	0x6c, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x62, 0x73, 0x74,
+	0x6f, 0x63, 0x6b, 0x2e, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c,
+	0x64, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x05, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x29, 0x0a, 0x17, 0x53, 0x65, 0x74, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52,
+	0x75, 0x6c, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x02, 0x69, 0x64, 0x22, 0x29, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x22, 0x5c,
+	0x0a, 0x18, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x61, 0x72, 0x73, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65,
+	0x61, 0x72, 0x63, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x61, 0x72,
+	0x63, 0x68, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x67, 0x65,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x70, 0x61, 0x67, 0x65, 0x22, 0x2c, 0x0a, 0x1a,
+	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x22, 0x55, 0x0a, 0x11, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x12,
+	0x2a, 0x0a, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x12, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x72, 0x61, 0x72, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e,
+	0x74, 0x2a, 0x3e, 0x0a, 0x08, 0x45, 0x78, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x0d, 0x0a,
+	0x09, 0x45, 0x5f, 0x44, 0x49, 0x47, 0x49, 0x54, 0x41, 0x4c, 0x10, 0x00, 0x12, 0x15, 0x0a, 0x11,
+	0x45, 0x5f, 0x46, 0x52, 0x45, 0x45, 0x44, 0x4f, 0x4d, 0x5f, 0x46, 0x49, 0x4e, 0x41, 0x4e, 0x43,
+	0x45, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x45, 0x5f, 0x45, 0x58, 0x41, 0x4e, 0x54, 0x45, 0x10,
+	0x02, 0x2a, 0x30, 0x0a, 0x06, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x15, 0x0a, 0x11, 0x4d,
+	0x5f, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x45, 0x52, 0x5f, 0x42, 0x49, 0x44, 0x44, 0x49, 0x4e, 0x47,
+	0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x4d, 0x5f, 0x46, 0x52, 0x41, 0x4e, 0x4b, 0x46, 0x55, 0x52,
+	0x54, 0x10, 0x01, 0x2a, 0x40, 0x0a, 0x04, 0x4b, 0x69, 0x6e, 0x64, 0x12, 0x10, 0x0a, 0x0c, 0x4b,
+	0x5f, 0x53, 0x45, 0x43, 0x55, 0x52, 0x49, 0x54, 0x49, 0x45, 0x53, 0x10, 0x00, 0x12, 0x0b, 0x0a,
+	0x07, 0x4b, 0x5f, 0x46, 0x55, 0x4e, 0x44, 0x53, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07, 0x4b, 0x5f,
+	0x42, 0x4f, 0x4e, 0x44, 0x53, 0x10, 0x02, 0x12, 0x0c, 0x0a, 0x08, 0x4b, 0x5f, 0x42, 0x4c, 0x4f,
+	0x43, 0x4b, 0x53, 0x10, 0x03, 0x2a, 0x36, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x15, 0x0a,
+	0x11, 0x54, 0x5f, 0x4f, 0x52, 0x44, 0x49, 0x4e, 0x41, 0x52, 0x59, 0x5f, 0x53, 0x48, 0x41, 0x52,
+	0x45, 0x53, 0x10, 0x00, 0x12, 0x17, 0x0a, 0x13, 0x54, 0x5f, 0x50, 0x52, 0x45, 0x46, 0x45, 0x52,
+	0x45, 0x4e, 0x43, 0x45, 0x5f, 0x53, 0x48, 0x41, 0x52, 0x45, 0x53, 0x10, 0x01, 0x32, 0x9a, 0x0b,
+	0x0a, 0x03, 0x41, 0x70, 0x69, 0x12, 0x6e, 0x0a, 0x0d, 0x53, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x1d, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b,
+	0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65,
+	0x74, 0x52, 0x75, 0x6c, 0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x22, 0x25,
+	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x1f, 0x22, 0x1a, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69,
+	0x6e, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x73, 0x65, 0x74, 0x2d, 0x6d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x3a, 0x01, 0x2a, 0x12, 0x6e, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x1d, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b,
+	0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65,
+	0x74, 0x52, 0x75, 0x6c, 0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x22, 0x25,
+	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x1f, 0x22, 0x1a, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69,
+	0x6e, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x6d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x3a, 0x01, 0x2a, 0x12, 0x71, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x73, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x1e, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63,
+	0x6b, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b,
+	0x65, 0x74, 0x73, 0x52, 0x75, 0x6c, 0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63,
+	0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74,
+	0x22, 0x26, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x20, 0x22, 0x1b, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64,
+	0x6d, 0x69, 0x6e, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x6d, 0x61,
+	0x72, 0x6b, 0x65, 0x74, 0x73, 0x3a, 0x01, 0x2a, 0x12, 0x77, 0x0a, 0x10, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x20, 0x2e, 0x70,
+	0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x52, 0x75, 0x6c, 0x65, 0x1a, 0x17,
+	0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x4d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x22, 0x28, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x22, 0x22,
+	0x1d, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b,
+	0x2f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x2d, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x3a, 0x01,
+	0x2a, 0x12, 0x6e, 0x0a, 0x0d, 0x53, 0x65, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x75,
+	0x6c, 0x65, 0x12, 0x1d, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x53, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x75, 0x6c,
+	0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x22, 0x25, 0x82, 0xd3, 0xe4, 0x93,
+	0x02, 0x1f, 0x22, 0x1a, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f, 0x73, 0x74,
+	0x6f, 0x63, 0x6b, 0x2f, 0x73, 0x65, 0x74, 0x2d, 0x73, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x3a, 0x01,
+	0x2a, 0x12, 0x6e, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x75,
+	0x6c, 0x65, 0x12, 0x1d, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x47, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x75, 0x6c,
+	0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x22, 0x25, 0x82, 0xd3, 0xe4, 0x93,
+	0x02, 0x1f, 0x22, 0x1a, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f, 0x73, 0x74,
+	0x6f, 0x63, 0x6b, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x73, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x3a, 0x01,
+	0x2a, 0x12, 0x71, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x52,
+	0x75, 0x6c, 0x65, 0x12, 0x1e, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x47, 0x65,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x52,
+	0x75, 0x6c, 0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x22, 0x26, 0x82, 0xd3,
+	0xe4, 0x93, 0x02, 0x20, 0x22, 0x1b, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f,
+	0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x73, 0x65, 0x63, 0x74, 0x6f, 0x72,
+	0x73, 0x3a, 0x01, 0x2a, 0x12, 0x77, 0x0a, 0x10, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x65,
+	0x63, 0x74, 0x6f, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x20, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f,
+	0x63, 0x6b, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x53, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x73,
+	0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x53, 0x65, 0x63,
+	0x74, 0x6f, 0x72, 0x22, 0x28, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x22, 0x22, 0x1d, 0x2f, 0x76, 0x32,
+	0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x64, 0x65, 0x6c,
+	0x65, 0x74, 0x65, 0x2d, 0x73, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x7a, 0x0a,
+	0x10, 0x53, 0x65, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c,
+	0x65, 0x12, 0x20, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x53, 0x65, 0x74, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52,
+	0x75, 0x6c, 0x65, 0x1a, 0x1a, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x22,
+	0x28, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x22, 0x22, 0x1d, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d,
+	0x69, 0x6e, 0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x73, 0x65, 0x74, 0x2d, 0x72, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x7a, 0x0a, 0x10, 0x47, 0x65, 0x74,
+	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x20, 0x2e,
+	0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x1a,
+	0x1a, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x22, 0x28, 0x82, 0xd3, 0xe4,
+	0x93, 0x02, 0x22, 0x22, 0x1d, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f, 0x73,
+	0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x61, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x7d, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x61, 0x72, 0x73, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x21, 0x2e, 0x70, 0x62, 0x73,
+	0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x73, 0x52, 0x75, 0x6c, 0x65, 0x1a, 0x1a, 0x2e,
+	0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x22, 0x29, 0x82, 0xd3, 0xe4, 0x93, 0x02,
+	0x23, 0x22, 0x1e, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x2f, 0x73, 0x74, 0x6f,
+	0x63, 0x6b, 0x2f, 0x67, 0x65, 0x74, 0x2d, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72,
+	0x73, 0x3a, 0x01, 0x2a, 0x12, 0x83, 0x01, 0x0a, 0x13, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c, 0x65, 0x12, 0x23, 0x2e, 0x70,
+	0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x52, 0x75, 0x6c,
+	0x65, 0x1a, 0x1a, 0x2e, 0x70, 0x62, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x22, 0x2b, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x25, 0x22, 0x20, 0x2f, 0x76, 0x32, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e,
+	0x2f, 0x73, 0x74, 0x6f, 0x63, 0x6b, 0x2f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x2d, 0x72, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x72, 0x3a, 0x01, 0x2a, 0x42, 0x16, 0x5a, 0x14, 0x73, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x70, 0x62, 0x73, 0x74, 0x6f,
+	0x63, 0x6b, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
-var file_server_proto_pbstock_stock_proto_goTypes = []interface{}{}
+var (
+	file_server_proto_pbstock_stock_proto_rawDescOnce sync.Once
+	file_server_proto_pbstock_stock_proto_rawDescData = file_server_proto_pbstock_stock_proto_rawDesc
+)
+
+func file_server_proto_pbstock_stock_proto_rawDescGZIP() []byte {
+	file_server_proto_pbstock_stock_proto_rawDescOnce.Do(func() {
+		file_server_proto_pbstock_stock_proto_rawDescData = protoimpl.X.CompressGZIP(file_server_proto_pbstock_stock_proto_rawDescData)
+	})
+	return file_server_proto_pbstock_stock_proto_rawDescData
+}
+
+var file_server_proto_pbstock_stock_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_server_proto_pbstock_stock_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_server_proto_pbstock_stock_proto_goTypes = []interface{}{
+	(Exchange)(0),                      // 0: pbstock.Exchange
+	(Method)(0),                        // 1: pbstock.Method
+	(Kind)(0),                          // 2: pbstock.Kind
+	(Type)(0),                          // 3: pbstock.Type
+	(*Sector)(nil),                     // 4: pbstock.Sector
+	(*Market)(nil),                     // 5: pbstock.Market
+	(*Registrar)(nil),                  // 6: pbstock.Registrar
+	(*SetRequestMarketRule)(nil),       // 7: pbstock.SetRequestMarketRule
+	(*GetRequestMarketRule)(nil),       // 8: pbstock.GetRequestMarketRule
+	(*GetRequestMarketsRule)(nil),      // 9: pbstock.GetRequestMarketsRule
+	(*DeleteRequestMarketRule)(nil),    // 10: pbstock.DeleteRequestMarketRule
+	(*ResponseMarket)(nil),             // 11: pbstock.ResponseMarket
+	(*SetRequestSectorRule)(nil),       // 12: pbstock.SetRequestSectorRule
+	(*GetRequestSectorRule)(nil),       // 13: pbstock.GetRequestSectorRule
+	(*DeleteRequestSectorRule)(nil),    // 14: pbstock.DeleteRequestSectorRule
+	(*GetRequestSectorsRule)(nil),      // 15: pbstock.GetRequestSectorsRule
+	(*ResponseSector)(nil),             // 16: pbstock.ResponseSector
+	(*SetRequestRegistrarRule)(nil),    // 17: pbstock.SetRequestRegistrarRule
+	(*GetRequestRegistrarRule)(nil),    // 18: pbstock.GetRequestRegistrarRule
+	(*GetRequestRegistrarsRule)(nil),   // 19: pbstock.GetRequestRegistrarsRule
+	(*DeleteRequestRegistrarRule)(nil), // 20: pbstock.DeleteRequestRegistrarRule
+	(*ResponseRegistrar)(nil),          // 21: pbstock.ResponseRegistrar
+}
 var file_server_proto_pbstock_stock_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: pbstock.Market.exchange:type_name -> pbstock.Exchange
+	1,  // 1: pbstock.Market.method:type_name -> pbstock.Method
+	2,  // 2: pbstock.Market.kind:type_name -> pbstock.Kind
+	3,  // 3: pbstock.Market.type:type_name -> pbstock.Type
+	5,  // 4: pbstock.SetRequestMarketRule.market:type_name -> pbstock.Market
+	5,  // 5: pbstock.ResponseMarket.fields:type_name -> pbstock.Market
+	4,  // 6: pbstock.SetRequestSectorRule.sector:type_name -> pbstock.Sector
+	4,  // 7: pbstock.ResponseSector.fields:type_name -> pbstock.Sector
+	6,  // 8: pbstock.ResponseRegistrar.fields:type_name -> pbstock.Registrar
+	7,  // 9: pbstock.Api.SetMarketRule:input_type -> pbstock.SetRequestMarketRule
+	8,  // 10: pbstock.Api.GetMarketRule:input_type -> pbstock.GetRequestMarketRule
+	9,  // 11: pbstock.Api.GetMarketsRule:input_type -> pbstock.GetRequestMarketsRule
+	10, // 12: pbstock.Api.DeleteMarketRule:input_type -> pbstock.DeleteRequestMarketRule
+	12, // 13: pbstock.Api.SetSectorRule:input_type -> pbstock.SetRequestSectorRule
+	13, // 14: pbstock.Api.GetSectorRule:input_type -> pbstock.GetRequestSectorRule
+	15, // 15: pbstock.Api.GetSectorsRule:input_type -> pbstock.GetRequestSectorsRule
+	14, // 16: pbstock.Api.DeleteSectorRule:input_type -> pbstock.DeleteRequestSectorRule
+	17, // 17: pbstock.Api.SetRegistrarRule:input_type -> pbstock.SetRequestRegistrarRule
+	18, // 18: pbstock.Api.GetRegistrarRule:input_type -> pbstock.GetRequestRegistrarRule
+	19, // 19: pbstock.Api.GetRegistrarsRule:input_type -> pbstock.GetRequestRegistrarsRule
+	20, // 20: pbstock.Api.DeleteRegistrarRule:input_type -> pbstock.DeleteRequestRegistrarRule
+	11, // 21: pbstock.Api.SetMarketRule:output_type -> pbstock.ResponseMarket
+	11, // 22: pbstock.Api.GetMarketRule:output_type -> pbstock.ResponseMarket
+	11, // 23: pbstock.Api.GetMarketsRule:output_type -> pbstock.ResponseMarket
+	11, // 24: pbstock.Api.DeleteMarketRule:output_type -> pbstock.ResponseMarket
+	16, // 25: pbstock.Api.SetSectorRule:output_type -> pbstock.ResponseSector
+	16, // 26: pbstock.Api.GetSectorRule:output_type -> pbstock.ResponseSector
+	16, // 27: pbstock.Api.GetSectorsRule:output_type -> pbstock.ResponseSector
+	16, // 28: pbstock.Api.DeleteSectorRule:output_type -> pbstock.ResponseSector
+	21, // 29: pbstock.Api.SetRegistrarRule:output_type -> pbstock.ResponseRegistrar
+	21, // 30: pbstock.Api.GetRegistrarRule:output_type -> pbstock.ResponseRegistrar
+	21, // 31: pbstock.Api.GetRegistrarsRule:output_type -> pbstock.ResponseRegistrar
+	21, // 32: pbstock.Api.DeleteRegistrarRule:output_type -> pbstock.ResponseRegistrar
+	21, // [21:33] is the sub-list for method output_type
+	9,  // [9:21] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_server_proto_pbstock_stock_proto_init() }
@@ -46,18 +1678,238 @@ func file_server_proto_pbstock_stock_proto_init() {
 	if File_server_proto_pbstock_stock_proto != nil {
 		return
 	}
+	if !protoimpl.UnsafeEnabled {
+		file_server_proto_pbstock_stock_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Sector); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Market); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Registrar); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetRequestMarketRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequestMarketRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequestMarketsRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteRequestMarketRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ResponseMarket); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetRequestSectorRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequestSectorRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteRequestSectorRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequestSectorsRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ResponseSector); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetRequestRegistrarRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequestRegistrarRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequestRegistrarsRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteRequestRegistrarRule); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_server_proto_pbstock_stock_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ResponseRegistrar); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_server_proto_pbstock_stock_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   0,
+			NumEnums:      4,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_server_proto_pbstock_stock_proto_goTypes,
 		DependencyIndexes: file_server_proto_pbstock_stock_proto_depIdxs,
+		EnumInfos:         file_server_proto_pbstock_stock_proto_enumTypes,
+		MessageInfos:      file_server_proto_pbstock_stock_proto_msgTypes,
 	}.Build()
 	File_server_proto_pbstock_stock_proto = out.File
 	file_server_proto_pbstock_stock_proto_rawDesc = nil
@@ -73,36 +1925,470 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// SpotClient is the client API for Spot service.
+// ApiClient is the client API for Api service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type SpotClient interface {
+type ApiClient interface {
+	SetMarketRule(ctx context.Context, in *SetRequestMarketRule, opts ...grpc.CallOption) (*ResponseMarket, error)
+	GetMarketRule(ctx context.Context, in *GetRequestMarketRule, opts ...grpc.CallOption) (*ResponseMarket, error)
+	GetMarketsRule(ctx context.Context, in *GetRequestMarketsRule, opts ...grpc.CallOption) (*ResponseMarket, error)
+	DeleteMarketRule(ctx context.Context, in *DeleteRequestMarketRule, opts ...grpc.CallOption) (*ResponseMarket, error)
+	SetSectorRule(ctx context.Context, in *SetRequestSectorRule, opts ...grpc.CallOption) (*ResponseSector, error)
+	GetSectorRule(ctx context.Context, in *GetRequestSectorRule, opts ...grpc.CallOption) (*ResponseSector, error)
+	GetSectorsRule(ctx context.Context, in *GetRequestSectorsRule, opts ...grpc.CallOption) (*ResponseSector, error)
+	DeleteSectorRule(ctx context.Context, in *DeleteRequestSectorRule, opts ...grpc.CallOption) (*ResponseSector, error)
+	SetRegistrarRule(ctx context.Context, in *SetRequestRegistrarRule, opts ...grpc.CallOption) (*ResponseRegistrar, error)
+	GetRegistrarRule(ctx context.Context, in *GetRequestRegistrarRule, opts ...grpc.CallOption) (*ResponseRegistrar, error)
+	GetRegistrarsRule(ctx context.Context, in *GetRequestRegistrarsRule, opts ...grpc.CallOption) (*ResponseRegistrar, error)
+	DeleteRegistrarRule(ctx context.Context, in *DeleteRequestRegistrarRule, opts ...grpc.CallOption) (*ResponseRegistrar, error)
 }
 
-type spotClient struct {
+type apiClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSpotClient(cc grpc.ClientConnInterface) SpotClient {
-	return &spotClient{cc}
+func NewApiClient(cc grpc.ClientConnInterface) ApiClient {
+	return &apiClient{cc}
 }
 
-// SpotServer is the server API for Spot service.
-type SpotServer interface {
+func (c *apiClient) SetMarketRule(ctx context.Context, in *SetRequestMarketRule, opts ...grpc.CallOption) (*ResponseMarket, error) {
+	out := new(ResponseMarket)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/SetMarketRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-// UnimplementedSpotServer can be embedded to have forward compatible implementations.
-type UnimplementedSpotServer struct {
+func (c *apiClient) GetMarketRule(ctx context.Context, in *GetRequestMarketRule, opts ...grpc.CallOption) (*ResponseMarket, error) {
+	out := new(ResponseMarket)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/GetMarketRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-func RegisterSpotServer(s *grpc.Server, srv SpotServer) {
-	s.RegisterService(&_Spot_serviceDesc, srv)
+func (c *apiClient) GetMarketsRule(ctx context.Context, in *GetRequestMarketsRule, opts ...grpc.CallOption) (*ResponseMarket, error) {
+	out := new(ResponseMarket)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/GetMarketsRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-var _Spot_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "pbstock.Spot",
-	HandlerType: (*SpotServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "server/proto/pbstock/stock.proto",
+func (c *apiClient) DeleteMarketRule(ctx context.Context, in *DeleteRequestMarketRule, opts ...grpc.CallOption) (*ResponseMarket, error) {
+	out := new(ResponseMarket)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/DeleteMarketRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) SetSectorRule(ctx context.Context, in *SetRequestSectorRule, opts ...grpc.CallOption) (*ResponseSector, error) {
+	out := new(ResponseSector)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/SetSectorRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) GetSectorRule(ctx context.Context, in *GetRequestSectorRule, opts ...grpc.CallOption) (*ResponseSector, error) {
+	out := new(ResponseSector)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/GetSectorRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) GetSectorsRule(ctx context.Context, in *GetRequestSectorsRule, opts ...grpc.CallOption) (*ResponseSector, error) {
+	out := new(ResponseSector)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/GetSectorsRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) DeleteSectorRule(ctx context.Context, in *DeleteRequestSectorRule, opts ...grpc.CallOption) (*ResponseSector, error) {
+	out := new(ResponseSector)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/DeleteSectorRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) SetRegistrarRule(ctx context.Context, in *SetRequestRegistrarRule, opts ...grpc.CallOption) (*ResponseRegistrar, error) {
+	out := new(ResponseRegistrar)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/SetRegistrarRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) GetRegistrarRule(ctx context.Context, in *GetRequestRegistrarRule, opts ...grpc.CallOption) (*ResponseRegistrar, error) {
+	out := new(ResponseRegistrar)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/GetRegistrarRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) GetRegistrarsRule(ctx context.Context, in *GetRequestRegistrarsRule, opts ...grpc.CallOption) (*ResponseRegistrar, error) {
+	out := new(ResponseRegistrar)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/GetRegistrarsRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) DeleteRegistrarRule(ctx context.Context, in *DeleteRequestRegistrarRule, opts ...grpc.CallOption) (*ResponseRegistrar, error) {
+	out := new(ResponseRegistrar)
+	err := c.cc.Invoke(ctx, "/pbstock.Api/DeleteRegistrarRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ApiServer is the server API for Api service.
+type ApiServer interface {
+	SetMarketRule(context.Context, *SetRequestMarketRule) (*ResponseMarket, error)
+	GetMarketRule(context.Context, *GetRequestMarketRule) (*ResponseMarket, error)
+	GetMarketsRule(context.Context, *GetRequestMarketsRule) (*ResponseMarket, error)
+	DeleteMarketRule(context.Context, *DeleteRequestMarketRule) (*ResponseMarket, error)
+	SetSectorRule(context.Context, *SetRequestSectorRule) (*ResponseSector, error)
+	GetSectorRule(context.Context, *GetRequestSectorRule) (*ResponseSector, error)
+	GetSectorsRule(context.Context, *GetRequestSectorsRule) (*ResponseSector, error)
+	DeleteSectorRule(context.Context, *DeleteRequestSectorRule) (*ResponseSector, error)
+	SetRegistrarRule(context.Context, *SetRequestRegistrarRule) (*ResponseRegistrar, error)
+	GetRegistrarRule(context.Context, *GetRequestRegistrarRule) (*ResponseRegistrar, error)
+	GetRegistrarsRule(context.Context, *GetRequestRegistrarsRule) (*ResponseRegistrar, error)
+	DeleteRegistrarRule(context.Context, *DeleteRequestRegistrarRule) (*ResponseRegistrar, error)
+}
+
+// UnimplementedApiServer can be embedded to have forward compatible implementations.
+type UnimplementedApiServer struct {
+}
+
+func (*UnimplementedApiServer) SetMarketRule(context.Context, *SetRequestMarketRule) (*ResponseMarket, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetMarketRule not implemented")
+}
+func (*UnimplementedApiServer) GetMarketRule(context.Context, *GetRequestMarketRule) (*ResponseMarket, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMarketRule not implemented")
+}
+func (*UnimplementedApiServer) GetMarketsRule(context.Context, *GetRequestMarketsRule) (*ResponseMarket, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMarketsRule not implemented")
+}
+func (*UnimplementedApiServer) DeleteMarketRule(context.Context, *DeleteRequestMarketRule) (*ResponseMarket, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteMarketRule not implemented")
+}
+func (*UnimplementedApiServer) SetSectorRule(context.Context, *SetRequestSectorRule) (*ResponseSector, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetSectorRule not implemented")
+}
+func (*UnimplementedApiServer) GetSectorRule(context.Context, *GetRequestSectorRule) (*ResponseSector, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSectorRule not implemented")
+}
+func (*UnimplementedApiServer) GetSectorsRule(context.Context, *GetRequestSectorsRule) (*ResponseSector, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSectorsRule not implemented")
+}
+func (*UnimplementedApiServer) DeleteSectorRule(context.Context, *DeleteRequestSectorRule) (*ResponseSector, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSectorRule not implemented")
+}
+func (*UnimplementedApiServer) SetRegistrarRule(context.Context, *SetRequestRegistrarRule) (*ResponseRegistrar, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetRegistrarRule not implemented")
+}
+func (*UnimplementedApiServer) GetRegistrarRule(context.Context, *GetRequestRegistrarRule) (*ResponseRegistrar, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRegistrarRule not implemented")
+}
+func (*UnimplementedApiServer) GetRegistrarsRule(context.Context, *GetRequestRegistrarsRule) (*ResponseRegistrar, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRegistrarsRule not implemented")
+}
+func (*UnimplementedApiServer) DeleteRegistrarRule(context.Context, *DeleteRequestRegistrarRule) (*ResponseRegistrar, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistrarRule not implemented")
+}
+
+func RegisterApiServer(s *grpc.Server, srv ApiServer) {
+	s.RegisterService(&_Api_serviceDesc, srv)
+}
+
+func _Api_SetMarketRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRequestMarketRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).SetMarketRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/SetMarketRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).SetMarketRule(ctx, req.(*SetRequestMarketRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GetMarketRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestMarketRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetMarketRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/GetMarketRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetMarketRule(ctx, req.(*GetRequestMarketRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GetMarketsRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestMarketsRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetMarketsRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/GetMarketsRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetMarketsRule(ctx, req.(*GetRequestMarketsRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_DeleteMarketRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequestMarketRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).DeleteMarketRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/DeleteMarketRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).DeleteMarketRule(ctx, req.(*DeleteRequestMarketRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_SetSectorRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRequestSectorRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).SetSectorRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/SetSectorRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).SetSectorRule(ctx, req.(*SetRequestSectorRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GetSectorRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestSectorRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetSectorRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/GetSectorRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetSectorRule(ctx, req.(*GetRequestSectorRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GetSectorsRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestSectorsRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetSectorsRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/GetSectorsRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetSectorsRule(ctx, req.(*GetRequestSectorsRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_DeleteSectorRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequestSectorRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).DeleteSectorRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/DeleteSectorRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).DeleteSectorRule(ctx, req.(*DeleteRequestSectorRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_SetRegistrarRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRequestRegistrarRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).SetRegistrarRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/SetRegistrarRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).SetRegistrarRule(ctx, req.(*SetRequestRegistrarRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GetRegistrarRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestRegistrarRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetRegistrarRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/GetRegistrarRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetRegistrarRule(ctx, req.(*GetRequestRegistrarRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GetRegistrarsRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestRegistrarsRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetRegistrarsRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/GetRegistrarsRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetRegistrarsRule(ctx, req.(*GetRequestRegistrarsRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_DeleteRegistrarRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequestRegistrarRule)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).DeleteRegistrarRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbstock.Api/DeleteRegistrarRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).DeleteRegistrarRule(ctx, req.(*DeleteRequestRegistrarRule))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Api_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "pbstock.Api",
+	HandlerType: (*ApiServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SetMarketRule",
+			Handler:    _Api_SetMarketRule_Handler,
+		},
+		{
+			MethodName: "GetMarketRule",
+			Handler:    _Api_GetMarketRule_Handler,
+		},
+		{
+			MethodName: "GetMarketsRule",
+			Handler:    _Api_GetMarketsRule_Handler,
+		},
+		{
+			MethodName: "DeleteMarketRule",
+			Handler:    _Api_DeleteMarketRule_Handler,
+		},
+		{
+			MethodName: "SetSectorRule",
+			Handler:    _Api_SetSectorRule_Handler,
+		},
+		{
+			MethodName: "GetSectorRule",
+			Handler:    _Api_GetSectorRule_Handler,
+		},
+		{
+			MethodName: "GetSectorsRule",
+			Handler:    _Api_GetSectorsRule_Handler,
+		},
+		{
+			MethodName: "DeleteSectorRule",
+			Handler:    _Api_DeleteSectorRule_Handler,
+		},
+		{
+			MethodName: "SetRegistrarRule",
+			Handler:    _Api_SetRegistrarRule_Handler,
+		},
+		{
+			MethodName: "GetRegistrarRule",
+			Handler:    _Api_GetRegistrarRule_Handler,
+		},
+		{
+			MethodName: "GetRegistrarsRule",
+			Handler:    _Api_GetRegistrarsRule_Handler,
+		},
+		{
+			MethodName: "DeleteRegistrarRule",
+			Handler:    _Api_DeleteRegistrarRule_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "server/proto/pbstock/stock.proto",
 }

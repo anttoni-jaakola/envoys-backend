@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbmarket"
+	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/net/context"
 	"strings"
 	"time"
@@ -126,6 +127,8 @@ func (m *Service) SetOrder(ctx context.Context, req *pbmarket.SetRequestOrder) (
 	if err != nil {
 		return &response, m.Context.Error(err)
 	}
+
+	spew.Dump(request)
 
 	if fields, ok := request.(map[string]interface{}); ok {
 

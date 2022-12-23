@@ -11,10 +11,10 @@
     "application/json"
   ],
   "paths": {
-    "/v2/account/get-activities": {
+    "/v2/account/get-actions": {
       "post": {
-        "summary": "Activities list.",
-        "operationId": "Api_GetActivities",
+        "summary": "Actions list.",
+        "operationId": "Api_GetActions",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pbaccountGetRequestActivities"
+              "$ref": "#/definitions/pbaccountGetRequestActions"
             }
           }
         ],
@@ -208,38 +208,6 @@
           "Api"
         ]
       }
-    },
-    "/v2/admin/account/set-factor": {
-      "post": {
-        "operationId": "Api_SetTOTPs",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbaccountResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/pbaccountSetRequestUserManual"
-            }
-          }
-        ],
-        "tags": [
-          "Api"
-        ]
-      }
     }
   },
   "definitions": {
@@ -260,7 +228,7 @@
         }
       }
     },
-    "pbaccountActivity": {
+    "pbaccountAction": {
       "type": "object",
       "properties": {
         "id": {
@@ -290,9 +258,9 @@
           "type": "string"
         }
       },
-      "description": "Activity structure."
+      "description": "Action structure."
     },
-    "pbaccountGetRequestActivities": {
+    "pbaccountGetRequestActions": {
       "type": "object",
       "properties": {
         "page": {
@@ -304,7 +272,7 @@
           "format": "int64"
         }
       },
-      "description": "Activity structure."
+      "description": "Actions structure."
     },
     "pbaccountGetRequestUser": {
       "type": "object",
@@ -355,10 +323,10 @@
         "status": {
           "type": "boolean"
         },
-        "activities": {
+        "actions": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/pbaccountActivity"
+            "$ref": "#/definitions/pbaccountAction"
           }
         },
         "sample": {

@@ -10,6 +10,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbmarket"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/http2"
 	"google.golang.org/grpc"
@@ -208,6 +209,7 @@ func (o *Options) gateway(ctx context.Context, connect *grpc.ClientConn, opts []
 		pbauth.RegisterApiHandler,
 		pbaccount.RegisterApiHandler,
 		pbspot.RegisterApiHandler,
+		pbstock.RegisterApiHandler,
 		pbmarket.RegisterApiHandler,
 	} {
 		if err := f(ctx, route, connect); err != nil {
