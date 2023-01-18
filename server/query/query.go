@@ -40,22 +40,22 @@ type Migrate struct {
 }
 
 // User - get user.
-func (q *Migrate) User(id int64) (*pbaccount.Response, error) {
+func (m *Migrate) User(id int64) (*pbaccount.Response, error) {
 
 	var (
-		response      pbaccount.Response
-		sample, rules []byte
+		response pbaccount.Response
+		q        Query
 	)
 
-	if err := q.Context.Db.QueryRow("select id, name, email, status, sample, rules from accounts where id = $1", id).Scan(&response.Id, &response.Name, &response.Email, &response.Status, &sample, &rules); err != nil {
+	if err := m.Context.Db.QueryRow("select id, name, email, status, sample, rules from accounts where id = $1", id).Scan(&response.Id, &response.Name, &response.Email, &response.Status, &q.Sample, &q.Rules); err != nil {
 		return &response, err
 	}
 
-	if err := json.Unmarshal(sample, &response.Sample); err != nil {
+	if err := json.Unmarshal(q.Sample, &response.Sample); err != nil {
 		return &response, err
 	}
 
-	if err := json.Unmarshal(rules, &response.Rules); err != nil {
+	if err := json.Unmarshal(q.Rules, &response.Rules); err != nil {
 		return &response, err
 	}
 
@@ -63,7 +63,7 @@ func (q *Migrate) User(id int64) (*pbaccount.Response, error) {
 }
 
 // Rules - user role admin.
-func (q *Migrate) Rules(id int64, name string, tag int) bool {
+func (m *Migrate) Rules(id int64, name string, tag int) bool {
 
 	var (
 		response Query
@@ -71,7 +71,7 @@ func (q *Migrate) Rules(id int64, name string, tag int) bool {
 		rules    pbaccount.Rules
 	)
 
-	if err := q.Context.Db.QueryRow("select rules from accounts where id = $1", id).Scan(&response.Rules); q.Context.Debug(err) {
+	if err := m.Context.Db.QueryRow("select rules from accounts where id = $1", id).Scan(&response.Rules); m.Context.Debug(err) {
 		return false
 	}
 
@@ -97,13 +97,13 @@ func (q *Migrate) Rules(id int64, name string, tag int) bool {
 }
 
 // Rename - rename file.
-func (q *Migrate) Rename(path, oldName, newName string) error {
+func (m *Migrate) Rename(path, oldName, newName string) error {
 
 	var (
 		storage []string
 	)
 
-	storage = append(storage, []string{q.Context.StoragePath, "static", path}...)
+	storage = append(storage, []string{m.Context.StoragePath, "static", path}...)
 	if err := os.Rename(filepath.Join(append(storage, []string{fmt.Sprintf("%v.png", oldName)}...)...), filepath.Join(append(storage, []string{fmt.Sprintf("%v.png", newName)}...)...)); err != nil {
 		return err
 	}
@@ -112,13 +112,13 @@ func (q *Migrate) Rename(path, oldName, newName string) error {
 }
 
 // Remove - remove file.
-func (q *Migrate) Remove(path, name string) error {
+func (m *Migrate) Remove(path, name string) error {
 
 	var (
 		storage []string
 	)
 
-	storage = append(storage, []string{q.Context.StoragePath, "static", path, fmt.Sprintf("%v.png", name)}...)
+	storage = append(storage, []string{m.Context.StoragePath, "static", path, fmt.Sprintf("%v.png", name)}...)
 	if _, err := os.Stat(filepath.Join(storage...)); !errors.Is(err, os.ErrNotExist) {
 		if err := os.Remove(filepath.Join(storage...)); err != nil {
 			return err
@@ -129,7 +129,7 @@ func (q *Migrate) Remove(path, name string) error {
 }
 
 // Image - upload image
-func (q *Migrate) Image(img []byte, path, name string) error {
+func (m *Migrate) Image(img []byte, path, name string) error {
 
 	var (
 		response Query
@@ -141,11 +141,11 @@ func (q *Migrate) Image(img []byte, path, name string) error {
 		return status.Error(12000, "image type is not correct")
 	}
 
-	if err := q.Remove(path, name); err != nil {
+	if err := m.Remove(path, name); err != nil {
 		return err
 	}
 
-	file, err := os.Create(filepath.Join([]string{q.Context.StoragePath, "static", path, fmt.Sprintf("%v.png", name)}...))
+	file, err := os.Create(filepath.Join([]string{m.Context.StoragePath, "static", path, fmt.Sprintf("%v.png", name)}...))
 	if err != nil {
 		return err
 	}
@@ -174,19 +174,19 @@ func (q *Migrate) Image(img []byte, path, name string) error {
 }
 
 // SamplePosts - send to user mail sample.
-func (q *Migrate) SamplePosts(userId int64, name string, params ...interface{}) {
+func (m *Migrate) SamplePosts(userId int64, name string, params ...interface{}) {
 
 	var (
 		response Query
 		buffer   bytes.Buffer
 	)
 
-	if err := q.Context.Db.QueryRow("select name, sample, email from accounts where id = $1", userId).Scan(&response.Name, &response.Sample, &response.Email); q.Context.Debug(err) {
+	if err := m.Context.Db.QueryRow("select name, sample, email from accounts where id = $1", userId).Scan(&response.Name, &response.Sample, &response.Email); m.Context.Debug(err) {
 		return
 	}
 
 	templates, err := template.ParseFiles(fmt.Sprintf("./static/sample/sample_%v.html", name))
-	if q.Context.Debug(err) {
+	if m.Context.Debug(err) {
 		return
 	}
 
@@ -220,20 +220,20 @@ func (q *Migrate) SamplePosts(userId int64, name string, params ...interface{}) 
 	}
 
 	err = templates.Execute(&buffer, &response)
-	if q.Context.Debug(err) {
+	if m.Context.Debug(err) {
 		return
 	}
 
 	if help.Comparable(response.Sample, name, "secure") {
 
-		m := gomail.NewMessage()
-		m.SetHeader("From", q.Context.Smtp.Sender)
-		m.SetHeader("To", response.Email)
-		m.SetHeader("Subject", response.Subject)
-		m.SetBody("text/html", buffer.String())
+		g := gomail.NewMessage()
+		g.SetHeader("From", m.Context.Smtp.Sender)
+		g.SetHeader("To", response.Email)
+		g.SetHeader("Subject", response.Subject)
+		g.SetBody("text/html", buffer.String())
 
-		d := gomail.NewDialer(q.Context.Smtp.Host, q.Context.Smtp.Port, q.Context.Smtp.Sender, q.Context.Smtp.Password)
-		if err := d.DialAndSend(m); q.Context.Debug(err) {
+		d := gomail.NewDialer(m.Context.Smtp.Host, m.Context.Smtp.Port, m.Context.Smtp.Sender, m.Context.Smtp.Password)
+		if err := d.DialAndSend(g); m.Context.Debug(err) {
 			return
 		}
 	}

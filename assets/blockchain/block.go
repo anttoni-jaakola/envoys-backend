@@ -16,7 +16,7 @@ func (p *Params) BlockByNumber(number int64) (block *Block, err error) {
 
 	switch p.platform {
 	case pbspot.Platform_ETHEREUM:
-		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":[%d, true],"id":1}`, number), p.rpc}
+		p.query = []string{"-X", "POST", "--data", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x%x", true],"id":1}`, number), p.rpc}
 	case pbspot.Platform_TRON:
 		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/getblockbynum", p.rpc), "-d", fmt.Sprintf(`{"num": %d}`, number)}
 	default:

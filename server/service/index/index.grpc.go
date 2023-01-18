@@ -69,11 +69,14 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 		_ = i.Context.Db.QueryRow("select sum(value) from spot_reserves where symbol = $1", reserve.Symbol).Scan(&reserve.Value)
 		if reserve.Value > 0 {
 
-			if err := i.Context.Db.QueryRow("select price from spot_pairs where base_unit = $1 and quote_unit = $2", reserve.Symbol, "usd").Scan(&price); err != nil {
-				return &response, i.Context.Error(err)
+			if reserve.Symbol != "usdt" {
+				if err := i.Context.Db.QueryRow("select price from spot_pairs where base_unit = $1 and quote_unit = $2", reserve.Symbol, "usd").Scan(&price); err != nil {
+					return &response, i.Context.Error(err)
+				}
+
+				reserve.ValueChargedConvert = decimal.New(reserve.ValueCharged).Mul(price).Float()
 			}
 
-			reserve.ValueChargedConvert = decimal.FromFloat(reserve.ValueCharged).Mul(decimal.FromFloat(price)).Float64()
 		}
 
 		statistic.Reserves = append(statistic.Reserves, &reserve)

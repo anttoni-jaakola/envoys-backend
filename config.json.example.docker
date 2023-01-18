@@ -14,12 +14,7 @@
       "Pairs": ["USDT-USD", "USDT-EUR"],
       "Test": true
     },
-  
-    "Intervals": {
-      "Market": 1,
-      "Chain": 1
-    },
-  
+
     "Server": {
       "Host": "127.0.0.1:3081",
       "Proxy": ":3082"

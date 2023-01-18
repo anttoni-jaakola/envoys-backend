@@ -447,3 +447,27 @@ func (e *Service) DeleteRegistrarRule(ctx context.Context, rule *pbstock.DeleteR
 	//TODO implement me
 	panic("implement me")
 }
+
+// SetDepositaryRule - set new depositary.
+func (e *Service) SetDepositaryRule(ctx context.Context, rule *pbstock.SetRequestDepositaryRule) (*pbstock.ResponseDepositary, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// GetDepositaryRule - get depositary by id.
+func (e *Service) GetDepositaryRule(ctx context.Context, rule *pbstock.GetRequestDepositaryRule) (*pbstock.ResponseDepositary, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// GetDepositariesRule - get all list depositaries.
+func (e *Service) GetDepositariesRule(ctx context.Context, rule *pbstock.GetRequestDepositariesRule) (*pbstock.ResponseDepositary, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// DeleteDepositaryRule - delete depositary by id.
+func (e *Service) DeleteDepositaryRule(ctx context.Context, rule *pbstock.DeleteRequestDepositaryRule) (*pbstock.ResponseDepositary, error) {
+	//TODO implement me
+	panic("implement me")
+}

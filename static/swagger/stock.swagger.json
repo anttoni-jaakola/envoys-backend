@@ -1,0 +1,954 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "server/proto/pbstock/stock.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v2/admin/stock/delete-depositary": {
+      "post": {
+        "operationId": "Api_DeleteDepositaryRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseDepositary"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockDeleteRequestDepositaryRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/delete-market": {
+      "post": {
+        "operationId": "Api_DeleteMarketRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseMarket"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockDeleteRequestMarketRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/delete-registrar": {
+      "post": {
+        "operationId": "Api_DeleteRegistrarRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseRegistrar"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockDeleteRequestRegistrarRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/delete-sector": {
+      "post": {
+        "operationId": "Api_DeleteSectorRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseSector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockDeleteRequestSectorRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-depositaries": {
+      "post": {
+        "operationId": "Api_GetDepositariesRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseDepositary"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestDepositariesRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-depositary": {
+      "post": {
+        "operationId": "Api_GetDepositaryRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseDepositary"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestDepositaryRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-market": {
+      "post": {
+        "operationId": "Api_GetMarketRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseMarket"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestMarketRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-markets": {
+      "post": {
+        "operationId": "Api_GetMarketsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseMarket"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestMarketsRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-registrar": {
+      "post": {
+        "operationId": "Api_GetRegistrarRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseRegistrar"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestRegistrarRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-registrars": {
+      "post": {
+        "operationId": "Api_GetRegistrarsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseRegistrar"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestRegistrarsRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-sector": {
+      "post": {
+        "operationId": "Api_GetSectorRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseSector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestSectorRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/get-sectors": {
+      "post": {
+        "operationId": "Api_GetSectorsRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseSector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockGetRequestSectorsRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/set-depositary": {
+      "post": {
+        "operationId": "Api_SetDepositaryRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseDepositary"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockSetRequestDepositaryRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/set-market": {
+      "post": {
+        "operationId": "Api_SetMarketRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseMarket"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockSetRequestMarketRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/set-registrar": {
+      "post": {
+        "operationId": "Api_SetRegistrarRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseRegistrar"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockSetRequestRegistrarRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/admin/stock/set-sector": {
+      "post": {
+        "operationId": "Api_SetSectorRule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbstockResponseSector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbstockSetRequestSectorRule"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "pbstockDeleteRequestDepositaryRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockDeleteRequestMarketRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockDeleteRequestRegistrarRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockDeleteRequestSectorRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockDepositary": {
+      "type": "object"
+    },
+    "pbstockExchange": {
+      "type": "string",
+      "enum": [
+        "E_DIGITAL",
+        "E_FREEDOM_FINANCE",
+        "E_EXANTE"
+      ],
+      "default": "E_DIGITAL"
+    },
+    "pbstockGetRequestDepositariesRule": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockGetRequestDepositaryRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockGetRequestMarketRule": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "pbstockGetRequestMarketsRule": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockGetRequestRegistrarRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockGetRequestRegistrarsRule": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockGetRequestSectorRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockGetRequestSectorsRule": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbstockKind": {
+      "type": "string",
+      "enum": [
+        "K_SECURITIES",
+        "K_FUNDS",
+        "K_BONDS",
+        "K_BLOCKS"
+      ],
+      "default": "K_SECURITIES"
+    },
+    "pbstockMarket": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "start_at": {
+          "type": "string"
+        },
+        "stop_at": {
+          "type": "string"
+        },
+        "create_at": {
+          "type": "string"
+        },
+        "qty_shares": {
+          "type": "number",
+          "format": "double"
+        },
+        "price_buy": {
+          "type": "number",
+          "format": "double"
+        },
+        "price_sell": {
+          "type": "number",
+          "format": "double"
+        },
+        "price_market": {
+          "type": "number",
+          "format": "double"
+        },
+        "sector": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "exchange": {
+          "$ref": "#/definitions/pbstockExchange"
+        },
+        "method": {
+          "$ref": "#/definitions/pbstockMethod"
+        },
+        "kind": {
+          "$ref": "#/definitions/pbstockKind"
+        },
+        "type": {
+          "$ref": "#/definitions/pbstockType"
+        }
+      },
+      "description": "Market structure."
+    },
+    "pbstockMethod": {
+      "type": "string",
+      "enum": [
+        "M_COUNTER_BIDDING",
+        "M_FRANKFURT"
+      ],
+      "default": "M_COUNTER_BIDDING"
+    },
+    "pbstockRegistrar": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "chapter": {
+          "type": "string"
+        },
+        "invoice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "rate": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "description": "Registrar structures."
+    },
+    "pbstockResponseDepositary": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbstockDepositary"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbstockResponseMarket": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbstockMarket"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbstockResponseRegistrar": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbstockRegistrar"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbstockResponseSector": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbstockSector"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbstockSector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "status": {
+          "type": "boolean"
+        }
+      },
+      "description": "Sector structures."
+    },
+    "pbstockSetRequestDepositaryRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "depositary": {
+          "$ref": "#/definitions/pbstockDepositary"
+        }
+      }
+    },
+    "pbstockSetRequestMarketRule": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string",
+          "format": "byte"
+        },
+        "market": {
+          "$ref": "#/definitions/pbstockMarket"
+        }
+      },
+      "description": "Market structures."
+    },
+    "pbstockSetRequestRegistrarRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "description": "Registrar structures."
+    },
+    "pbstockSetRequestSectorRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "sector": {
+          "$ref": "#/definitions/pbstockSector"
+        }
+      },
+      "description": "Sector structures."
+    },
+    "pbstockType": {
+      "type": "string",
+      "enum": [
+        "T_ORDINARY_SHARES",
+        "T_PREFERENCE_SHARES"
+      ],
+      "default": "T_ORDINARY_SHARES"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

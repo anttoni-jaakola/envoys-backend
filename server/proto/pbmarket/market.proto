@@ -44,7 +44,59 @@ service Api {
             }
         };
     }
+    // Adds a request for incoming settlement.
+    rpc IncomingSettlementRequest (SetRequestIncomingRequest) returns (ResponseIncomingRequest) {
+        option (google.api.http) = {
+            post: "/v2/market/set-request",
+            body: "*"
+        };
+    }
+    // Adds outgoing settlement transaction.
+    rpc IncomingSettlementTransaction (SetTransactionIncomingRequest) returns (ResponseIncomingTransaction) {
+        option (google.api.http) = {
+            post: "/v2/market/set-transaction",
+            body: "*"
+        };
+    }
+    // Returns incoming and outgoing settlement transactions.
+    rpc GetTransactions (GetRequestSettlementTransaction) returns (ResponseSettlementTransaction) {
+        option (google.api.http) = {
+            post: "/v2/market/get-transactions",
+            body: "*"
+            additional_bindings {
+                get: "/v2/market/get-transactions"
+            }
+        };
+    }
+    // Returns requests for incoming and outgoing settlement.
+    rpc GetRequests (GetRequestSettlementRequest) returns (ResponseSettlementRequest) {
+        option (google.api.http) = {
+            post: "/v2/market/get-requests",
+            body: "*"
+            additional_bindings {
+                get: "/v2/market/get-requests"
+            }
+        };
+    }
 }
+
+message SetTransactionIncomingRequest {
+    int64 cid = 1;
+    string currency = 2;
+    double amount = 3;
+    string comment = 4;
+    int32 flags = 5;
+}
+message ResponseIncomingTransaction {}
+
+message SetRequestIncomingRequest {
+    int64 cid = 1;
+    string currency = 2;
+    double amount = 3;
+    string comment = 4;
+    int32 flags = 5;
+}
+message ResponseIncomingRequest {}
 
 // Market set order.
 message Order {

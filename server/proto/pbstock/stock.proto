@@ -79,7 +79,7 @@ service Api {
       body: "*"
     };
   }
-  /*rpc SetDepositaryRule (SetRequestDepositaryRule) returns (ResponseDepositary) {
+  rpc SetDepositaryRule (SetRequestDepositaryRule) returns (ResponseDepositary) {
     option (google.api.http) = {
       post: "/v2/admin/stock/set-depositary",
       body: "*"
@@ -91,12 +91,40 @@ service Api {
       body: "*"
     };
   }
-  rpc GetRegistrarsRule (GetRequestRegistrarsRule) returns (ResponseRegistrar) {
+  rpc GetDepositariesRule (GetRequestDepositariesRule) returns (ResponseDepositary) {
     option (google.api.http) = {
-      post: "/v2/admin/stock/get-registrars",
+      post: "/v2/admin/stock/get-depositaries",
       body: "*"
     };
-  }*/
+  }
+  rpc DeleteDepositaryRule (DeleteRequestDepositaryRule) returns (ResponseDepositary) {
+    option (google.api.http) = {
+      post: "/v2/admin/stock/delete-depositary",
+      body: "*"
+    };
+  }
+}
+
+message Depositary {
+
+}
+message SetRequestDepositaryRule {
+  int64 id = 1;
+  Depositary depositary = 2;
+}
+message GetRequestDepositaryRule {
+  int64 id = 1;
+}
+message GetRequestDepositariesRule {
+  int64 limit = 1;
+  int64 page = 2;
+}
+message DeleteRequestDepositaryRule {
+  int64 id = 1;
+}
+message ResponseDepositary {
+  repeated Depositary fields = 1;
+  int32 count = 2;
 }
 
 enum Exchange {

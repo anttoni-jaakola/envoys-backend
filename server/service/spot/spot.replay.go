@@ -78,7 +78,7 @@ func (e *Service) replayPriceScale() {
 func (e *Service) replayMarket() {
 
 	// Loading at a specific time interval.
-	ticker := time.NewTicker(time.Minute * e.Context.Intervals.Market)
+	ticker := time.NewTicker(time.Minute * 1)
 	for range ticker.C {
 
 		func() {
@@ -123,7 +123,7 @@ func (e *Service) replayMarket() {
 func (e *Service) replayChainStatus() {
 
 	// Loading at a specific time interval.
-	ticker := time.NewTicker(time.Minute * e.Context.Intervals.Chain)
+	ticker := time.NewTicker(time.Minute * 1)
 	for range ticker.C {
 
 		func() {
@@ -280,7 +280,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 			switch params[1].GetAssigning() {
 			case pbspot.Assigning_BUY:
 
-				quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.FromFloat(params[1].GetValue()).Mul(decimal.FromFloat(params[1].GetPrice())).Float64(), false)
+				quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.New(params[1].GetValue()).Mul(params[1].GetPrice()).Float(), false)
 				if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 					return
 				}
@@ -304,7 +304,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 
 				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: true}
 
-				quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.FromFloat(params[1].GetValue()).Mul(decimal.FromFloat(params[0].GetPrice())).Float64(), true)
+				quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.New(params[1].GetValue()).Mul(params[0].GetPrice()).Float(), true)
 				if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 					return
 				}
@@ -352,7 +352,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 			switch params[1].GetAssigning() {
 			case pbspot.Assigning_BUY:
 
-				quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.FromFloat(params[0].GetValue()).Mul(decimal.FromFloat(params[1].GetPrice())).Float64(), false)
+				quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.New(params[0].GetValue()).Mul(params[1].GetPrice()).Float(), false)
 				if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 					return
 				}
@@ -376,7 +376,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 
 				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: false}
 
-				quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.FromFloat(params[0].GetValue()).Mul(decimal.FromFloat(params[0].GetPrice())).Float64(), true)
+				quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.New(params[0].GetValue()).Mul(params[0].GetPrice()).Float(), true)
 				if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 					return
 				}

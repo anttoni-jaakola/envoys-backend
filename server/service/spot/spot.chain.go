@@ -48,7 +48,7 @@ func (e *Service) depositEthereum(chain *pbspot.Chain) {
 			quantity := new(big.Int)
 			quantity.SetString(strings.TrimPrefix(tx.Value, "0x"), 16)
 
-			if value := decimal.ValueFloat(quantity, 18); value > 0 {
+			if value := decimal.New(quantity).Floating(18); value > 0 {
 
 				item.To = address.New(tx.To).Hex()
 
@@ -107,7 +107,7 @@ func (e *Service) depositEthereum(chain *pbspot.Chain) {
 						// The number of tokens that were sent to the final recipient.
 						if number, ok := instance[0].(*big.Int); ok {
 
-							if value := decimal.ValueFloat(number, contract.GetDecimals()); value > 0 {
+							if value := decimal.New(number).Floating(contract.GetDecimals()); value > 0 {
 
 								item.To = address.New(logs.Topics[2].(string)).Hex()
 
@@ -193,7 +193,7 @@ func (e *Service) depositTron(chain *pbspot.Chain) {
 					item.Platform = chain.GetPlatform()
 					item.FinType = pbspot.FinType_CRYPTO
 					item.TxType = pbspot.TxType_DEPOSIT
-					item.Value = decimal.FromFloat(value).Div(decimal.FromFloat(1000000)).Float64() // value / 1000000
+					item.Value = decimal.New(value).Div(1000000).Float() // value / 1000000
 					item.Hash = tx.Hash
 					item.Block = chain.GetBlock()
 				}
@@ -239,7 +239,7 @@ func (e *Service) depositTron(chain *pbspot.Chain) {
 						// The number of tokens that were sent to the final recipient.
 						if number, ok := instance[0].(*big.Int); ok || number.Int64() > 0 {
 
-							if value := decimal.ValueFloat(number, contract.GetDecimals()); value > 0 {
+							if value := decimal.New(number).Floating(contract.GetDecimals()); value > 0 {
 
 								item.To = address.New(logs.Topics[2].(string)).Base58()
 
@@ -350,9 +350,9 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to common.
 		fees, _ = new(big.Float).Quo(impost, big.NewFloat(math.Pow10(18))).Float64()
 
 		if subscribe {
-			wei = decimal.ValueInt(decimal.FromFloat(value).Sub(decimal.FromFloat(fees)).Float64(), 18)
+			wei = decimal.New(decimal.New(value).Sub(fees).Float()).Integer(18)
 		} else {
-			wei = decimal.ValueInt(value, 18)
+			wei = decimal.New(value).Integer(18)
 		}
 
 		transfer, err = types.SignNewTx(privateKey, types.NewEIP155Signer(big.NewInt(chain.GetNetwork())), &types.LegacyTx{
@@ -379,8 +379,8 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to common.
 		impost.SetString(strconv.FormatInt(gasPrice.Int64()*60000, 10))
 		commission, _ = new(big.Float).Quo(impost, big.NewFloat(math.Pow10(int(contract.GetDecimals())))).Float64()
 
-		convert = decimal.FromFloat(commission).Mul(decimal.FromFloat(price)).Float64()
-		wei = decimal.ValueInt(decimal.FromFloat(value).Sub(decimal.FromFloat(convert)).Float64(), contract.GetDecimals())
+		convert = decimal.New(commission).Mul(price).Float()
+		wei = decimal.New(decimal.New(value).Sub(convert).Float()).Integer(contract.GetDecimals())
 
 		paddedAmount, paddedAddress, contractAddress := common.LeftPadBytes(wei.Bytes(), 32), common.LeftPadBytes(to.Bytes(), 32), common.HexToAddress(contract.GetAddress())
 
@@ -442,7 +442,7 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to common.
 
 			// Contract account - update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
 			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
-			if err := e.setReserve(userId, owner, symbol, decimal.FromFloat(value).Sub(decimal.FromFloat(convert)).Float64(), platform, protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), platform, protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 
@@ -455,7 +455,7 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to common.
 			}
 
 			fees = commission
-			charges = decimal.FromFloat(fees).Mul(decimal.FromFloat(price)).Float64()
+			charges = decimal.New(fees).Mul(price).Float()
 		}
 
 		if _, err := e.Context.Db.Exec("update spot_transactions set fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, transfer.Hash().String(), fees); e.Context.Debug(err) {
@@ -476,13 +476,13 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to common.
 
 		if protocol == pbspot.Protocol_MAINNET {
 
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.FromFloat(value).Add(decimal.FromFloat(fees)).Float64(), platform, pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), platform, pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 
 			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
 			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
-			if _, err := e.Context.Db.Exec("update spot_currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.FromFloat(value).Add(decimal.FromFloat(fees)).Float64()); e.Context.Debug(err) {
+			if _, err := e.Context.Db.Exec("update spot_currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
 				return
 			}
 
@@ -534,19 +534,19 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 		transfer = &blockchain.Transfer{
 			To:    address.New(to).Hex(true),
 			Gas:   10000000,
-			Value: decimal.ValueInt(value, 6),
+			Value: decimal.New(value).Integer(6),
 		}
 
 		estimate, err := client.EstimateGas(transfer)
 		if e.Context.Debug(err) {
 			return
 		}
-		fees = decimal.FromInt(estimate).Div(decimal.FromInt(1000000)).Float64()
+		fees = decimal.New(estimate).Div(1000000).Float()
 
 		if subscribe {
-			wei = decimal.ValueInt(decimal.FromFloat(value).Sub(decimal.FromFloat(fees)).Float64(), 6)
+			wei = decimal.New(decimal.New(value).Sub(fees).Float()).Integer(6)
 		} else {
-			wei = decimal.ValueInt(value, 6)
+			wei = decimal.New(value).Integer(6)
 		}
 
 		transfer.Value = wei
@@ -558,7 +558,7 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 			return
 		}
 
-		data, err := client.Data(address.New(to).Hex(true), decimal.ValueInt(value, contract.GetDecimals()).Bytes())
+		data, err := client.Data(address.New(to).Hex(true), decimal.New(value).Integer(contract.GetDecimals()).Bytes())
 		if err != nil {
 			return
 		}
@@ -573,10 +573,10 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 		if err != nil {
 			panic(err)
 		}
-		fees = decimal.FromInt(estimate).Div(decimal.FromInt(1000000)).Float64()
+		fees = decimal.New(estimate).Div(1000000).Float()
 
-		convert = decimal.FromFloat(fees).Mul(decimal.FromFloat(price)).Float64()
-		wei = decimal.ValueInt(decimal.FromFloat(value).Sub(decimal.FromFloat(convert)).Float64(), contract.GetDecimals())
+		convert = decimal.New(fees).Mul(price).Float()
+		wei = decimal.New(decimal.New(value).Sub(convert).Float()).Integer(contract.GetDecimals())
 	}
 
 	hash, err := client.Transfer(transfer)
@@ -610,7 +610,7 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 
 			// Contract account - update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
 			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
-			if err := e.setReserve(userId, owner, symbol, decimal.FromFloat(value).Sub(decimal.FromFloat(convert)).Float64(), platform, protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), platform, protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 
@@ -622,7 +622,7 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 				return
 			}
 
-			charges = decimal.FromFloat(fees).Mul(decimal.FromFloat(price)).Float64()
+			charges = decimal.New(fees).Mul(price).Float()
 		}
 
 		if _, err := e.Context.Db.Exec("update spot_transactions set fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees); e.Context.Debug(err) {
@@ -643,13 +643,13 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 
 		if protocol == pbspot.Protocol_MAINNET {
 
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.FromFloat(value).Add(decimal.FromFloat(fees)).Float64(), platform, pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), platform, pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 
 			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
 			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
-			if _, err := e.Context.Db.Exec("update spot_currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.FromFloat(value).Add(decimal.FromFloat(fees)).Float64()); e.Context.Debug(err) {
+			if _, err := e.Context.Db.Exec("update spot_currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
 				return
 			}
 

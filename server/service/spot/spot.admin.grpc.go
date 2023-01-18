@@ -971,7 +971,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 			item.ChainId = 0
 
 			if item.GetProtocol() != pbspot.Protocol_MAINNET {
-				item.Fees = decimal.FromFloat(item.GetFees()).Mul(decimal.FromFloat(item.GetPrice())).Float64()
+				item.Fees = decimal.New(item.GetFees()).Mul(item.GetPrice()).Float()
 			}
 
 			response.Fields = append(response.Fields, &item)

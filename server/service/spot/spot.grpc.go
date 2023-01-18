@@ -110,9 +110,9 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 				if len(migrate.GetFields()) == 2 {
 					switch i {
 					case 0:
-						analysis.BuyRatio = decimal.FromFloat(100 * (analysis.GetPrice() - migrate.Fields[0].GetPrice()) / migrate.Fields[0].GetPrice()).Round(2).Float64()
+						analysis.BuyRatio = decimal.New(100 * (analysis.GetPrice() - migrate.Fields[0].GetPrice()) / migrate.Fields[0].GetPrice()).Round(2).Float()
 					case 1:
-						analysis.SelRatio = decimal.FromFloat(100 * (analysis.GetPrice() - migrate.Fields[0].GetPrice()) / migrate.Fields[0].GetPrice()).Round(2).Float64()
+						analysis.SelRatio = decimal.New(100 * (analysis.GetPrice() - migrate.Fields[0].GetPrice()) / migrate.Fields[0].GetPrice()).Round(2).Float()
 					}
 				}
 			}
@@ -258,15 +258,6 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 		return &response, e.Context.Error(status.Error(748990, "your account and assets have been blocked, please contact technical support for any questions"))
 	}
 
-	switch req.GetTradeType() {
-	case pbspot.TradeType_MARKET:
-		order.Price = e.getMarket(req.GetBaseUnit(), req.GetQuoteUnit(), req.GetAssigning(), req.GetPrice())
-	case pbspot.TradeType_LIMIT:
-		order.Price = req.GetPrice()
-	default:
-		return &response, e.Context.Error(status.Error(82284, "invalid type trade position"))
-	}
-
 	if err := e.helperSymbol(req.GetBaseUnit()); err != nil {
 		return &response, e.Context.Error(err)
 	}
@@ -279,11 +270,26 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 		return &response, e.Context.Error(err)
 	}
 
+	order.Quantity = req.GetQuantity()
+	order.Value = req.GetQuantity()
+
+	switch req.GetTradeType() {
+	case pbspot.TradeType_MARKET:
+		order.Price = e.getMarket(req.GetBaseUnit(), req.GetQuoteUnit(), req.GetAssigning(), req.GetPrice())
+
+		if req.GetAssigning() == pbspot.Assigning_BUY {
+			order.Quantity, order.Value = decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float(), decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float()
+		}
+
+	case pbspot.TradeType_LIMIT:
+		order.Price = req.GetPrice()
+	default:
+		return &response, e.Context.Error(status.Error(82284, "invalid type trade position"))
+	}
+
 	order.UserId = user.GetId()
 	order.BaseUnit = req.GetBaseUnit()
 	order.QuoteUnit = req.GetQuoteUnit()
-	order.Quantity = req.GetQuantity()
-	order.Value = req.GetQuantity()
 	order.Assigning = req.GetAssigning()
 	order.Status = pbspot.Status_PENDING
 	order.CreateAt = time.Now().UTC().Format(time.RFC3339)
@@ -372,10 +378,6 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrdersMan
 		maps = append(maps, fmt.Sprintf("and status = %d", pbspot.Status_PENDING))
 	case pbspot.Status_CANCEL:
 		maps = append(maps, fmt.Sprintf("and status = %d", pbspot.Status_CANCEL))
-	}
-
-	if req.GetDecimal() > 0 {
-		maps = append(maps, fmt.Sprintf("and (value between %[2]v and %[1]v)", req.GetDecimal(), 0))
 	}
 
 	// Get request to display pair information.
@@ -559,7 +561,7 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 					return &response, e.Context.Error(err)
 				}
 
-				chain.FeesWithdraw = decimal.FromFloat(chain.GetFeesWithdraw()).Mul(decimal.FromFloat(price.GetPrice())).Float64()
+				chain.FeesWithdraw = decimal.New(chain.GetFeesWithdraw()).Mul(price.GetPrice()).Float()
 				chain.Contract = contract
 			}
 
@@ -765,7 +767,7 @@ func (e *Service) GetPrice(_ context.Context, req *pbspot.GetRequestPriceManual)
 	}
 
 	if response.Price, ok = e.getPrice(req.GetQuoteUnit(), req.GetBaseUnit()); ok {
-		response.Price = decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(response.Price)).Float64()).Round(8).Float64()
+		response.Price = decimal.New(decimal.New(1).Div(response.Price).Float()).Round(8).Float()
 	}
 
 	return &response, nil
@@ -853,7 +855,7 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 			item.ChainId = 0
 
 			if item.GetProtocol() != pbspot.Protocol_MAINNET {
-				item.Fees = decimal.FromFloat(item.GetFees()).Mul(decimal.FromFloat(item.GetPrice())).Float64()
+				item.Fees = decimal.New(item.GetFees()).Mul(item.GetPrice()).Float()
 			}
 
 			response.Fields = append(response.Fields, &item)
@@ -929,7 +931,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		req.Price = price.GetPrice()
 		chain.FeesWithdraw = contract.GetFeesWithdraw()
 
-		fees = decimal.FromFloat(contract.GetFeesWithdraw()).Mul(decimal.FromFloat(req.GetPrice())).Float64()
+		fees = decimal.New(contract.GetFeesWithdraw()).Mul(req.GetPrice()).Float()
 	} else {
 		fees = chain.GetFeesWithdraw()
 	}
@@ -1071,7 +1073,7 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 			// internal.FromFloat(float64).Mul(float64).Float64() - Фиксируем выходную сумму после калькуляции, так как после точки плавящая цена бывает не точной, а именно ошибочной,
 			// например если взять число float64 0.1273806776220894 и умножить её на сумму float64 3140.19368924 то результат будет
 			// float64 400.00000000000006, но правильный вариант это 400.
-			if err := e.setBalance(item.GetQuoteUnit(), item.GetUserId(), decimal.FromFloat(item.GetValue()).Mul(decimal.FromFloat(item.GetPrice())).Float64(), pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(item.GetQuoteUnit(), item.GetUserId(), decimal.New(item.GetValue()).Mul(item.GetPrice()).Float(), pbspot.Balance_PLUS); err != nil {
 				return &response, e.Context.Error(err)
 			}
 

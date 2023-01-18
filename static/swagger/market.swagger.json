@@ -212,6 +212,114 @@
         ]
       }
     },
+    "/v2/market/get-requests": {
+      "get": {
+        "summary": "Returns requests for incoming and outgoing settlement.",
+        "operationId": "Api_GetRequests2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseSettlementRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "summary": "Returns requests for incoming and outgoing settlement.",
+        "operationId": "Api_GetRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseSettlementRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketGetRequestSettlementRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/market/get-transactions": {
+      "get": {
+        "summary": "Returns incoming and outgoing settlement transactions.",
+        "operationId": "Api_GetTransactions2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseSettlementTransaction"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "summary": "Returns incoming and outgoing settlement transactions.",
+        "operationId": "Api_GetTransactions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseSettlementTransaction"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketGetRequestSettlementTransaction"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/v2/market/set-order": {
       "post": {
         "summary": "Set places an order. Taker can specify order volume instead of order size.",
@@ -237,6 +345,72 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/pbmarketSetRequestOrder"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/market/set-request": {
+      "post": {
+        "summary": "Adds a request for incoming settlement.",
+        "operationId": "Api_IncomingSettlementRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseIncomingRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketSetRequestIncomingRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/v2/market/set-transaction": {
+      "post": {
+        "summary": "Adds outgoing settlement transaction.",
+        "operationId": "Api_IncomingSettlementTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbmarketResponseIncomingTransaction"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbmarketSetTransactionIncomingRequest"
             }
           }
         ],
@@ -342,6 +516,12 @@
         }
       }
     },
+    "pbmarketGetRequestSettlementRequest": {
+      "type": "object"
+    },
+    "pbmarketGetRequestSettlementTransaction": {
+      "type": "object"
+    },
     "pbmarketInstrument": {
       "type": "object",
       "properties": {
@@ -438,6 +618,12 @@
         }
       }
     },
+    "pbmarketResponseIncomingRequest": {
+      "type": "object"
+    },
+    "pbmarketResponseIncomingTransaction": {
+      "type": "object"
+    },
     "pbmarketResponseInstrument": {
       "type": "object",
       "properties": {
@@ -456,6 +642,45 @@
           }
         },
         "count": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbmarketResponseSettlementRequest": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "$ref": "#/definitions/pbmarketSettlementRequest"
+        }
+      }
+    },
+    "pbmarketResponseSettlementTransaction": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "$ref": "#/definitions/pbmarketSettlementTransaction"
+        }
+      }
+    },
+    "pbmarketSetRequestIncomingRequest": {
+      "type": "object",
+      "properties": {
+        "cid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "flags": {
           "type": "integer",
           "format": "int32"
         }
@@ -490,6 +715,160 @@
         "type": {
           "type": "string",
           "description": "Order types \"limitIOC\", \"limitFOK\", \"marketIOC\", \"marketFOK\" can only be used by market takers. \"postOnly\" and \"limit\" can only be used by market makers.."
+        }
+      }
+    },
+    "pbmarketSetTransactionIncomingRequest": {
+      "type": "object",
+      "properties": {
+        "cid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "flags": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbmarketSettlementRequest": {
+      "type": "object",
+      "properties": {
+        "incoming": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbmarketSettlementRequestItem"
+          }
+        },
+        "outgoing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbmarketSettlementRequestItem"
+          }
+        }
+      },
+      "description": "Market settlement."
+    },
+    "pbmarketSettlementRequestItem": {
+      "type": "object",
+      "properties": {
+        "cid": {
+          "type": "string",
+          "format": "int64",
+          "description": "Counterparty Id."
+        },
+        "name": {
+          "type": "string",
+          "description": "Currency name."
+        },
+        "flags": {
+          "type": "integer",
+          "format": "int32",
+          "description": "0 - No flags.\n1 - Fee paid by recipient."
+        },
+        "size": {
+          "type": "number",
+          "format": "double",
+          "description": "Requested amount. If zero, the full outstanding position is supposed to be settled."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comment."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Request expiration time in milliseconds. If 0, request won't be expired."
+        }
+      }
+    },
+    "pbmarketSettlementTransaction": {
+      "type": "object",
+      "properties": {
+        "incoming": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbmarketSettlementTransactionItem"
+          }
+        },
+        "outgoing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbmarketSettlementTransactionItem"
+          }
+        }
+      },
+      "description": "Market settlement transaction."
+    },
+    "pbmarketSettlementTransactionItem": {
+      "type": "object",
+      "properties": {
+        "cid": {
+          "type": "string",
+          "format": "int64",
+          "description": "Counterparty Id."
+        },
+        "name": {
+          "type": "string",
+          "description": "Currency name."
+        },
+        "size": {
+          "type": "number",
+          "format": "double",
+          "description": "Requested amount. If zero, the full outstanding position is supposed to be settled."
+        },
+        "oid": {
+          "type": "string",
+          "format": "int64",
+          "description": "Settlement order id."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comment."
+        },
+        "create_at": {
+          "type": "string",
+          "format": "int64",
+          "description": "Created at."
+        },
+        "tx_id": {
+          "type": "string",
+          "description": "Tx id."
+        },
+        "sent_at": {
+          "type": "string",
+          "format": "int64",
+          "description": "Sent at."
+        },
+        "flags": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Settlement transaction flags\nBits 0-1\n0 = Committed by receiver\n1 = Committed by admin\n2 = Cancelled by sender\n3 = Cancelled by admin\nBit 2\n1 = Network fee paid by recipient."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Transaction moment."
+        },
+        "deal_id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Transaction id."
+        },
+        "fee": {
+          "type": "number",
+          "format": "double",
+          "description": "Network fee."
         }
       }
     },

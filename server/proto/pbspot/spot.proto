@@ -778,11 +778,10 @@ message GetRequestOrdersManual {
     int64 user_id = 2;
     int64 limit = 3;
     int64 page = 4;
-    double decimal = 5;
-    string base_unit = 6;
-    string quote_unit = 7;
-    Assigning assigning = 8;
-    Status status = 9;
+    string base_unit = 5;
+    string quote_unit = 6;
+    Assigning assigning = 7;
+    Status status = 8;
 }
 message CancelRequestOrder {
     int64 id = 1;

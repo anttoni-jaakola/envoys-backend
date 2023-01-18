@@ -211,8 +211,8 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 			return fee, err
 		}
 
-		fee = decimal.FromInt(int64(len(raw.(string)))).Mul(decimal.FromInt(10)).Int64()
-		if price >= decimal.FromInt(fee).Div(decimal.FromInt(10)).Int64() {
+		fee = decimal.New(int64(len(raw.(string)))).Mul(10).Int64()
+		if price >= decimal.New(fee).Div(10).Int64() {
 			fee = 0
 		}
 
@@ -247,11 +247,11 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 
 				if energy, ok := constant["energy_used"]; ok {
 
-					fee = decimal.FromInt(9 + 60 + int64(energy.(float64)*10) + int64(gas)).Mul(decimal.FromInt(10)).Int64()
-					bandwidth := decimal.FromInt(fee).Sub(decimal.FromInt(int64(energy.(float64) * 100))).Int64()
+					fee = decimal.New(9 + 60 + int64(energy.(float64)*10) + int64(gas)).Mul(10).Int64()
+					bandwidth := decimal.New(fee).Sub(energy.(float64) * 100).Int64()
 
-					if price >= decimal.FromInt(bandwidth).Div(decimal.FromInt(10)).Int64() {
-						fee = decimal.FromInt(fee).Sub(decimal.FromInt(bandwidth)).Int64()
+					if price >= decimal.New(bandwidth).Div(10).Int64() {
+						fee = decimal.New(fee).Sub(float64(bandwidth)).Int64()
 					}
 
 					return fee, nil

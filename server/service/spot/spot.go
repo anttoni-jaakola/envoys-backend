@@ -252,7 +252,7 @@ func (e *Service) getFees(symbol string, maker bool) (fees float64) {
 	}
 
 	if maker {
-		fees = decimal.FromFloat(fees).Sub(decimal.FromFloat(discount)).Float64()
+		fees = decimal.New(fees).Sub(discount).Float()
 	}
 
 	return fees
@@ -270,12 +270,12 @@ func (e *Service) getSum(symbol string, value float64, maker bool) (balance, fee
 	}
 
 	if maker {
-		fees = decimal.FromFloat(fees).Sub(decimal.FromFloat(discount)).Float64()
+		fees = decimal.New(fees).Sub(discount).Float()
 	}
 
 	// Calculate the fees from the current amount.
 	// New balance including fees.
-	return value - (value - (value - decimal.FromFloat(value).Mul(decimal.FromFloat(fees)).Float64()/100)), value - (value - decimal.FromFloat(value).Mul(decimal.FromFloat(fees)).Float64()/100)
+	return value - (value - (value - decimal.New(value).Mul(fees).Float()/100)), value - (value - decimal.New(value).Mul(fees).Float()/100)
 }
 
 // getAddress - user asset wallet address.
@@ -301,7 +301,7 @@ func (e *Service) getQuantity(assigning pbspot.Assigning, quantity, price float6
 
 		switch assigning {
 		case pbspot.Assigning_BUY:
-			quantity = decimal.FromFloat(quantity).Div(decimal.FromFloat(price)).Float64()
+			quantity = decimal.New(quantity).Div(price).Float()
 		}
 
 		return quantity
@@ -310,7 +310,7 @@ func (e *Service) getQuantity(assigning pbspot.Assigning, quantity, price float6
 
 		switch assigning {
 		case pbspot.Assigning_BUY:
-			quantity = decimal.FromFloat(quantity).Mul(decimal.FromFloat(price)).Float64()
+			quantity = decimal.New(quantity).Mul(price).Float()
 		}
 
 		return quantity

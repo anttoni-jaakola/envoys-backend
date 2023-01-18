@@ -119,7 +119,7 @@ func (p *Marketplace) getHuobi(base, quote string) float64 {
 		}
 
 		if price := p.getHuobi(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0
@@ -146,7 +146,7 @@ func (p *Marketplace) getFtx(base, quote string) float64 {
 		}
 
 		if price := p.getFtx(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0
@@ -185,7 +185,7 @@ func (p *Marketplace) getKuna(base, quote string) float64 {
 		}
 
 		if price := p.getKuna(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0
@@ -228,7 +228,7 @@ func (p *Marketplace) getPoloniex(base, quote string) float64 {
 		}
 
 		if price := p.getPoloniex(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0
@@ -279,7 +279,7 @@ func (p *Marketplace) getKucoin(base, quote string) float64 {
 		}
 
 		if price := p.getKucoin(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0
@@ -288,7 +288,7 @@ func (p *Marketplace) getKucoin(base, quote string) float64 {
 	if data, ok := result["data"]; ok {
 		if price, ok := data.(map[string]interface{})[quote]; ok {
 			if price, err := strconv.ParseFloat(price.(string), 64); err == nil {
-				return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+				return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 			}
 		}
 	}
@@ -326,7 +326,7 @@ func (p *Marketplace) getBitfinex(base, quote string) float64 {
 		}
 
 		if price := p.getBitfinex(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0
@@ -353,7 +353,7 @@ func (p *Marketplace) getBinance(base, quote string) float64 {
 		}
 
 		if price := p.getBinance(quote, base); price > 0 {
-			return decimal.FromFloat(decimal.FromFloat(1).Div(decimal.FromFloat(price)).Float64()).Round(8).Float64()
+			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
 		}
 
 		return 0

@@ -78,6 +78,11 @@ func (p *Params) commit() error {
 
 // get - new request.
 func (p *Params) get() (response map[string]interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			return
+		}
+	}()
 
 	cmd, err := exec.Command("curl", p.query...).Output()
 	if err != nil {

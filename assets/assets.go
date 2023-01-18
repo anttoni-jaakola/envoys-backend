@@ -48,10 +48,6 @@ type Credentials struct {
 	Crt, Key, Override string
 }
 
-type Intervals struct {
-	Market, Chain time.Duration
-}
-
 type Finery struct {
 	Key, Secret string
 	Pairs       []string
@@ -75,7 +71,6 @@ type Context struct {
 	Server      *Server
 	Redis       *Redis
 	Broker      *Broker
-	Intervals   *Intervals
 	Credentials *Credentials
 
 	BrokerClient MQTT.Client

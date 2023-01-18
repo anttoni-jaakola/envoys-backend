@@ -99,7 +99,6 @@ func (o *Options) headers(ctx context.Context, conn *grpc.ClientConn) error {
 
 	route := http.NewServeMux()
 	route.Handle("/v2/storage/", http.StripPrefix("/v2/storage/", http.FileServer(http.Dir("./static"))))
-	route.Handle("/v2/swagger/", http.StripPrefix("/v2/swagger/", http.FileServer(http.Dir("./swagger"))))
 
 	// Server status returns a health handler which returns ok.
 	route.HandleFunc("/v2/status", func(conn *grpc.ClientConn) http.HandlerFunc {

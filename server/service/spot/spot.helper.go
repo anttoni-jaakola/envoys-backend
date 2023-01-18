@@ -56,7 +56,7 @@ func (e *Service) helperPair(base, quote string) error {
 func (e *Service) helperWithdraw(quantity, reserve, balance, max, min, fees float64) error {
 
 	var (
-		proportion = decimal.FromFloat(min).Add(decimal.FromFloat(fees)).Float64()
+		proportion = decimal.New(min).Add(fees).Float()
 	)
 
 	if quantity > reserve {
@@ -103,34 +103,29 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 	switch order.GetAssigning() {
 	case pbspot.Assigning_BUY:
 
-		quantity := e.getQuantity(pbspot.Assigning_BUY, order.GetQuantity(), order.GetPrice(), false)
-
+		quantity := decimal.New(order.GetQuantity()).Mul(order.GetPrice()).Float()
 		if min, max, ok := e.getRange(order.GetQuoteUnit(), quantity); !ok {
-			return 0, status.Errorf(11623, "[quote]: minimum trading amount: %v, maximum trading amount: %v", decimal.FromFloat(min), decimal.FromFloat(max))
+			return 0, status.Errorf(11623, "[quote]: minimum trading amount: %.8f, maximum trading amount: %.8f", min, max)
 		}
 
 		balance := e.getBalance(order.GetQuoteUnit(), order.GetUserId())
-		summary = e.getQuantity(pbspot.Assigning_BUY, balance, order.GetPrice(), true)
-
-		if order.GetQuantity() > summary || order.GetQuantity() == 0 {
-			return 0, status.Errorf(11586, "[quote]: there is not enough funds on your asset balance to place an order, balance: %v, or you did not specify the amount: %v", decimal.FromFloat(balance).Round(8), decimal.FromFloat(quantity).Round(8))
+		summary := decimal.New(balance).Div(order.GetPrice()).Round(16).Float()
+		if decimal.New(order.GetQuantity()).Round(16).Float() > summary || order.GetQuantity() == 0 {
+			return 0, status.Errorf(11586, "[quote]: there is not enough funds on your asset balance to place an order, balance: %.8f, or you did not specify the amount: %.8f", balance, quantity)
 		}
 
 		return quantity, nil
 
 	case pbspot.Assigning_SELL:
 
-		quantity := e.getQuantity(pbspot.Assigning_SELL, order.GetQuantity(), order.GetPrice(), false)
-
-		if min, max, ok := e.getRange(order.GetBaseUnit(), quantity); !ok {
-			return 0, status.Errorf(11587, "[base]: minimum trading amount: %v, maximum trading amount: %v", decimal.FromFloat(min), decimal.FromFloat(max))
+		quantity := order.GetQuantity()
+		if min, max, ok := e.getRange(order.GetBaseUnit(), order.GetQuantity()); !ok {
+			return 0, status.Errorf(11587, "[base]: minimum trading amount: %.8f, maximum trading amount: %.8f", min, max)
 		}
 
 		balance := e.getBalance(order.GetBaseUnit(), order.GetUserId())
-		summary = e.getQuantity(pbspot.Assigning_SELL, balance, order.GetPrice(), true)
-
-		if order.GetQuantity() > summary || order.GetQuantity() == 0 {
-			return 0, status.Errorf(11624, "[base]: there is not enough funds on your asset balance to place an order, balance: %v, or you did not specify the amount: %v", decimal.FromFloat(balance).Round(8), decimal.FromFloat(quantity).Round(8))
+		if quantity > balance || order.GetQuantity() == 0 {
+			return 0, status.Errorf(11624, "[base]: there is not enough funds on your asset balance to place an order, balance: %.8f, or you did not specify the amount: %.8f", balance, quantity)
 		}
 
 		return quantity, nil

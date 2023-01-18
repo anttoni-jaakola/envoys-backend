@@ -2,9 +2,7 @@ package market
 
 import (
 	"errors"
-	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbmarket"
-	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/net/context"
 	"strings"
 	"time"
@@ -128,8 +126,6 @@ func (m *Service) SetOrder(ctx context.Context, req *pbmarket.SetRequestOrder) (
 		return &response, m.Context.Error(err)
 	}
 
-	spew.Dump(request)
-
 	if fields, ok := request.(map[string]interface{}); ok {
 
 		if number, ok := fields["error"]; ok {
@@ -170,7 +166,7 @@ func (m *Service) SetOrder(ctx context.Context, req *pbmarket.SetRequestOrder) (
 			req.Volume = maps.(map[string]interface{})["volume"].(float64) / 100000000
 		}
 
-		if _, err = m.Context.Db.Exec("insert into market_orders (id, uid, symbol, price, volume, size, side, type, cid) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", decimal.FromFloat(fields["id"].(float64)).Int64(), account, req.GetSymbol(), req.GetPrice(), req.GetVolume(), req.GetSize(), req.GetSide(), req.GetType(), 87); err != nil {
+		if _, err = m.Context.Db.Exec("insert into market_orders (id, uid, symbol, price, volume, size, side, type, cid) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", int64(fields["id"].(float64)), account, req.GetSymbol(), req.GetPrice(), req.GetVolume(), req.GetSize(), req.GetSide(), req.GetType(), 87); err != nil {
 			return &response, m.Context.Error(err)
 		}
 
@@ -233,4 +229,72 @@ func (m *Service) GetOrders(ctx context.Context, req *pbmarket.GetRequestOrder) 
 	}
 
 	return &response, nil
+}
+
+// IncomingSettlementRequest - set new request.
+func (m *Service) IncomingSettlementRequest(ctx context.Context, req *pbmarket.SetRequestIncomingRequest) (*pbmarket.ResponseIncomingRequest, error) {
+
+	var (
+		response pbmarket.ResponseIncomingRequest
+	)
+
+	_, err := m.Context.Auth(ctx)
+	if err != nil {
+		return &response, m.Context.Error(err)
+	}
+
+	params := map[string]interface{}{
+		"counterpartyId": req.GetCid(),
+		"currency":       req.GetCurrency(),
+		"amount":         req.GetAmount() * 1e8,
+		"comment":        req.GetComment(),
+		"flags":          1,
+	}
+
+	_, err = m.request("addIncomingSettlementRequest", params)
+	if err != nil {
+		return &response, m.Context.Error(err)
+	}
+
+	return &response, nil
+}
+
+// IncomingSettlementTransaction - set new transaction.
+func (m *Service) IncomingSettlementTransaction(ctx context.Context, req *pbmarket.SetTransactionIncomingRequest) (*pbmarket.ResponseIncomingTransaction, error) {
+
+	var (
+		response pbmarket.ResponseIncomingTransaction
+	)
+
+	_, err := m.Context.Auth(ctx)
+	if err != nil {
+		return &response, m.Context.Error(err)
+	}
+
+	params := map[string]interface{}{
+		"counterpartyId": req.GetCid(),
+		"currency":       req.GetCurrency(),
+		"amount":         req.GetAmount() * 1e8,
+		"comment":        req.GetComment(),
+		"flags":          1,
+	}
+
+	_, err = m.request("addOutgoingSettlementTransaction", params)
+	if err != nil {
+		return &response, m.Context.Error(err)
+	}
+
+	return &response, nil
+}
+
+// GetTransactions - get transaction list.
+func (m *Service) GetTransactions(ctx context.Context, req *pbmarket.GetRequestSettlementTransaction) (*pbmarket.ResponseSettlementTransaction, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// GetRequests - get request list.
+func (m *Service) GetRequests(ctx context.Context, req *pbmarket.GetRequestSettlementRequest) (*pbmarket.ResponseSettlementRequest, error) {
+	//TODO implement me
+	panic("implement me")
 }
