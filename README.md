@@ -13,5 +13,5 @@
 | Type       | Supported          |
 |------------|--------------------|
 | 0 - Spot   | Yes                |
-| 1 - Stock  | Yes                |
+| 1 - Stock  | In developing      |
 | 2 - Margin | No                 |
