@@ -56,7 +56,7 @@ func (p *Float) Float() float64 {
 
 // Value - convert big float to float64.
 func (p *Float) Value() float64 {
-	if s, err := strconv.ParseFloat(p.String(), 32); err == nil {
+	if s, err := strconv.ParseFloat(p.String(), 64); err == nil {
 		return s
 	}
 	return 0

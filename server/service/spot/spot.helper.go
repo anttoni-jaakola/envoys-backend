@@ -109,9 +109,8 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 		}
 
 		balance := e.getBalance(order.GetQuoteUnit(), order.GetUserId())
-		summary := decimal.New(balance).Div(order.GetPrice()).Round(16).Float()
-		if decimal.New(order.GetQuantity()).Round(16).Float() > summary || order.GetQuantity() == 0 {
-			return 0, status.Errorf(11586, "[quote]: there is not enough funds on your asset balance to place an order, balance: %.8f, or you did not specify the amount: %.8f", balance, quantity)
+		if quantity > balance || order.GetQuantity() == 0 {
+			return 0, status.Errorf(11586, "[quote]: there is not enough funds on your asset balance to place an order, balance: %.16f, or you did not specify the amount: %.16f", balance, quantity)
 		}
 
 		return quantity, nil
@@ -125,7 +124,7 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 
 		balance := e.getBalance(order.GetBaseUnit(), order.GetUserId())
 		if quantity > balance || order.GetQuantity() == 0 {
-			return 0, status.Errorf(11624, "[base]: there is not enough funds on your asset balance to place an order, balance: %.8f, or you did not specify the amount: %.8f", balance, quantity)
+			return 0, status.Errorf(11624, "[base]: there is not enough funds on your asset balance to place an order, balance: %.16f, or you did not specify the amount: %.16f", balance, quantity)
 		}
 
 		return quantity, nil

@@ -7,7 +7,7 @@ create table if not exists public.spot_assets
             unique,
     user_id integer,
     symbol  varchar,
-    balance numeric(32, 19) default 0.0000000000000000 not null
+    balance numeric(32, 18) default 0.0000000000000000 not null
 );
 
 alter table public.spot_assets

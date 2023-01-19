@@ -10,7 +10,7 @@ create table if not exists public.spot_reserves
     symbol   varchar,
     platform integer,
     protocol integer,
-    value    numeric(32, 19) default 0.0000000000000000 not null,
+    value    numeric(32, 18) default 0.0000000000000000 not null,
     lock     boolean         default false              not null
 );
 

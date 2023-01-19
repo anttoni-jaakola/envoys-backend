@@ -12,7 +12,7 @@ create table if not exists public.spot_transfers
     base_unit  varchar,
     quote_unit varchar,
     price      numeric(20, 8),
-    quantity   numeric(32, 19),
+    quantity   numeric(32, 18),
     assigning  integer,
     fees       double precision,
     create_at  timestamp with time zone default CURRENT_TIMESTAMP not null

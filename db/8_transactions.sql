@@ -9,7 +9,7 @@ create table if not exists public.spot_transactions
             unique,
     symbol       varchar,
     hash         varchar                  default ''::character varying not null,
-    value        numeric(32, 19),
+    value        numeric(32, 18),
     fees         double precision         default 0                     not null,
     confirmation integer                  default 0                     not null,
     "to"         varchar                  default ''::character varying not null,
