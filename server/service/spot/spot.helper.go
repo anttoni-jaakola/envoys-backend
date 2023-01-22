@@ -5,6 +5,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"regexp"
+	"strconv"
 )
 
 // helperAddress - проверка адресов.
@@ -105,12 +106,12 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 
 		quantity := decimal.New(order.GetQuantity()).Mul(order.GetPrice()).Float()
 		if min, max, ok := e.getRange(order.GetQuoteUnit(), quantity); !ok {
-			return 0, status.Errorf(11623, "[quote]: minimum trading amount: %.8f, maximum trading amount: %.8f", min, max)
+			return 0, status.Errorf(11623, "[quote]: minimum trading amount: %v~%v, maximum trading amount: %v", min, strconv.FormatFloat(decimal.New(min).Mul(2).Float(), 'f', -1, 64), strconv.FormatFloat(max, 'f', -1, 64))
 		}
 
 		balance := e.getBalance(order.GetQuoteUnit(), order.GetUserId())
 		if quantity > balance || order.GetQuantity() == 0 {
-			return 0, status.Errorf(11586, "[quote]: there is not enough funds on your asset balance to place an order, balance: %.16f, or you did not specify the amount: %.16f", balance, quantity)
+			return 0, status.Error(11586, "[quote]: there is not enough funds on your asset balance to place an order")
 		}
 
 		return quantity, nil
@@ -119,12 +120,12 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 
 		quantity := order.GetQuantity()
 		if min, max, ok := e.getRange(order.GetBaseUnit(), order.GetQuantity()); !ok {
-			return 0, status.Errorf(11587, "[base]: minimum trading amount: %.8f, maximum trading amount: %.8f", min, max)
+			return 0, status.Errorf(11587, "[base]: minimum trading amount: %v~%v, maximum trading amount: %v", min, strconv.FormatFloat(decimal.New(min).Mul(2).Float(), 'f', -1, 64), strconv.FormatFloat(max, 'f', -1, 64))
 		}
 
 		balance := e.getBalance(order.GetBaseUnit(), order.GetUserId())
 		if quantity > balance || order.GetQuantity() == 0 {
-			return 0, status.Errorf(11624, "[base]: there is not enough funds on your asset balance to place an order, balance: %.16f, or you did not specify the amount: %.16f", balance, quantity)
+			return 0, status.Error(11624, "[base]: there is not enough funds on your asset balance to place an order")
 		}
 
 		return quantity, nil

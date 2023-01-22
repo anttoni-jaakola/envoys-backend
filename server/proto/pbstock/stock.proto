@@ -7,6 +7,15 @@ option go_package = "server/proto/pbstock";
 import "google/api/annotations.proto";
 
 service Api {
+  // Get symbol.
+  rpc GetSymbol (GetRequestSymbol) returns (ResponseSymbol) {
+    option (google.api.http) = {
+      post: "/v2/stock/get-symbol",
+      body: "*"
+    };
+  }
+
+  // Administration api.
   rpc SetMarketRule (SetRequestMarketRule) returns (ResponseMarket) {
     option (google.api.http) = {
       post: "/v2/admin/stock/set-market",
@@ -103,6 +112,15 @@ service Api {
       body: "*"
     };
   }
+}
+
+// Symbol structure.
+message GetRequestSymbol {
+  string base_unit = 1;
+  string quote_unit = 2;
+}
+message ResponseSymbol {
+  bool success = 1;
 }
 
 message Depositary {

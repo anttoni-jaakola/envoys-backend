@@ -18,6 +18,7 @@ func (e *Service) GetSymbol(_ context.Context, req *pbspot.GetRequestSymbol) (*p
 
 	var (
 		response pbspot.ResponseSymbol
+		exist    bool
 	)
 
 	if row, err := e.getCurrency(req.GetBaseUnit(), false); err != nil {
@@ -27,6 +28,11 @@ func (e *Service) GetSymbol(_ context.Context, req *pbspot.GetRequestSymbol) (*p
 	if row, err := e.getCurrency(req.GetQuoteUnit(), false); err != nil {
 		return &response, e.Context.Error(status.Errorf(11582, "this quote currency does not exist, %v", row.GetSymbol()))
 	}
+
+	if err := e.Context.Db.QueryRow("select exists(select id from spot_pairs where base_unit = $1 and quote_unit = $2)::bool", req.GetBaseUnit(), req.GetQuoteUnit()).Scan(&exist); err != nil || !exist {
+		return &response, e.Context.Error(status.Errorf(11585, "this pair %v-%v does not exist", req.GetBaseUnit(), req.GetQuoteUnit()))
+	}
+
 	response.Success = true
 
 	return &response, nil
@@ -594,7 +600,7 @@ func (e *Service) GetGraph(_ context.Context, req *pbspot.GetRequestGraph) (*pbs
 	}
 
 	if req.GetFrom() > 0 && req.GetTo() > 0 {
-		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at, 'yyyy-mm-dd hh24:mi:ss.ff6 +00:00')::timestamptz between to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss.ff6 +00:00')::timestamptz and to_char(to_timestamp(%[2]d), 'yyyy-mm-dd hh24:mi:ss.ff6 +00:00')::timestamptz`, req.GetFrom(), req.GetTo()))
+		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at, 'yyyy-mm-dd hh24:mi:ss')::timestamptz between to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi')::timestamptz and to_char(to_timestamp(%[2]d), 'yyyy-mm-dd hh24:mi:ss')::timestamptz`, req.GetFrom(), req.GetTo()))
 	}
 
 	/**

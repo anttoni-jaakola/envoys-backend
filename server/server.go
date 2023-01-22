@@ -6,13 +6,11 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbauth"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbmarket"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
 	"github.com/cryptogateway/backend-envoys/server/service/account"
 	"github.com/cryptogateway/backend-envoys/server/service/auth"
 	"github.com/cryptogateway/backend-envoys/server/service/index"
-	"github.com/cryptogateway/backend-envoys/server/service/market"
 	"github.com/cryptogateway/backend-envoys/server/service/spot"
 	"github.com/cryptogateway/backend-envoys/server/service/stock"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -104,18 +102,15 @@ func Master(option *assets.Context) {
 		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
 
 		var (
-			spotService   = &spot.Service{Context: option}
-			marketService = &market.Service{Context: option}
-			stockService  = &stock.Service{Context: option}
+			spotService  = &spot.Service{Context: option}
+			stockService = &stock.Service{Context: option}
 		)
 
 		go spotService.Initialization()
 		go stockService.Initialization()
-		go marketService.Initialization()
 
 		pbspot.RegisterApiServer(srv, spotService)
 		pbstock.RegisterApiServer(srv, stockService)
-		pbmarket.RegisterApiServer(srv, marketService)
 
 		reflection.Register(srv)
 

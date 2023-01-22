@@ -3,5 +3,6 @@
 writer.log
 ./main
 data/
+static/swagger/
 writer.log
 config.json
