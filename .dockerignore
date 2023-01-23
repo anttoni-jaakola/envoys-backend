@@ -6,3 +6,6 @@ data/
 writer.log
 Dockerfile.*
 config.json
+static/swagger/
+.DS_Store
+*.pb.go
