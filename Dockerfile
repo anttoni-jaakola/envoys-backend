@@ -17,4 +17,5 @@ RUN go install github.com/golang/protobuf/protoc-gen-go
 
 RUN ./proto.sh
 RUN go build main.go
+RUN rm -rf server/
 CMD ["./main"]
