@@ -7,3 +7,4 @@ static/swagger/
 writer.log
 config.json
 .DS_Store
+*.pb.go
