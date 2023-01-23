@@ -10,4 +10,5 @@ FROM timescale/timescaledb-ha:pg14-latest as builder
 COPY ./postgresql.conf /etc/postgresql/postgresql.conf
 COPY ./postgresql.conf /var/lib/postgres/data/postgresql.conf
 
+RUN chown postgres /home/postgres/pgdata/data
 # RUN timescaledb-tune --yes
