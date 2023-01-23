@@ -15,6 +15,7 @@ services:
     ports:
       - 3082:3082
   pg:
+    user: postgres
     build:
       context: .
       dockerfile: ./Dockerfile.PostgreSQL
