@@ -6,9 +6,10 @@ swagger="static/swagger"
 for d in server/proto/* ; do
 
     [ -L "${d%/}" ] && continue
+    [ "${d%/}" == "server/proto/apis" ] && continue
 
-    protoc -I=. -I="$GOPATH"/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"/*.proto
-    protoc -I=. -I="$GOPATH"/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:./static/swagger "$d"/*.proto
+    protoc -I=. -I="$(cd "$(dirname -- "$1")" >/dev/null; pwd -P)/$(basename -- "$1")server/proto/apis" --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"/*.proto
+    protoc -I=. -I="$(cd "$(dirname -- "$1")" >/dev/null; pwd -P)/$(basename -- "$1")server/proto/apis" --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:./static/swagger "$d"/*.proto
 
     echo "$d - BUILD SUCCESS!"
 done

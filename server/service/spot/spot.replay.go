@@ -17,7 +17,9 @@ import (
 // replayPriceScale - pair price scale.
 func (e *Service) replayPriceScale() {
 
-	for {
+	// Loading at a specific time interval.
+	ticker := time.NewTicker(time.Minute * 1)
+	for range ticker.C {
 
 		func() {
 
