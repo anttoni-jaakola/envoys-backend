@@ -1,6 +1,4 @@
 FROM rabbitmq:3.8-management
 RUN rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_web_stomp rabbitmq_web_mqtt rabbitmq_shovel rabbitmq_shovel_management
 
-RUN echo "loopback_users.guest = false" >> ./rabbitmq.conf
 COPY ./rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
-RUN rm ./rabbitmq.conf
