@@ -600,7 +600,7 @@ func (e *Service) GetGraph(_ context.Context, req *pbspot.GetRequestGraph) (*pbs
 	}
 
 	if req.GetFrom() > 0 && req.GetTo() > 0 {
-		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') between to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss') and to_char(to_timestamp(%[2]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetFrom(), req.GetTo()))
+		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') < to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetTo()))
 	}
 
 	rows, err := e.Context.Db.Query(fmt.Sprintf("select extract(epoch from time_bucket('%[4]s', ohlc.create_at))::integer buckettime, first(ohlc.price, ohlc.create_at) as open, last(ohlc.price, ohlc.create_at) as close, first(ohlc.price, ohlc.price) as low, last(ohlc.price, ohlc.price) as high, sum(ohlc.quantity) as volume, avg(ohlc.price) as avg_price, ohlc.base_unit, ohlc.quote_unit from spot_trades as ohlc where ohlc.base_unit = '%[1]s' and ohlc.quote_unit = '%[2]s' %[3]s group by buckettime, ohlc.base_unit, ohlc.quote_unit order by buckettime desc %[5]s", req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "), help.Resolution(req.GetResolution()), limit))

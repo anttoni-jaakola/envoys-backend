@@ -8,3 +8,4 @@ writer.log
 config.json
 .DS_Store
 *.pb.go
+*.pb.gw.go
