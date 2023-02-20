@@ -648,6 +648,14 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 				return
 			}
 
+			// This code is used to insert data into a database table called "credits". The purpose of this code is to add a new
+			// row to the "credits" table containing the userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), and fees
+			// values. The if statement checks for any errors that may arise from the execution of the query and if an error does
+			// occur, the code will return without continuing.
+			if _, err := e.Context.Db.Exec(`insert into credits (user_id, address, symbol, platform, value) values ($1, $2, $3, $4, $5)`, userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), fees); e.Context.Debug(err) {
+				return
+			}
+
 			// Token commission - update the collection account, the commission that was deducted from the amount of the token is credited to the exchange, the commission is calculated according to the formula and commission of the parent account,
 			// for example: since we make commissions for the transfer exclusively from the parent account, we need to minus the commission of 0.006 eth from the amount of 1000 tst using conversion at the price of the token,
 			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); this amount is 985.3 tst and will be credited for the transfer,
@@ -699,12 +707,18 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 				return
 			}
 
+			// This code is used to insert data into a reverses table in a database. The data that is being inserted includes the
+			// userId, owner, to, chain symbol, platform, and value. After the data is inserted, it will check for errors and if
+			// there are any, it will return.
+			if _, err := e.Context.Db.Exec(`insert into reverses (user_id, "from", "to", symbol, platform, value) values ($1, $2, $3, $4, $5, $6)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
+				return
+			}
+
 			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
 			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
 			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
 				return
 			}
-
 		}
 	}
 
@@ -937,6 +951,14 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 				return
 			}
 
+			// This code is used to insert data into a database table called "credits". The purpose of this code is to add a new
+			// row to the "credits" table containing the userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), and fees
+			// values. The if statement checks for any errors that may arise from the execution of the query and if an error does
+			// occur, the code will return without continuing.
+			if _, err := e.Context.Db.Exec(`insert into credits (user_id, address, symbol, platform, value) values ($1, $2, $3, $4, $5)`, userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), fees); e.Context.Debug(err) {
+				return
+			}
+
 			// The purpose of this code is to calculate the charge amount based on the fees and the price. The decimal.New(fees)
 			// function creates a new decimal from the fees value, and then the Mul(price) function multiplies that value with the
 			// price. Finally, the Float() function converts the result to a float value.
@@ -978,6 +1000,13 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 			// platform, protocol and balance are all supplied to the setReserve function. If any errors occur during the process,
 			// the program will return. Otherwise, the reserve will be set successfully.
 			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+				return
+			}
+
+			// This code is used to insert data into a reverses table in a database. The data that is being inserted includes the
+			// userId, owner, to, chain symbol, platform, and value. After the data is inserted, it will check for errors and if
+			// there are any, it will return.
+			if _, err := e.Context.Db.Exec(`insert into reverses (user_id, "from", "to", symbol, platform, value) values ($1, $2, $3, $4, $5, $6)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
 				return
 			}
 

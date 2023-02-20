@@ -1,5 +1,4 @@
--- auto-generated definition
-create table advertising
+create table public.advertising
 (
     id    serial
         primary key,
@@ -9,8 +8,14 @@ create table advertising
     type  integer default 0                     not null
 );
 
-alter table advertising
+alter table public.advertising
     owner to envoys;
+
+alter table public.advertising
+    add unique (id);
+
+create unique index if not exists advertising_id_uindex
+    on public.advertising (id);
 
 insert into public.advertising (id, title, text, link, type)
 values  (1, '', '', 'https://filmix.ac/series/triller/135902-k-karnival-rou-2019.html', 1),
