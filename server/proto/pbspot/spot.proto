@@ -78,19 +78,19 @@ service Api {
         };
     }
     // Get order.
-    rpc GetOrders (GetRequestOrdersManual) returns (ResponseOrder) {
+    rpc GetOrders (GetRequestOrders) returns (ResponseOrder) {
         option (google.api.http) = {
             post: "/v2/spot/get-orders",
             body: "*"
         };
     }
-    // Get graph.
-    rpc GetGraph (GetRequestGraph) returns (ResponseGraph) {
+    // Get candles.
+    rpc GetCandles (GetRequestCandles) returns (ResponseCandles) {
         option (google.api.http) = {
-            post: "/v2/spot/get-graph",
+            post: "/v2/spot/get-candles",
             body: "*"
             additional_bindings {
-                get: "/v2/spot/get-graph"
+                get: "/v2/spot/get-candles"
             }
         };
     }
@@ -264,17 +264,24 @@ service Api {
             body: "*"
         };
     }
-    // Get orders.
-    rpc GetOrdersRule (GetRequestOrdersManual) returns (ResponseOrder) {
-        option (google.api.http) = {
-            post: "/v2/admin/spot/get-orders",
-            body: "*"
-        };
-    }
     // Get assets.
     rpc GetAssetsRule (GetRequestAssetsManual) returns (ResponseAsset) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-assets",
+            body: "*"
+        };
+    }
+    // Get reserves.
+    rpc GetReservesRule (GetRequestReservesManual) returns (ResponseReserve) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-reserves",
+            body: "*"
+        };
+    }
+    // Set reserve unlock.
+    rpc SetReserveUnlockRule (SetRequestReserveUnlockManual) returns (ResponseReserve) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-reserve-unlock",
             body: "*"
         };
     }
@@ -368,7 +375,6 @@ enum FinType {
 enum OrderType {
     SPOT = 0;
     MARGIN = 1;
-    BROKER = 3;
 }
 
 // Enum statuses, such as order statuses,
@@ -403,15 +409,6 @@ enum Platform {
 enum Balance {
     MINUS = 0;
     PLUS = 1;
-}
-
-// Enum pusher structure.
-enum Pusher {
-    TradeStatusPublic = 0;
-    TradePublic = 1;
-    DepositPublic = 2;
-    WithdrawPublic = 3;
-    OrderCreatePublic = 4;
 }
 
 // Contract message structure.
@@ -462,20 +459,17 @@ message Chain {
     string explorer_link = 4;
     string address = 5;
     string rpc = 6;
-    string rpc_key = 7;
-    string rpc_user = 8;
-    string rpc_password = 9;
-    int64 block = 10;
-    int64 network = 11;
-    int64 confirmation = 12;
-    int64 time_withdraw = 13;
-    bool status = 14;
-    bool exist = 15;
-    double reserve = 16;
-    double fees_withdraw = 17;
-    Platform platform = 18;
-    Contract contract = 19;
-    Tag tag = 20;
+    int64 block = 7;
+    int64 network = 8;
+    int64 confirmation = 9;
+    int64 time_withdraw = 10;
+    bool status = 11;
+    bool exist = 12;
+    double reserve = 13;
+    double fees_withdraw = 14;
+    Platform platform = 15;
+    Contract contract = 16;
+    Tag tag = 17;
 }
 
 // Pair message structure.
@@ -493,8 +487,8 @@ message Pair {
     bool graph_clear = 11;
 }
 
-// Graph message structure.
-message Graph {
+// Candles message structure.
+message Candles {
     int64 id = 1;
     int64 time = 2;
     string base_unit = 3;
@@ -603,7 +597,7 @@ message Analysis {
     double price = 4;
     double buy_ratio = 5;
     double sel_ratio = 6;
-    repeated double chart = 7;
+    repeated double candles = 7;
 }
 
 // Transfer message structure.
@@ -723,7 +717,11 @@ message ResponsePair {
 }
 
 // Asset structure.
-message GetRequestAssetsManual {}
+message GetRequestAssetsManual {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
 message GetRequestAsset {
     string symbol = 1;
 }
@@ -737,6 +735,7 @@ message ResponseAsset {
     repeated Currency fields = 1;
     string address = 2;
     bool success = 3;
+    int32 count = 4;
 }
 
 // Symbol structure.
@@ -773,7 +772,7 @@ message SetRequestOrder {
     TradeType trade_type = 5;
     Assigning assigning = 6;
 }
-message GetRequestOrdersManual {
+message GetRequestOrders {
     bool owner = 1;
     int64 user_id = 2;
     int64 limit = 3;
@@ -793,8 +792,8 @@ message ResponseOrder {
     bool success = 4;
 }
 
-// Graph structure.
-message GetRequestGraph {
+// Candles structure.
+message GetRequestCandles {
     int64 limit = 1;
     int64 from = 2;
     int64 to = 3;
@@ -802,8 +801,8 @@ message GetRequestGraph {
     string quote_unit = 5;
     string resolution = 6;
 }
-message ResponseGraph {
-    repeated Graph fields = 1;
+message ResponseCandles {
+    repeated Candles fields = 1;
     Stats stats = 2;
 }
 
@@ -850,15 +849,41 @@ message SetRequestWithdraw {
     int64 id = 1;
     string symbol = 2;
     string address = 3;
-    string secure = 4;
-    double price = 5;
-    double quantity = 6;
-    bool refresh = 7;
-    Platform platform = 8;
+    string email_code = 4;
+    string factor_code = 6;
+    double price = 7;
+    double quantity = 8;
+    bool refresh = 9;
+    Platform platform = 10;
 }
 message CancelRequestWithdraw {
     int64 id = 1;
 }
 message ResponseWithdraw {
     bool success = 1;
+}
+
+// Reserve structures.
+message Reserve {
+    int64 id = 1;
+    int64 user_id = 2;
+    string address = 3;
+    string symbol = 4;
+    double value = 5;
+    bool lock = 6;
+    Protocol protocol = 7;
+    Platform platform = 8;
+}
+message GetRequestReservesManual {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+    string search = 5;
+}
+message SetRequestReserveUnlockManual {
+    string id = 1;
+}
+message ResponseReserve {
+    repeated Reserve fields = 1;
+    int32 count = 2;
 }

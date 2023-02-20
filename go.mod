@@ -32,6 +32,9 @@ require (
 )
 
 require (
+	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
+	github.com/fatih/structs v1.1.0 // indirect
+	github.com/pquerna/otp v1.4.0 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect

@@ -10,35 +10,42 @@ service Api {
     // Account action signup.
     rpc ActionSignup (Request) returns (Response) {
         option (google.api.http) = {
-            post: "/v2/auth/action-signup"
+            post: "/v2/auth/action-signup",
             body: "*"
         };
     }
     // Account action signin.
     rpc ActionSignin (Request) returns (Response) {
         option (google.api.http) = {
-            post: "/v2/auth/action-signin"
+            post: "/v2/auth/action-signin",
             body: "*"
         };
     }
     // Account action reset.
     rpc ActionReset (Request) returns (Response) {
         option (google.api.http) = {
-            post: "/v2/auth/action-reset"
+            post: "/v2/auth/action-reset",
             body: "*"
         };
     }
     // Account set logout.
     rpc SetLogout (Request) returns (Response) {
         option (google.api.http) = {
-            post: "/v2/auth/set-logout"
+            post: "/v2/auth/set-logout",
             body: "*"
         };
     }
     // Account get refresh.
     rpc GetRefresh (Request) returns (Response) {
         option (google.api.http) = {
-            post: "/v2/auth/get-refresh"
+            post: "/v2/auth/get-refresh",
+            body: "*"
+        };
+    }
+    // Account get secure.
+    rpc GetSecure (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/get-secure",
             body: "*"
         };
     }
@@ -67,11 +74,12 @@ message Request {
     string email = 1;
     string name = 2;
     string password = 3;
-    string secure = 4;
-    string refresh = 5;
-    Signup signup = 6;
-    Signin signin = 7;
-    Reset reset = 8;
+    string email_code = 4;
+    string factor_code = 5;
+    string refresh = 6;
+    Signup signup = 7;
+    Signin signin = 8;
+    Reset reset = 9;
 }
 
 message Response {
@@ -82,4 +90,5 @@ message Response {
         string access_token = 1;
         int64 subject = 2;
     }
+    bool factor_secure = 4;
 }

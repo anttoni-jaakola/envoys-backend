@@ -1,11 +1,11 @@
-create table if not exists public.spot_wallets
+create table if not exists public.wallets
 (
     id       serial
-        constraint spot_wallets_pk
+        constraint wallets_pk
             primary key
-        constraint spot_wallets_id_key
+        constraint wallets_id_key
             unique
-        constraint spot_wallets_id_key1
+        constraint wallets_id_key1
             unique,
     address  varchar,
     user_id  integer,
@@ -14,8 +14,11 @@ create table if not exists public.spot_wallets
     symbol   varchar
 );
 
-alter table public.spot_wallets
+alter table public.wallets
     owner to envoys;
 
-create unique index if not exists spot_wallets_id_uindex
-    on public.spot_wallets (id);
+alter table public.wallets
+    add unique (id);
+
+create unique index if not exists wallets_id_uindex
+    on public.wallets (id);

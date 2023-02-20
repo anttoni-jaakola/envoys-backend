@@ -1,17 +1,20 @@
-create table if not exists public.spot_assets
+create table if not exists public.assets
 (
     id      serial
-        constraint spot_assets_pk
+        constraint assets_pk
             primary key
-        constraint spot_assets_id_key
+        constraint assets_id_key
             unique,
     user_id integer,
     symbol  varchar,
-    balance numeric(32, 18) default 0.0000000000000000 not null
+    balance numeric(32, 18) default 0.000000000000000000 not null
 );
 
-alter table public.spot_assets
+alter table public.assets
     owner to envoys;
 
-create unique index if not exists spot_assets_id_uindex
-    on public.spot_assets (id);
+alter table public.assets
+    add unique (id);
+
+create unique index if not exists assets_id_uindex
+    on public.assets (id);

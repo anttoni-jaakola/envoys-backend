@@ -1,11 +1,11 @@
-create table if not exists public.spot_transfers
+create table if not exists public.transfers
 (
     id         serial
-        constraint spot_transfers_pk
+        constraint transfers_pk
             primary key
-        constraint spot_transfers_id_key
+        constraint transfers_id_key
             unique
-        constraint spot_transfers_id_key1
+        constraint transfers_id_key1
             unique,
     user_id    integer,
     order_id   integer,
@@ -18,8 +18,11 @@ create table if not exists public.spot_transfers
     create_at  timestamp with time zone default CURRENT_TIMESTAMP not null
 );
 
-alter table public.spot_transfers
+alter table public.transfers
     owner to envoys;
 
-create unique index if not exists spot_transfers_id_uindex
-    on public.spot_transfers (id);
+alter table public.transfers
+    add unique (id);
+
+create unique index if not exists transfers_id_uindex
+    on public.transfers (id);

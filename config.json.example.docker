@@ -2,18 +2,12 @@
     "Development": true,
     "Timezones": "Etc/UTC",
     "StoragePath": "/home/paymex/go/src/github.com/cryptogateway/backend-envoys",
-    "Postgres": "postgres://envoys:123123@pg/envoys?sslmode=disable",
+    "PostgresConnect": "postgres://envoys:123123@pg/envoys?sslmode=disable",
+
     "Secrets": [
       "yx5ySJ;5_H~3Cd6e!%jh7)&8GyER57",
       "ngrk!nM;4(vyB8V9;&25LE5(U6M^2h"
     ],
-  
-    "Finery": {
-      "Key": "TFNr5sTFWztAAiUmZTfMa81ue8sBrUp7xCbrrsAj2sc",
-      "Secret": "8699xKHIYB7WCEKul2yR9oHl6qtVCZRewyGuyY4W2iY",
-      "Pairs": ["USDT-USD", "USDT-EUR"],
-      "Test": true
-    },
 
     "Server": {
       "Host": "127.0.0.1:3081",

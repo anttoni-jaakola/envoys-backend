@@ -8,44 +8,60 @@ import "google/api/annotations.proto";
 
 service Api {
     // Account info.
-    rpc GetUser (GetRequestUser) returns (Response) {
+    rpc GetUser (GetRequestUser) returns (ResponseUser) {
         option (google.api.http) = {
             post: "/v2/account/get-user",
             body: "*"
         };
     }
     // Account info update.
-    rpc SetUser (SetRequestUserManual) returns (Response) {
+    rpc SetUser (SetRequestUserManual) returns (ResponseUser) {
         option (google.api.http) = {
             post: "/v2/account/set-user",
             body: "*"
         };
     }
     // Actions list.
-    rpc GetActions (GetRequestActions) returns (Response) {
+    rpc GetActions (GetRequestActions) returns (ResponseActions) {
         option (google.api.http) = {
             post: "/v2/account/get-actions",
             body: "*"
         };
     }
 
+    // Secure api.
+    // Set secure 2fa.
+    rpc SetSecure (SetRequestSecure) returns (ResponseSecure) {
+        option (google.api.http) = {
+            post: "/v2/account/set-secure",
+            body: "*"
+        };
+    }
+    // Get secure 2fa.
+    rpc GetSecure (GetRequestSecure) returns (ResponseSecure) {
+        option (google.api.http) = {
+            post: "/v2/account/get-secure",
+            body: "*"
+        };
+    }
+
     // Administration api.
     // Get accounts.
-    rpc GetAccountsRule (GetRequestUsersRule) returns (Response) {
+    rpc GetAccountsRule (GetRequestUsersRule) returns (ResponseUser) {
         option (google.api.http) = {
             post: "/v2/admin/account/get-accounts",
             body: "*"
         };
     }
     // Get account.
-    rpc GetAccountRule (GetRequestUserRule) returns (Response) {
+    rpc GetAccountRule (GetRequestUserRule) returns (ResponseUser) {
         option (google.api.http) = {
             post: "/v2/admin/account/get-account",
             body: "*"
         };
     }
     // Set account.
-    rpc SetAccountRule (SetRequestUserManual) returns (Response) {
+    rpc SetAccountRule (SetRequestUserManual) returns (ResponseUser) {
         option (google.api.http) = {
             post: "/v2/admin/account/set-account",
             body: "*"
@@ -57,7 +73,13 @@ service Api {
 message Rules {
     repeated string default = 1;
     repeated string spot = 2;
-    repeated string stock = 3;
+}
+
+// Counts structure.
+message Counts {
+    int32 transaction = 1;
+    int32 order = 2;
+    int32 asset = 3;
 }
 
 // User structure.
@@ -67,13 +89,12 @@ message User {
     string email = 3;
     string create_at = 4;
     bool status = 5;
-    message Counts {
-        int32 transaction = 1;
-        int32 order = 2;
-        int32 asset = 3;
-    }
     Counts counts = 6;
     Rules rules = 7;
+    repeated Action actions = 8;
+    repeated string sample = 9;
+    bool factor_secure = 10;
+    string factor_secret = 11;
 }
 
 // Action structure.
@@ -106,20 +127,29 @@ message SetRequestUserManual {
     User user = 5;
 }
 
+// Secure structure.
+message SetRequestSecure {
+    string secret = 1;
+    string code = 2;
+}
+message GetRequestSecure {}
+message ResponseSecure {
+    string secret = 1;
+    string url = 2;
+}
+
 // Actions structure.
 message GetRequestActions {
     int64 page = 1;
     int64 limit = 2;
 }
+message ResponseActions {
+    repeated Action fields = 1;
+    int32 count = 2;
+}
 
-message Response {
-    int64 id = 1;
-    string name = 2;
-    string email = 3;
-    bool status = 4;
-    repeated Action actions = 5;
-    repeated string sample = 6;
-    repeated User fields = 7;
-    int32 count = 8;
-    Rules rules = 9;
+// User structure.
+message ResponseUser {
+    repeated User fields = 1;
+    int32 count = 2;
 }

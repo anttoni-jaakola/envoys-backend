@@ -1,21 +1,24 @@
-create table if not exists public.spot_reserves
+create table if not exists public.reserves
 (
     id       serial
-        constraint spot_reserves_pk
+        constraint reserves_pk
             primary key
-        constraint spot_reserves_id_key
+        constraint reserves_id_key
             unique,
     user_id  integer,
     address  varchar,
     symbol   varchar,
     platform integer,
     protocol integer,
-    value    numeric(32, 18) default 0.0000000000000000 not null,
+    value    numeric(32, 18) default 0.000000000000000000 not null,
     lock     boolean         default false              not null
 );
 
-alter table public.spot_reserves
+alter table public.reserves
     owner to envoys;
 
-create unique index if not exists spot_reserves_id_uindex
-    on public.spot_reserves (id);;
+alter table public.reserves
+    add unique (id);
+
+create unique index if not exists reserves_id_uindex
+    on public.reserves (id);;

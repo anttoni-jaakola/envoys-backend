@@ -45,9 +45,11 @@ sudo service postgresql restart
 
 sudo -i -u envoys psql -X -c "create extension if not exists timescaledb cascade;"
 
+sudo useradd envoys
 for index in db/* ; do
   sudo -i -u envoys psql envoys < "${index}"
 done
+sudo userdel envoys
 
 sudo mv config.json.example config.json
 

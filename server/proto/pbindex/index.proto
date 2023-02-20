@@ -13,17 +13,10 @@ service Api {
       get: "/v2/index/get-statistic"
     };
   }
-  // Index get currencies.
-  rpc GetCurrencies (GetRequestCurrencies) returns (ResponseCurrency) {
-    option (google.api.http) = {
-      post: "/v2/index/get-currencies"
-      body: "*"
-    };
-  }
   // Index get pairs.
   rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
     option (google.api.http) = {
-      post: "/v2/index/get-pairs"
+      post: "/v2/index/get-pairs",
       body: "*"
     };
   }
@@ -79,16 +72,11 @@ message Pair {
   string quote_unit = 4;
   double price = 5;
   double ratio = 6;
-}
-
-// Currency message structure.
-message Currency {
-  int64 id = 1;
-  string name = 2;
-  string symbol = 3;
-  double fees_trade = 4;
-  double fees_discount = 5;
-  repeated Pair pairs = 6;
+  repeated double candles = 7;
+  double low = 8;
+  double high = 9;
+  double volume = 10;
+  bool status = 11;
 }
 
 // Statistic structure.
@@ -97,17 +85,13 @@ message ResponseStatistic {
   Statistic fields = 1;
 }
 
-// Currency structure.
-message GetRequestCurrencies {
-  int64 id = 1;
-}
-message ResponseCurrency {
-  repeated Currency fields = 1;
-  int32 count = 2;
-}
-
 // Pair structure.
-message GetRequestPairs {}
+message GetRequestPairs {
+  int64 limit = 1;
+  int64 page = 2;
+  string search = 3;
+}
 message ResponsePair {
   repeated Pair fields = 1;
+  int32 count = 2;
 }

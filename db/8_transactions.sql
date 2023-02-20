@@ -1,11 +1,11 @@
-create table if not exists public.spot_transactions
+create table if not exists public.transactions
 (
     id           serial
-        constraint spot_transactions_pk
+        constraint transactions_pk
             primary key
-        constraint spot_transactions_id_key
+        constraint transactions_id_key
             unique
-        constraint spot_transactions_id_key1
+        constraint transactions_id_key1
             unique,
     symbol       varchar,
     hash         varchar                  default ''::character varying not null,
@@ -26,8 +26,17 @@ create table if not exists public.spot_transactions
     create_at    timestamp with time zone default CURRENT_TIMESTAMP
 );
 
-alter table public.spot_transactions
+alter table public.transactions
     owner to envoys;
 
-create unique index if not exists spot_transactions_id_uindex
-    on public.spot_transactions (id);;
+alter table public.transactions
+    add unique (id);
+
+alter table public.transactions
+    add unique (hash);
+
+create unique index if not exists transactions_id_uindex
+    on public.transactions (id);;
+
+create unique index if not exists transactions_hash_uindex
+    on public.transactions (hash);;

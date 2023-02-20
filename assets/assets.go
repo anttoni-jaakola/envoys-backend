@@ -25,145 +25,225 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Smtp - The type Smtp struct is used to store information about a Simple Mail Transfer Protocol (SMTP) connection. It contains
+// fields for the SMTP host name, sender address, password, and port number. This information can be used to establish an
+// SMTP connection, send emails, and receive emails.
 type Smtp struct {
 	Host, Sender, Password string
 	Port                   int
 }
 
+// Server - The type Server struct is a data structure in the Go programming language that holds two strings, Host and Proxy. It
+// is used to represent a server with both a host name and a proxy name. It can be used to store configuration details
+// for a server, such as host and proxy settings. It can also be used to store information about the server such as its
+// address, port, and other settings.
 type Server struct {
 	Host, Proxy string
 }
 
+// Redis - The type Redis struct is a data structure used to store information about a Redis server. It contains fields to store the
+// host address, password, and the database number that is being accessed. This data structure is used to establish a
+// connection to a Redis server and can be used to store and retrieve data.
 type Redis struct {
 	Host, Password string
 	DB             int
 }
 
-type Broker struct {
+// Rabbitmq - The type Rabbitmq struct is a data structure used to store the information needed to connect to a RabbitMQ server. It stores
+// the host URL, username, password, and a boolean value that indicates whether the connection should be
+// established with a clean session. This information is then used by clients to connect and interact with RabbitMQ.
+type Rabbitmq struct {
 	Host, Username, Password string
 	CleanSession             bool
 }
 
+// The Credentials struct is used to store authentication credentials such as a certificate, secret key, and override. It
+// allows the data to be organized and accessed more easily.
 type Credentials struct {
 	Crt, Key, Override string
 }
 
-type Finery struct {
-	Key, Secret string
-	Pairs       []string
-	Test        bool
-}
-
 type Context struct {
+
+	// Development bool is a boolean value used to check if the current environment is a development environment or not.
+	// This is commonly used in software development to distinguish between the environment used for development and the
+	// environment used for production. It is used to ensure that certain features are enabled or disabled depending on the environment.
 	Development bool
 
+	// Logger *logrus.Logger is a type of logger that is used to record events and errors in a program. It helps developers
+	// to track down issues, monitor application performance, and audit user activity. It can also be used to provide
+	// detailed debugging information, which is useful for troubleshooting issues.
 	Logger *logrus.Logger
-	Mutex  sync.Mutex
 
-	Secrets     []string
+	// A mutex is a synchronization mechanism used to control access to shared resources in a multi-threaded environment. It
+	// is used to ensure that only one thread can access a resource at a given time, thus preventing race conditions and
+	// data corruption. The sync.Mutex object allows threads to take ownership of the resource, thus ensuring that no other
+	// threads can access it until the owner thread has finished its work.
+	Mutex sync.Mutex
+
+	// The purpose of the above code is to create an array of strings called Secrets. This array can be used to store
+	// various secrets, such as passwords, encryption keys, or other sensitive information.
+	Secrets []string
+
+	// StoragePath string is a variable used to store the path of a directory or file in a string format. It can be used to
+	// access the contents of the file or directory.
 	StoragePath string
-	Postgres    string
-	Timezones   string
 
-	Finery *Finery
+	// The PostgresConnect string is a connection string used to establish a connection to a PostgreSQL database. It
+	// typically contains information such as the server name, port, database name, and authentication credentials.
+	PostgresConnect string
 
-	Smtp        *Smtp
-	Server      *Server
-	Redis       *Redis
-	Broker      *Broker
-	Credentials *Credentials
+	// Timezones is a string that is used to store information about the different time zones that a person may need to
+	// interact with. It can be used to help convert between different time zones and to manage scheduling of events.
+	Timezones string
 
-	BrokerClient MQTT.Client
-	RedisClient  *redis.Client
-	GrpcClient   *grpc.ClientConn
-	Db           *sql.DB
+	// Smtp: Simple Mail Transfer Protocol is a protocol used for sending and receiving emails.
+	// Server: A server is a computer or program that provides a service to other computers or programs over a network.
+	// Redis: Redis is an open source, in-memory data structure store, used as a database, cache and message broker.
+	// Rabbitmq: RabbitMQ is a message broker that allows clients to communicate asynchronously by sending and receiving messages.
+	// Credentials: Credentials are the pieces of information used to authenticate a user or system to access a service.
+	// RabbitmqClient: An MQTT broker client is a program that helps to establish a connection between an MQTT broker and a client.
+	// RedisClient: A Redis client is a program used to access a Redis database and perform data operations.
+	// GrpcClient: A gRPC client is a program used to establish a secure connection between a gRPC server and a client application.
+	// Db: A database (DB) is a collection of organized data that is stored and accessed electronically from a computer system.
+	Smtp           *Smtp
+	Server         *Server
+	Redis          *Redis
+	Rabbitmq       *Rabbitmq
+	Credentials    *Credentials
+	RabbitmqClient MQTT.Client
+	RedisClient    *redis.Client
+	GrpcClient     *grpc.ClientConn
+	Db             *sql.DB
 }
 
+// This function is used to set up the application context. It locks the mutex, reads the configuration file, sets the
+// timezone, initializes the logger, opens the PostgresQL and Redis databases, and connects to the RabbitMQ broker.
+// Finally, it unlocks the mutex and returns the application context.
 func (app *Context) Write() *Context {
 
+	// The purpose of app.Mutex.Lock() is to prevent multiple threads or processes from accessing a shared resource
+	// simultaneously. This is done by obtaining a lock that allows only one thread to access the resource at a time. By
+	// doing this, it ensures that data is not corrupted or overwritten by multiple threads accessing it simultaneously.
 	app.Mutex.Lock()
 
+	// This code is used to read a file located at the location stored in the app.ConfigPath() variable. It uses the
+	// ioutil.ReadFile() function to read the contents of the file as a byte array and store it in the serialize variable.
+	// If there is an error encountered while reading the file, the err variable will contain the error and the
+	// logrus.Fatal() function is used to log the error and terminate the program.
 	serialize, err := ioutil.ReadFile(app.ConfigPath())
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
+	// This code is used to convert the serialized data in the variable "serialize" into the "app" variable using the
+	// json.Unmarshal method. If an error occurs, it is logged using logrus.Fatal and the program will terminate.
 	if err = json.Unmarshal(serialize, &app); err != nil {
 		logrus.Fatal(err)
 	}
 
-	// Convert time between different timezones.
+	// This code is loading a timezone from the app.Timezones variable and setting it as the local timezone. If an error
+	// occurs when loading the location, it will log the error and exit the program.
 	loc, err := time.LoadLocation(app.Timezones)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	time.Local = loc
 
+	// The app.Logger = logrus.New() statement assigns an instance of a logrus logger to the app.Logger variable. This
+	// allows you to use the logrus logger to log messages from your application.
 	app.Logger = logrus.New()
 
-	// Log as JSON instead of the default ASCII formatter.
+	// This code sets the formatter for the Logger to logrus.TextFormatter. The ForceColors option will force the logger to
+	// output logs with colors, even if they are not displayed in a terminal.
 	app.Logger.SetFormatter(&logrus.TextFormatter{
 		ForceColors: true,
 	})
 
+	// The purpose of this code is to open the file "writer.log" with read-write permissions, create it if it does not
+	// exist, and append to it if it does exist. If there is an error opening the file, the app.Logger.Fatalf function is
+	// called to log the error.
 	writer, err := os.OpenFile("./writer.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		app.Logger.Fatalf("error opening file: %v", err)
 	}
 
-	// Output to stdout instead of the default stderr.
-	// Can be any io.Writer, see below for File example.
+	// This statement sets the output of the app.Logger object to both os.Stdout and writer. This means that any log
+	// messages will be printed to the standard output and written to the writer object.
 	app.Logger.SetOutput(io.MultiWriter(os.Stdout, writer))
 
-	// Only log the warning severity or above.
+	// The purpose of app.Logger.SetLevel is to set the logging level for the application. This enables the application to
+	// log different types of messages depending on their severity. The different log levels are ErrorLevel, FatalLevel, and
+	// WarnLevel. ErrorLevel will log errors, FatalLevel will log fatal errors, and WarnLevel will log warnings.
 	app.Logger.SetLevel(logrus.ErrorLevel)
 	app.Logger.SetLevel(logrus.FatalLevel)
 	app.Logger.SetLevel(logrus.WarnLevel)
 
+	// The purpose of the code is to set the log level for the application depending on if it is in development or not. If
+	// the application is in development, the log level is set to InfoLevel and DebugLevel, otherwise it is set to whatever the default log level is.
 	if app.Development {
 		app.Logger.SetLevel(logrus.InfoLevel)
 		app.Logger.SetLevel(logrus.DebugLevel)
 	}
 
-	// PostgresQL connect and open.
-	app.Db, err = sql.Open("postgres", app.Postgres)
+	// This code is used to open a connection to a PostgreSQL database using the app.PostgresConnect parameter for the
+	// connection string. The connection is stored in a variable called app.Db and is used for subsequent database
+	// operations. If an error occurs during the opening of the connection, it is logged using the logrus library and the
+	// program exits with a fatal error.
+	app.Db, err = sql.Open("postgres", app.PostgresConnect)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
+	// The code above is creating a new redis client connection with the specified Redis host, password, and DB from the
+	// app. It allows the app to interact with Redis and perform operations such as retrieving or setting data.
 	app.RedisClient = redis.NewClient(&redis.Options{
 		Addr:     app.Redis.Host,
 		Password: app.Redis.Password,
 		DB:       app.Redis.DB,
 	})
 
-	app.BrokerClient = MQTT.NewClient(MQTT.NewClientOptions().
-		AddBroker(app.Broker.Host).
-		SetUsername(app.Broker.Username).
-		SetPassword(app.Broker.Password).
-		SetCleanSession(app.Broker.CleanSession).
+	// This code is establishing a connection to a RabbitMQ server with the given credentials and settings. The purpose of
+	// this is to allow for communication between the RabbitMQ server and the application. The code also checks to see if
+	// the connection was successful, and if not, it prints an error message.
+	app.RabbitmqClient = MQTT.NewClient(MQTT.NewClientOptions().
+		AddBroker(app.Rabbitmq.Host).
+		SetUsername(app.Rabbitmq.Username).
+		SetPassword(app.Rabbitmq.Password).
+		SetCleanSession(app.Rabbitmq.CleanSession).
 		SetKeepAlive(2 * time.Second).
 		SetPingTimeout(1 * time.Second))
-	if connect := app.BrokerClient.Connect(); connect.Wait() && connect.Error() != nil {
+	if connect := app.RabbitmqClient.Connect(); connect.Wait() && connect.Error() != nil {
 		logrus.Fatal(connect.Error())
 	}
 
+	// App.Mutex.Unlock() is a function that unlocks a mutex, which is a synchronization primitive that allows only one
+	// thread to access a shared resource at a time. It is used to ensure that multiple threads do not access a shared
+	// resource simultaneously, which can cause unexpected results.
 	app.Mutex.Unlock()
 
 	return app
 }
 
-// Auth - ensure valid token ensures a valid token exists within a request's metadata.
-// If the token is missing or invalid, the interceptor blocks execution of the
-// handler and returns an error.
+// Auth - This function is used to authenticate users in a context-based application. It uses JWT to parse the authorization
+// token from the incoming context and uses the secret key stored in the application's Secrets to validate the token.
+// Once the token is validated, it returns the user's personal data that was previously encoded.
 func (app *Context) Auth(ctx context.Context) (int64, error) {
 
-	// Metadata from incoming context.
+	// The purpose of this code is to extract the metadata from the incoming context (ctx) and assign it to the meta
+	// variable. Metadata is a key-value map containing information about the context, such as details about the request, the user, etc.
 	meta, _ := metadata.FromIncomingContext(ctx)
+
+	// This code checks if the "authorization" field of the "meta" object has a length of 1 and is not nil. If both of these
+	// conditions are not met, the code returns an error with code 10010 and the message "missing metadata". This is likely
+	// used to ensure that the "authorization" field is set correctly and is not empty before continuing with further processing.
 	if len(meta["authorization"]) != 1 && meta["authorization"] == nil {
 		return 0, status.Error(10010, "missing metadata")
 	}
 
+	// This line of code is used to parse a JWT token from an authorization header. It takes the authorization header value
+	// and splits it into two parts, taking the second part as the token. It then uses the token and the app.Secrets[0] byte
+	// array to parse the token. If the token is valid, it will return the token, otherwise it will return an error.
 	token, err := jwt.Parse(strings.Split(meta["authorization"][0], "Bearer ")[1], func(token *jwt.Token) (interface{}, error) {
 		return []byte(app.Secrets[0]), nil
 	})
@@ -171,7 +251,10 @@ func (app *Context) Auth(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 
-	// Returns to the personal data the previous look, that were previously encoded.
+	// This code is used to extract a key from a JSON Web Token (JWT). The code is checking if the claims are of type
+	// jwt.MapClaims and that the token is valid. If so, it extracts the value of the "sub" key and converts it to an int64.
+	// The purpose of this code is to get a user's ID from the JWT so that the application can identify the user and grant
+	// them access to the appropriate resources.
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return int64(claims["sub"].(float64)), nil
 	}
@@ -179,9 +262,15 @@ func (app *Context) Auth(ctx context.Context) (int64, error) {
 	return 0, nil
 }
 
-// Error - caller.
+// This function is used to log an error and return the same error. The function utilizes the context struct's Logger to
+// log the error. It also uses runtime.Caller to provide the file and line number where the error happened. This allows
+// the user to quickly trace the source of the error.
 func (app *Context) Error(err error) error {
 
+	// This code is used to log an error message with the file name and line number of where the error occurred. The
+	// runtime.Caller() function returns information about the calling function, and in this case the caller of the current
+	// function is returned. The variables _, file, and line are assigned the respective values. The ok variable will be
+	// true if the call to runtime.Caller() was successful. If ok is true, the error is logged with the file and line information included.
 	if _, file, line, ok := runtime.Caller(1); ok {
 		app.Logger.WithFields(logrus.Fields{
 			"file": file,
@@ -192,21 +281,38 @@ func (app *Context) Error(err error) error {
 	return err
 }
 
-// Publish - pusher send to socket.
+// Publish - This function is used to publish data to a specific topic on a given channel.
+// It takes in a data interface, a topic string, and a variable list of channel strings.
+// It uses the json package to marshal the data interface into a string.
+// It then iterates through the channel list and uses the RabbitmqClient to publish the data string to the given topic on the given channel.
+// Finally, it returns nil if the publication is successful.
 func (app *Context) Publish(data interface{}, topic string, channel ...string) error {
 
+	// The Marshal struct is used to store data in a standardized format which is capable of being encoded and decoded as
+	// JSON. The structure contains two fields: Channel and Data. The Channel field is a string that identifies the source
+	// or destination of the data, while the Data field is a string containing the actual data. This structure can be used
+	// to easily pass data between different applications or services, as it is a commonly accepted data format.
 	type Marshal struct {
 		Channel string `json:"channel"`
 		Data    string `json:"data"`
 	}
 
+	// This code is used in a for loop to iterate through the elements of a channel. The for loop sets the variable 'i' to 0
+	// and then checks to see if 'i' is less than the length of the channel. If it is, it will then execute the code within
+	// the loop and then increment 'i' by 1. The loop continues to run until 'i' is no longer less than the length of the channel.
 	for i := 0; i < len(channel); i++ {
 
+		// This code is attempting to marshal (convert) a data object into a JSON object. The json.Marshal function will return
+		// the serialized JSON object as the first return value and any errors that occurred as the second. If an error
+		// occurred, the code will return the error to the caller.
 		serialize, err := json.Marshal(data)
 		if err != nil {
 			return err
 		}
 
+		// This code is serializing a struct of type Marshal, which contains two fields, Channel and Data. The Channel field is
+		// set to the value of the i-th element of the channel array, and the Data field is set to the value of the serialize
+		// variable. If any errors occur while serializing, the code returns an error.
 		serialize, err = json.Marshal(Marshal{
 			Channel: channel[i],
 			Data:    string(serialize),
@@ -215,20 +321,31 @@ func (app *Context) Publish(data interface{}, topic string, channel ...string) e
 			return err
 		}
 
-		app.BrokerClient.Publish(topic, byte(2), false, string(serialize))
+		// The purpose of this code is to publish a message to a given topic using the app.RabbitmqClient. The message is
+		// serialized as a byte(2) and the boolean false indicates that the message is not retained by the broker. The
+		// string(serialize) is used to indicate the serialized message that needs to be published.
+		app.RabbitmqClient.Publish(topic, byte(2), false, string(serialize))
 	}
 
 	return nil
 }
 
-// Recovery - panic recovery.
+// Recovery - This function is used to recover from unexpected errors in a Go application. It takes an interface as an argument and
+// returns an error. It generates an error message with the given expression included, which allows the application to
+// identify the source of the unexpected error.
 func (app *Context) Recovery(expr interface{}) error {
 	return status.Errorf(codes.Internal, "Unexpected error: (%+v)", expr)
 }
 
-// Debug - with debug caller.
+// Debug - This function is used to debug the application context. It takes an expression as a parameter and logs it based on its
+// type. If the expression is an error type, it will log an error level message. Otherwise, it will log a debug level
+// message. The function also includes the file and line number from where the logging was called. This helps to trace any issues in the application.
 func (app *Context) Debug(expr interface{}) bool {
 
+	// This code is used to log errors and debug information in an application. The runtime.Caller(1) statement allows the
+	// application to retrieve the file and line number of the code that is currently running. The switch statement then
+	// checks the type of the expression (expr) passed in and either logs an error, returns false if the expression is nil,
+	// or logs a debug message and returns true.
 	if _, file, line, ok := runtime.Caller(1); ok {
 		switch expr.(type) {
 		case error:
@@ -245,15 +362,30 @@ func (app *Context) Debug(expr interface{}) bool {
 	return false
 }
 
-// ConfigPath - config path.
+// ConfigPath - This function is used to find the location of the config.json file. It first checks if the working directory contains the "cross" string, and if it does,
+// the path is set to "../config.json" otherwise, it is set to "./config.json".
+// If the config.json file is found at either path, the path is returned. If the file is not found, it throws a panic.
 func (app *Context) ConfigPath() (path string) {
-	dir, _ := os.Getwd()
+
+	// The purpose of this code is to get the current working directory of the operating system and store it in the variable
+	// dir. The os.Getwd() function is used to do this and it returns a string representing the path of the current working
+	// directory and an error value. If there is an error, it will be handled by the if statement which will cause the program to panic.
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	// This code checks if the string "dir" contains the substring "cross". If it does, then the variable "path" is set to
+	// the value "../config.json". This allows the code to take different action based on the value of "dir".
 	if strings.Contains(dir, "cross") {
 		path = "../config.json"
 	}
 
 	path = "./config.json"
 
+	// This code is intended to check for the existence of a path and panic in case it doesn't exist. The first if statement
+	// checks if a path exists and returns it if it does. The else if statement checks if the error is specifically
+	// os.ErrNotExist, and panics if it is. The else statement handles any other error and panics with the err as its argument.
 	if _, err := os.Stat(path); err == nil {
 		return path
 	} else if errors.Is(err, os.ErrNotExist) {
@@ -261,5 +393,4 @@ func (app *Context) ConfigPath() (path string) {
 	} else {
 		panic(err)
 	}
-
 }

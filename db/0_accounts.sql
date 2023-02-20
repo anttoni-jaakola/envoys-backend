@@ -1,29 +1,40 @@
-create table if not exists public.spot_accounts
+-- The purpose of this code is to create a table in the public schema named 'accounts' and add constraints to the table.
+-- It also adds a unique index to the 'email' and 'id' columns, and sets the owner of the table to 'envoys'.
+create table if not exists public.accounts
 (
-    id        serial
-        constraint spot_accounts_pk
+    id            serial
+        constraint accounts_pk
             primary key
-        constraint spot_accounts_id_key
+        unique
+        constraint accounts_id_key1
             unique,
-    name      varchar(25)              default ''::character varying not null,
-    email     varchar                  default ''::character varying not null,
-    secure    varchar                  default ''::character varying not null,
-    password  varchar,
-    entropy   bytea,
-    sample    jsonb                    default '[]'::jsonb           not null,
-    rules     jsonb                    default '{}'::jsonb           not null,
-    status    boolean                  default false                 not null,
-    create_at timestamp with time zone default CURRENT_TIMESTAMP
+    name          varchar(25)              default ''::character varying not null,
+    email         varchar                  default ''::character varying not null,
+    email_code    varchar                  default ''::character varying not null,
+    password      varchar,
+    entropy       bytea,
+    sample        jsonb                    default '[]'::jsonb           not null,
+    rules         jsonb                    default '{}'::jsonb           not null,
+    status        boolean                  default false                 not null,
+    create_at     timestamp with time zone default CURRENT_TIMESTAMP,
+    factor_secure boolean                  default false                 not null,
+    factor_secret varchar                  default ''::character varying not null
 );
 
-alter table public.spot_accounts
+alter table public.accounts
     owner to envoys;
 
-create unique index if not exists spot_accounts_email_uindex
-    on public.spot_accounts (email);
+alter table public.accounts
+    add unique (id);
 
-create unique index if not exists spot_accounts_id_uindex
-    on public.spot_accounts (id);
+alter table public.accounts
+    add unique (email);
 
-insert into public.spot_accounts (id, name, email, secure, password, entropy, sample, rules, status, create_at)
-values  (1, 'Aleksandr Konotopskiy', 'paymex.center@gmail.com', '', 'METU-dMG21lHzumRUuGkF_6WOF6hqXmPz3XxWl7Q4x4=', '0x34C9C7411729A47624E50DEA7E0DF7D5', '["news"]', '{"spot": ["currencies", "chains", "pairs", "contracts", "listing"], "default": ["accounts", "news", "support", "advertising"]}', true, '2022-06-05 12:33:37.234748 +00:00');
+create unique index accounts_email_uindex
+    on accounts (email);
+
+create unique index accounts_id_uindex
+    on accounts (id);
+
+insert into public.accounts (id, name, email, email_code, password, entropy, sample, rules, status, create_at, factor_secure, factor_secret)
+values  (1, 'Konotopskiy Aleksandr', 'paymex.center@gmail.com', '', 'vUPtjVOPvsL2-TIoWDioSnIg1WFWMbYEL9rQVgO8oLE=', E''\\xA903C868AE1FECE210190A07C5C1D98B'', '[]', '{"spot": ["reserves", "contracts", "pairs", "chains", "currencies"], "default": ["accounts", "advertising"]}', true, '2023-02-17 12:36:36.560573 +00:00', false, '');

@@ -1,4 +1,4 @@
-create table if not exists public.spot_trades
+create table if not exists public.trades
 (
     id         serial,
     base_unit  text,
@@ -8,14 +8,14 @@ create table if not exists public.spot_trades
     assigning  integer                  default 0                  not null,
     market     boolean                  default false              not null,
     create_at  timestamp with time zone default CURRENT_TIMESTAMP  not null
-        constraint spot_trades_create_at_key
+        constraint trades_create_at_key
             unique
 );
 
-alter table public.spot_trades
+alter table public.trades
     owner to envoys;
 
-create index if not exists spot_trades_create_at_idx
-    on public.spot_trades (create_at desc);;
+create index if not exists trades_create_at_idx
+    on public.trades (create_at desc);;
 
-select create_hypertable('spot_trades', 'create_at');
+select create_hypertable('trades', 'create_at');

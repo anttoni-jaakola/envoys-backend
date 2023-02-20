@@ -16,5 +16,8 @@ create table if not exists public.actions
 alter table public.actions
     owner to envoys;
 
+alter table public.actions
+    add unique (id);
+
 create unique index if not exists actions_id_uindex
     on public.actions (id);
