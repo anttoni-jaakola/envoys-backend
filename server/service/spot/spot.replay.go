@@ -933,9 +933,9 @@ func (e *Service) replayWithdraw() {
 											return
 										}
 
-										// The purpose of this switch statement is to check the platform of the item. If the item is on the Ethereum
-										// platform, then the code within the first case statement will be executed. If the item is on the Tron
-										// platform, then the code within the second case statement will be executed.
+										// The purpose of this switch statement is to check the platform of the item.
+										// If the item is on the Ethereum platform, then the code within the first case statement will be executed.
+										// If the item is on the Tron platform, then the code within the second case statement will be executed.
 										switch item.GetPlatform() {
 										case pbspot.Platform_ETHEREUM:
 											e.transferEthereum(insure.GetUserId(), item.GetId(), chain.GetParentSymbol(), reserve.GetTo(), item.GetFees(), 0, pbspot.Protocol_MAINNET, chain, false)
