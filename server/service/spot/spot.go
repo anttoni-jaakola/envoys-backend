@@ -652,7 +652,7 @@ func (e *Service) getChain(id int64, status bool) (*pbspot.Chain, error) {
 	// This code is used to query a database for a row of data which matches the given id. The query is built by joining the
 	// strings in the maps array and is passed to the QueryRow method. The data is then scanned into the chain object and
 	// returned. If there is an error, it will be returned instead.
-	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status from chains where id = %[1]d %[2]s", id, strings.Join(maps, " "))).Scan(
+	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, tag, parent_symbol, status from chains where id = %[1]d %[2]s", id, strings.Join(maps, " "))).Scan(
 		&chain.Id,
 		&chain.Name,
 		&chain.Rpc,
@@ -663,7 +663,6 @@ func (e *Service) getChain(id int64, status bool) (*pbspot.Chain, error) {
 		&chain.Confirmation,
 		&chain.TimeWithdraw,
 		&chain.FeesWithdraw,
-		&chain.Address,
 		&chain.Tag,
 		&chain.ParentSymbol,
 		&chain.Status,

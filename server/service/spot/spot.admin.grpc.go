@@ -608,9 +608,9 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 
 		// This code is an SQL statement that updates the values of a database entry in the "chains" table. It sets the values
 		// of the database fields (name, rpc, network, block, explorer_link, platform, confirmation, time_withdraw,
-		// fees_withdraw, address, tag, parent_symbol, and status) to values passed in the request (req). The id of the entry
+		// fees_withdraw, tag, parent_symbol, and status) to values passed in the request (req). The id of the entry
 		// to be updated is also passed in the request. The purpose of this code is to update the values of a particular database entry in the "chains" table.
-		if _, err := e.Context.Db.Exec("update chains set name = $1, rpc = $2, network = $3, block = $4, explorer_link = $5, platform = $6, confirmation = $7, time_withdraw = $8, fees_withdraw = $9, address = $10, tag = $11, parent_symbol = $12, status = $13 where id = $14;",
+		if _, err := e.Context.Db.Exec("update chains set name = $1, rpc = $2, network = $3, block = $4, explorer_link = $5, platform = $6, confirmation = $7, time_withdraw = $8, fees_withdraw = $9, tag = $10, parent_symbol = $11, status = $12 where id = $13;",
 			req.Chain.GetName(),
 			req.Chain.GetRpc(),
 			req.Chain.GetNetwork(),
@@ -620,7 +620,6 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 			req.Chain.GetConfirmation(),
 			req.Chain.GetTimeWithdraw(),
 			req.Chain.GetFeesWithdraw(),
-			req.Chain.GetAddress(),
 			req.Chain.GetTag(),
 			req.Chain.GetParentSymbol(),
 			req.Chain.GetStatus(),
@@ -634,8 +633,8 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 		// This code is used to insert data into a database table called 'chains'. The purpose of this code is to insert the
 		// values of the 'req.Chain' object into the specified fields of the 'chains' table. The variables that are being
 		// inserted are the name, RPC, network, block, explorer link, platform, confirmation, time withdraw, fees withdraw,
-		// address, tag, parent symbol, and status of the chain object.
-		if _, err := e.Context.Db.Exec("insert into chains (name, rpc, network, block, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, address, tag, parent_symbol, status) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		// tag, parent symbol, and status of the chain object.
+		if _, err := e.Context.Db.Exec("insert into chains (name, rpc, network, block, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, tag, parent_symbol, status) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
 			req.Chain.GetName(),
 			req.Chain.GetRpc(),
 			req.Chain.GetNetwork(),
@@ -645,7 +644,6 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 			req.Chain.GetConfirmation(),
 			req.Chain.GetTimeWithdraw(),
 			req.Chain.GetFeesWithdraw(),
-			req.Chain.GetAddress(),
 			req.Chain.GetTag(),
 			req.Chain.GetParentSymbol(),
 			req.Chain.GetStatus(),
