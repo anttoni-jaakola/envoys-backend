@@ -951,8 +951,8 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 				return
 			}
 
-			// This code is used to insert data into a database table called "credits". The purpose of this code is to add a new
-			// row to the "credits" table containing the userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), and fees
+			// This code is used to insert data into a database table called "fees". The purpose of this code is to add a new
+			// row to the "fees" table containing the userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), and fees
 			// values. The if statement checks for any errors that may arise from the execution of the query and if an error does
 			// occur, the code will return without continuing.
 			if _, err := e.Context.Db.Exec(`insert into fees (user_id, address, symbol, platform, value) values ($1, $2, $3, $4, $5)`, userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), fees); e.Context.Debug(err) {

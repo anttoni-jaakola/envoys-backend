@@ -70,7 +70,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 		// strings.Join and fmt.Sprintf functions are used to produce a valid SQL query string. The rows variable is used to
 		// store the results of the query in a row iterator. To defer rows.Close() statement is used to ensure that the row
 		// iterator is closed after the query has been completed.
-		rows, err := a.Context.Db.Query(fmt.Sprintf("select id, name, email, status, create_at, rules from accounts %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := a.Context.Db.Query(fmt.Sprintf("select id, name, email, status, create_at, kyc_secure, kyc_secret, rules from accounts %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, a.Context.Error(err)
 		}
@@ -97,6 +97,8 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 				&item.Email,
 				&item.Status,
 				&item.CreateAt,
+				&item.KycSecure,
+				&item.KycSecret,
 				&rules,
 			); err != nil {
 				return &response, a.Context.Error(err)
@@ -239,4 +241,43 @@ func (a *Service) SetAccountRule(ctx context.Context, req *pbaccount.SetRequestU
 	}
 
 	return &response, nil
+}
+
+// GetKycApplicantRule - This code snippet is used to provide a response to a KYC applicant rule. It authenticates a user, checks if they have
+// the correct permissions to write and edit data, and retrieves applicants from a KYC provider by their ID. If an error
+// is encountered during any of these processes, an error response is returned.
+func (a *Service) GetKycApplicantRule(ctx context.Context, req *pbaccount.GetRequestKycApplicantRule) (*pbaccount.ResponseKycApplicant, error) {
+
+	// The code above is declaring two variables, response and migrate. The first variable, response, is of type
+	// pbaccount.ResponseKycApplicantRule. The second variable, migrate, is of type query.Migrate and has a Context field
+	// set to a.Context. The purpose of these variables is likely to provide a response to a KYC applicant rule, as well as
+	// to migrate the query context.
+	var (
+		response *pbaccount.ResponseKycApplicant
+		migrate  = query.Migrate{
+			Context: a.Context,
+		}
+	)
+
+	// This code snippet is used to authenticate a user in a given context. It assigns the authentication details to the
+	// variable auth, and if an error is encountered, it returns an error response and the corresponding error.
+	auth, err := a.Context.Auth(ctx)
+	if err != nil {
+		return response, a.Context.Error(err)
+	}
+
+	// This code is checking if a user has the correct permissions to write and edit data. If they do not have the correct
+	// permissions, an error is returned with the message "you do not have rules for writing and editing data".
+	if !migrate.Rules(auth, "accounts", query.RoleDefault) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
+		return response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+	}
+
+	// This code is retrieving applicants from a KYC (Know Your Customer) Provider by their ID, then checking if an error
+	// occurred during the process. If an error did occur, it will return an error response.
+	response, err = a.Context.KycProvider.GetApplicantsById(req.GetId())
+	if err != nil {
+		return response, a.Context.Error(err)
+	}
+
+	return response, nil
 }

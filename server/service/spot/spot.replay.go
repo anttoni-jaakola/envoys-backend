@@ -451,7 +451,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 					return
 				}
 
-				// The purpose of this code is to set the parameters of a PBSpot order. The parameters include the fees, whether the
+				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
 				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
 				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: false, Equal: true}
 
@@ -485,7 +485,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 					return
 				}
 
-				// The purpose of this code is to set the parameters of a PBSpot order. The parameters include the fees, whether the
+				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
 				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
 				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: true}
 
@@ -586,7 +586,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 					return
 				}
 
-				// The purpose of this code is to set the parameters of a PBSpot order. The parameters include the fees, whether the
+				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
 				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
 				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: false, Equal: false}
 
@@ -620,7 +620,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 					return
 				}
 
-				// The purpose of this code is to set the parameters of a PBSpot order. The parameters include the fees, whether the
+				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
 				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
 				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: false}
 

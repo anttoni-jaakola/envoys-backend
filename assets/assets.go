@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/cryptogateway/backend-envoys/assets/common/kycaid"
 	"io"
 	"io/ioutil"
 	"os"
@@ -24,6 +25,15 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
+
+// Kyc - The type Kyc struct is used to store information related to Know Your Customer (KYC) processes. It contains three fields:
+// FromId, ApiKey, and RedirectUrl. FromId is a unique identifier for the user, ApiKey is used for authentication, and
+// RedirectUrl is the URL to which the user will be redirected after successful authentication. This struct can be used to store the necessary information for KYC processes.
+type Kyc struct {
+	FromId      string
+	ApiKey      string
+	RedirectUrl string
+}
 
 // Smtp - The type Smtp struct is used to store information about a Simple Mail Transfer Protocol (SMTP) connection. It contains
 // fields for the SMTP host name, sender address, password, and port number. This information can be used to establish an
@@ -97,15 +107,19 @@ type Context struct {
 	// interact with. It can be used to help convert between different time zones and to manage scheduling of events.
 	Timezones string
 
-	// Smtp: Simple Mail Transfer Protocol is a protocol used for sending and receiving emails.
-	// Server: A server is a computer or program that provides a service to other computers or programs over a network.
-	// Redis: Redis is an open source, in-memory data structure store, used as a database, cache and message broker.
-	// Rabbitmq: RabbitMQ is a message broker that allows clients to communicate asynchronously by sending and receiving messages.
-	// Credentials: Credentials are the pieces of information used to authenticate a user or system to access a service.
-	// RabbitmqClient: An MQTT broker client is a program that helps to establish a connection between an MQTT broker and a client.
-	// RedisClient: A Redis client is a program used to access a Redis database and perform data operations.
-	// GrpcClient: A gRPC client is a program used to establish a secure connection between a gRPC server and a client application.
-	// Db: A database (DB) is a collection of organized data that is stored and accessed electronically from a computer system.
+	// KYC: KYC (Know Your Customer) is a process used by organizations to verify the identity of their customers and assess their suitability for doing business.
+	// SMTP: Simple Mail Transfer Protocol (SMTP) is a protocol for sending emails. It is used to transfer emails from one server to another over the Internet.
+	// Server: A server is a computer that provides services to other computers or clients on a network. It can host websites, applications and other services.
+	// Redis: Redis is an in-memory data structure store that is used as a database, cache and message broker. It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries and bitmaps.
+	// Rabbitmq: RabbitMQ is an open source message broker software that implements the Advanced Message Queuing Protocol (AMQP). It is used to send, receive and store messages between applications.
+	// Credentials: Credentials are information used to authenticate a user or entity to gain access to a system or service. Examples include usernames, passwords, and security tokens.
+	// RabbitmqClient: MQTT.Client is a client library for the Message Queue Telemetry
+	// RedisClient: This is a Redis client which is used for caching and storing data in a NoSQL key-value store.
+	// GrpcClient: This is a gRPC client which is used for communicating with a remote server using a high-performance RPC protocol.
+	// Db: This is a SQL database which is used for storing and managing relational data.
+	// KycProvider: This is a KYC provider which is used to verify the identity of users for compliance with anti-money laundering regulations.
+
+	Kyc            *Kyc
 	Smtp           *Smtp
 	Server         *Server
 	Redis          *Redis
@@ -115,6 +129,7 @@ type Context struct {
 	RedisClient    *redis.Client
 	GrpcClient     *grpc.ClientConn
 	Db             *sql.DB
+	KycProvider    *kycaid.Api
 }
 
 // This function is used to set up the application context. It locks the mutex, reads the configuration file, sets the
@@ -129,7 +144,7 @@ func (app *Context) Write() *Context {
 
 	// This code is used to read a file located at the location stored in the app.ConfigPath() variable. It uses the
 	// ioutil.ReadFile() function to read the contents of the file as a byte array and store it in the serialize variable.
-	// If there is an error encountered while reading the file, the err variable will contain the error and the
+	// If there is an error encountered while reading the file, to err variable will contain the error and the
 	// logrus.Fatal() function is used to log the error and terminate the program.
 	serialize, err := ioutil.ReadFile(app.ConfigPath())
 	if err != nil {
@@ -216,6 +231,11 @@ func (app *Context) Write() *Context {
 	if connect := app.RabbitmqClient.Connect(); connect.Wait() && connect.Error() != nil {
 		logrus.Fatal(connect.Error())
 	}
+
+	// The app.KycProvider is an instance of the kycaid.NewApi function. It is used to store the Kyc.FromId, Kyc.ApiKey, and any
+	// additional parameters needed to create an API instance for interacting with the KYC service. This API instance can
+	// then be used to access the KYC service for authentication and verification purposes.
+	app.KycProvider = kycaid.NewApi(app.Kyc.FromId, app.Kyc.ApiKey, nil)
 
 	// App.Mutex.Unlock() is a function that unlocks a mutex, which is a synchronization primitive that allows only one
 	// thread to access a shared resource at a time. It is used to ensure that multiple threads do not access a shared
