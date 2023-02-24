@@ -648,11 +648,11 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 				return
 			}
 
-			// This code is used to insert data into a database table called "credits". The purpose of this code is to add a new
-			// row to the "credits" table containing the userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), and fees
-			// values. The if statement checks for any errors that may arise from the execution of the query and if an error does
-			// occur, the code will return without continuing.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, address, symbol, platform, value) values ($1, $2, $3, $4, $5)`, userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), fees); e.Context.Debug(err) {
+			// This code is attempting to insert data into a database. The code is using the Exec() function from the Db object.
+			// It is passing in parameters for the insert query as well as the userId, owner, to, chain.GetParentSymbol(),
+			// chain.GetPlatform(), fees, and pbspot.FeesType_SUPPLY. If there is an error, it will be printed to the console
+			// using the Debug() function. If an error occurs, the code will return.
+			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), fees, pbspot.FeesType_SUPPLY); e.Context.Debug(err) {
 				return
 			}
 
@@ -707,10 +707,10 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 				return
 			}
 
-			// This code is used to insert data into a reverses table in a database. The data that is being inserted includes the
-			// userId, owner, to, chain symbol, platform, and value. After the data is inserted, it will check for errors and if
-			// there are any, it will return.
-			if _, err := e.Context.Db.Exec(`insert into reverses (user_id, "from", "to", symbol, platform, value) values ($1, $2, $3, $4, $5, $6)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
+			// This code is part of a function that is used to insert fees into a database. The purpose of the code is to insert a
+			// new row into the 'fees' table with the given parameters (userId, owner, to, chain.GetParentSymbol(),
+			// chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE). If an error occurs, the code will log the error and then return.
+			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE); e.Context.Debug(err) {
 				return
 			}
 
@@ -951,11 +951,11 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 				return
 			}
 
-			// This code is used to insert data into a database table called "fees". The purpose of this code is to add a new
-			// row to the "fees" table containing the userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), and fees
-			// values. The if statement checks for any errors that may arise from the execution of the query and if an error does
-			// occur, the code will return without continuing.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, address, symbol, platform, value) values ($1, $2, $3, $4, $5)`, userId, owner, chain.GetParentSymbol(), chain.GetPlatform(), fees); e.Context.Debug(err) {
+			// This code is attempting to insert data into a database. The code is using the Exec() function from the Db object.
+			// It is passing in parameters for the insert query as well as the userId, owner, to, chain.GetParentSymbol(),
+			// chain.GetPlatform(), fees, and pbspot.FeesType_SUPPLY. If there is an error, it will be printed to the console
+			// using the Debug() function. If an error occurs, the code will return.
+			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), fees, pbspot.FeesType_SUPPLY); e.Context.Debug(err) {
 				return
 			}
 
@@ -1003,10 +1003,10 @@ func (e *Service) transferTron(userId, txId int64, symbol, to string, value, pri
 				return
 			}
 
-			// This code is used to insert data into a reverses table in a database. The data that is being inserted includes the
-			// userId, owner, to, chain symbol, platform, and value. After the data is inserted, it will check for errors and if
-			// there are any, it will return.
-			if _, err := e.Context.Db.Exec(`insert into reverses (user_id, "from", "to", symbol, platform, value) values ($1, $2, $3, $4, $5, $6)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
+			// This code is part of a function that is used to insert fees into a database. The purpose of the code is to insert a
+			// new row into the 'fees' table with the given parameters (userId, owner, to, chain.GetParentSymbol(),
+			// chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE). If an error occurs, the code will log the error and then return.
+			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE); e.Context.Debug(err) {
 				return
 			}
 

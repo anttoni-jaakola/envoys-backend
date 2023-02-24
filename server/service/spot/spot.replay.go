@@ -257,7 +257,7 @@ func (e *Service) replayTradeInit(order *pbspot.Order, side pbspot.Side) {
 	// parameters given to query for a specific set of data from the "orders" table. It is using the $1, $2, $3, $4, $5 and
 	// $6 to represent the given parameters. The query is also ordering the results by the "id" column. It is checking for
 	// errors and deferring the closing of the rows.
-	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, side, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), pbspot.Status_PENDING, pbspot.OrderType_SPOT)
+	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, side, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), pbspot.Status_PENDING, ExchangeType)
 	if e.Context.Debug(err) {
 		return
 	}
@@ -644,7 +644,6 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 
 			e.Context.Logger.Infof("[(B)%v]: (Assigning: %v), (Price: [%v]-[%v]), (Value: [%v]-[%v]), (UserID: [%v]-[%v])", params[0].GetAssigning(), params[1].GetAssigning(), params[0].GetPrice(), params[1].GetPrice(), params[0].GetValue(), params[1].GetValue(), params[0].GetUserId(), params[1].GetUserId())
 		}
-
 	}
 
 	if err := e.setTrade(params[0], params[1]); err != nil {
@@ -967,7 +966,6 @@ func (e *Service) replayWithdraw() {
 		// goroutine would be paused for 10 seconds.
 		time.Sleep(10 * time.Second)
 	}
-
 }
 
 // replayConfirmation - This function is used to check the status of pending deposits. It queries the database for transactions with a status

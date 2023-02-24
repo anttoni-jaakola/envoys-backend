@@ -16,6 +16,10 @@ import (
 	"strings"
 )
 
+const (
+	ExchangeType = 0
+)
+
 // Service - The purpose of the Service struct is to store data related to a service, such as the Context, run and wait maps, and
 // the block map. The Context is a pointer to an assets Context, which contains information about the service. The run
 // and wait maps are booleans that indicate whether the service is running or waiting for an action. The block map is an

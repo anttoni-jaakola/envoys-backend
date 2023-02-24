@@ -1,13 +1,17 @@
-create table public.fees
+create table if not exists public.fees
 (
-    id        serial
-        primary key,
+    id            serial
+        constraint fees_pk
+            primary key
+        unique,
     user_id   integer,
-    address   varchar,
+    "from"    varchar,
+    "to"      varchar,
     value     double precision,
     symbol    varchar,
-    platform  integer                  default 0     not null,
-    coated    boolean                  default false not null,
+    platform  integer                  default 0                                   not null,
+    coated    boolean                  default false                               not null,
+    type      integer                  default 0                                   not null,
     create_at timestamp with time zone default CURRENT_TIMESTAMP
 );
 
@@ -17,6 +21,5 @@ alter table public.fees
 alter table public.fees
     add unique (id);
 
-create unique index if not exists fees_id_uindex
-    on public.fees (id);
-
+create unique index fees_id_uindex
+    on fees (id);

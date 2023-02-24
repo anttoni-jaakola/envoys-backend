@@ -214,71 +214,96 @@ service Api {
             body: "*"
         };
     }
-    // Set pair.
+    // This code is used to set the request and response pair rule for the RPC (remote procedure call). The
+    // SetPairRule RPC takes the SetRequestPairRule as an input and returns the ResponsePair as an output. The
+    // google.api.http option specifies that when this RPC is called, the data should be sent as a POST request to
+    // the "/v2/admin/spot/set-pair" endpoint and the body of the request should include all of the data.
     rpc SetPairRule (SetRequestPairRule) returns (ResponsePair) {
         option (google.api.http) = {
             post: "/v2/admin/spot/set-pair",
             body: "*"
         };
     }
-    // Delete pair.
+    // This code is part of an RPC (Remote Procedure Call) which allows the DeletePairRule function to delete a pair
+    // rule on a remote server. The function takes in a DeleteRequestPairRule object as an argument and returns a
+    // ResponsePair object. The option (google.api.http) further specifies that the post request will be sent to
+    // "/v2/admin/spot/delete-pair" with the body being whatever is passed in as an argument.
     rpc DeletePairRule (DeleteRequestPairRule) returns (ResponsePair) {
         option (google.api.http) = {
             post: "/v2/admin/spot/delete-pair",
             body: "*"
         };
     }
-
-    // Get contracts.
+    // This is an RPC (remote procedure call) that allows a client to make an HTTP POST request to the specified URL
+    // in order to get a list of contracts and their associated rules. The request and response are specified as the
+    // "GetRequestContractsRule" and "ResponseContract" types, respectively.
     rpc GetContractsRule (GetRequestContractsRule) returns (ResponseContract) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-contracts",
             body: "*"
         };
     }
-    // Get contract.
+    // This rpc is used to get the rules and details of a specific contract. The GetRequestContractRule is used to
+    // send a request for the contract details, and the ResponseContract will contain the details of the contract.
+    // The google.api.http option is used to specify the HTTP method and endpoint path for the request.
     rpc GetContractRule (GetRequestContractRule) returns (ResponseContract) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-contract",
             body: "*"
         };
     }
-    // Set contract.
+    // This code is part of a remote procedure call (RPC) that provides a service to set contract rules. The purpose
+    // of this RPC is to set a contract rule that can be used to control access to a certain service. The code
+    // specifies the type of request (SetRequestContractRule) and response (ResponseContract) that will be sent and
+    // received with respect to this service, as well as the HTTP method (POST) and URL "/v2/admin/spot/set-contract"
+    // that should be used to access the service.
     rpc SetContractRule (SetRequestContractRule) returns (ResponseContract) {
         option (google.api.http) = {
             post: "/v2/admin/spot/set-contract",
             body: "*"
         };
     }
-    // Delete contract.
+    // This is a remote procedure call (RPC) that is used to delete a contract rule. It takes a
+    // DeleteRequestContractRule as an argument, and returns a ResponseContract. The option provided indicates that a
+    // POST request is made to the "/v2/admin/spot/delete-contract" endpoint of the API, with the request body
+    // containing the DeleteRequestContractRule argument.
     rpc DeleteContractRule (DeleteRequestContractRule) returns (ResponseContract) {
         option (google.api.http) = {
             post: "/v2/admin/spot/delete-contract",
             body: "*"
         };
     }
-    // Get transactions.
+    // This code is part of a Remote Procedure Call (RPC) that is used to retrieve transaction information from an
+    // admin spot. It defines a function, GetTransactionsRule, which takes an input of GetRequestTransactionsManual
+    // and returns a ResponseTransaction. The "option" clause specifies the HTTP method (POST) and the body format
+    // ("*") that the request will use.
     rpc GetTransactionsRule (GetRequestTransactionsManual) returns (ResponseTransaction) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-transactions",
             body: "*"
         };
     }
-    // Get assets.
+    // This rpc is used to get the assets rule from the GetRequestAssetsManual and return a response in the form of a
+    // ResponseAsset. The option (google.api.http) defines an HTTP request with a POST method at
+    // "/v2/admin/spot/get-assets" and specifies the body of the request as "*".
     rpc GetAssetsRule (GetRequestAssetsManual) returns (ResponseAsset) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-assets",
             body: "*"
         };
     }
-    // Get reserves.
+    // This code is part of a gRPC API and is used to create an HTTP endpoint for a service to get reserves rule
+    // information. The endpoint created by this code is "/v2/admin/spot/get-reserves" and it accepts a POST request
+    // with a body containing the request parameters. The response from the endpoint will be a ResponseReserveobject.
     rpc GetReservesRule (GetRequestReservesManual) returns (ResponseReserve) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-reserves",
             body: "*"
         };
     }
-    // Set reserve unlock.
+    // This RPC function is used to set a reserve unlock rule. It takes a SetRequestReserveUnlockManual as an
+    // argument and returns a ResponseReserve in response. The option provided is a Google API http configuration
+    // that specifies the post request path and the body of the request.
     rpc SetReserveUnlockRule (SetRequestReserveUnlockManual) returns (ResponseReserve) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-reserve-unlock",
@@ -287,7 +312,10 @@ service Api {
     }
 }
 
-// Enum chain tag structure.
+// The enum Tag is an enumerated data type that allows a programmer to assign unique numerical values to a list of
+// identifiers (in this case, the names of different cryptocurrencies). This allows a programmer to easily reference
+// those cryptocurrencies in other parts of their code. For example, if a program is designed to track the prices of
+// different cryptocurrencies, they could use the enum Tag to refer to each one.
 enum Tag {
     C_NONE = 0;
     C_BITCOIN = 1;
@@ -300,7 +328,9 @@ enum Tag {
     C_AVALANCHE = 8;
 }
 
-// Enum currency protocol structure.
+// The purpose of the enum Protocol is to define a set of constants for different types of blockchain protocols. Each
+// constant has a numerical value associated with it, which can be used to identify the protocol type. This makes it
+// easier to programmatically identify which protocol is being used in a particular context.
 enum Protocol {
     MAINNET = 0;
     ERC20 = 1;
@@ -337,7 +367,10 @@ enum Protocol {
     ARC223 = 32;
 }
 
-// Enum purpose of trades to sell or buy, market liquidity of trades.
+// Enums are used to assign symbolic names to constant values. The purpose of the above enum is to assign symbolic names
+// to constants that have a specific meaning in the context of a financial trading system. BUY and SELL are used to
+// denote the type of order for a financial transaction, MARKET_PRICE is used to denote the default market price for a
+// particular security, and DEFAULT is used to denote the default values in the system.
 enum Assigning {
     BUY = 0;
     SELL = 1;
@@ -345,40 +378,50 @@ enum Assigning {
     DEFAULT = 3;
 }
 
-// Enum buying at the seller's price or selling at the buyer's price, side "bid" - "buy" and "ask" - "sell".
+// The enum Side is used to define the different sides of a trade. ASK is the side of the trade where a trader is looking
+// to sell an asset, and BID is the side of the trade where a trader is looking to buy an asset. By assigning numerical
+// values to each side, it makes it easier to keep track of the different sides of a trade, side "bid" - "buy" and "ask" - "sell".
 enum Side {
     ASK = 0;
     BID = 1;
 }
 
-// Enum trading types, the marker type is responsible for
-// selling or buying at the market price,
-// the limit type is buying or selling at the price that the user sets.
+// The enum TradeType is a way to assign a numerical value to each type of trade. In this case, MARKET is assigned the
+// value 0, and LIMIT is assigned the value 1. This is useful when creating a trading system, as it allows trades to be
+// easily identified and categorized.
 enum TradeType {
     MARKET = 0;
     LIMIT = 1;
 }
 
-// Enum transaction type, there are 2 types of deposit and withdrawal.
+// Enums are used to define a set of named constants. In this example, the enum TxType is used to assign numerical values
+// to two named constants: DEPOSIT and WITHDRAWS. This can be used as an identifier for a type of transaction, such as a
+// deposit or a withdrawal.
 enum TxType {
     DEPOSIT = 0;
     WITHDRAWS = 1;
 }
 
-// Enum type of finance, is it a type of cryptocurrency or fiat.
+// Enums are used in programming to create a set of named constants. In this example, the enum FinType is used to
+// categorize financial types, specifically Crypto and Fiat. The = 0 and = 1 are used to assign numerical values to the
+// constants for easier comparison.
 enum FinType {
     CRYPTO = 0;
     FIAT = 1;
 }
 
-// Enum order type.
-enum OrderType {
-    SPOT = 0;
-    MARGIN = 1;
+// Enums are used to define a set of constant values. In this case, the enum is defining two constant values, SUPPLY and
+// REVERSE, which are used to represent different types of fees. This can be useful for code readability and for making
+// sure that the code is consistent in its use of defined constants.
+enum FeesType {
+    SUPPLY = 0;
+    REVERSE = 1;
 }
 
-// Enum statuses, such as order statuses,
-// this list has the status canceled, completed, and pending.
+// Enums are used in programming to create a set of constants. In this example, the enum Status is used to assign a
+// numerical value to a set of constants related to an order status. CANCEL is assigned a value of 0, FILLED is assigned
+// a value of 1, and so on. This allows the programmer to quickly reference the numerical value associated with each
+// status without having to remember the exact value.
 enum Status {
     CANCEL = 0;
     FILLED = 1;
@@ -388,14 +431,18 @@ enum Status {
     FAILED = 5;
 }
 
-// Enum base and quote is the dominance of pair trading,
-// these flags are used for correct conversion and not only.
+// Enums are used to declare a set of named constants. In this case, the enum Summary is declaring two constants, BASE
+// and QUOTE, with the values 0 and 1 respectively. These constants can then be used to refer to specific values in a
+// program. For example, an if-else statement could use the constants to check if a condition is true or false.
 enum Summary {
     BASE = 0;
     QUOTE = 1;
 }
 
-// Enum cryptocurrency parent platforms, list of underlying platforms.
+// The enum Platform is used to assign numerical values to different types of platforms. This allows for easier
+// comparison and identification between different types of platforms. For example, if someone was looking for a
+// platform with a numerical value of 2, they would know to look for TRON. This is a useful tool for developers and can
+// help streamline the process of comparing and distinguishing between different types of platforms.
 enum Platform {
     BITCOIN = 0;
     ETHEREUM = 1;
@@ -404,14 +451,20 @@ enum Platform {
     MASTERCARD = 4;
 }
 
-// Enum pointers to update the user's balance,
-// select the assigned amount or add the assigned amount.
+// Enums are used to define a set of named constants. The enum Balance above sets the constants MINUS and PLUS to the
+// values 0 and 1 respectively. This can be used to indicate a balance between two values (e.g., a bank account balance
+// between a credit and debit).
 enum Balance {
     MINUS = 0;
     PLUS = 1;
 }
 
-// Contract message structure.
+// This is a message contract used by a programming language such as Protocol Buffers. It is used to define a data
+// structure that can be used to store information about an asset or service. The message contract lists the different
+// fields that will be used to store the asset or service information, such as the id, chain_id, chain_name,
+// parent_symbol, symbol, address, fees_withdraw, decimals, platform, and protocol. This message contract can be used to
+// create a data structure that can be used to store information about an asset or service, which can then be used in
+// applications or services.
 message Contract {
     int64 id = 1;
     int64 chain_id = 2;
