@@ -13,10 +13,10 @@ import (
 	"time"
 )
 
-// replayPriceScale - The purpose of this code is to update the prices of pairs at a specific time interval. It first loads the pair ids,
+// price - The purpose of this code is to update the prices of pairs at a specific time interval. It first loads the pair ids,
 // prices, base units, and quote units from the pairs table where the status is active. It then gets the candles for the
 // base and quote units and calculates the new price based on the data. Lastly, it updates the price of the pair in the database.
-func (e *Service) replayPriceScale() {
+func (e *Service) price() {
 
 	// The code above creates a new ticker that will run once a minute and then loop through each range of the ticker.C
 	// channel. This is useful for running a certain task or operation on a regular interval of time.
@@ -111,10 +111,10 @@ func (e *Service) replayPriceScale() {
 	}
 }
 
-// replayMarket - This function is used to replay market prices. The function is executed on a specific time interval and retrieves data
+// market - This function is used to replay market prices. The function is executed on a specific time interval and retrieves data
 // from the database. It then inserts the data into the trades table, and publishes the data to exchange topics. This
 // allows for the market data to be replayed at a specific interval.
-func (e *Service) replayMarket() {
+func (e *Service) market() {
 
 	// The code creates a ticker that triggers every minute and runs a loop that executes each time the ticker is triggered.
 	// This allows code to be executed at regular intervals without the need for an explicit loop.
@@ -181,10 +181,10 @@ func (e *Service) replayMarket() {
 	}
 }
 
-// replayChainStatus - This function is used to replay the status of chains stored in a database. It loads at a specific time interval and
+// chain - This function is used to replay the status of chains stored in a database. It loads at a specific time interval and
 // queries the database for chains that have been stored. It then uses the 'help.Ping' function to check whether each
 // chain is available or not. If the chain is not available, its status is set to false, and then updated in the database.
-func (e *Service) replayChainStatus() {
+func (e *Service) chain() {
 
 	// The code is creating a new ticker that will fire every minute (time.Minute * 1). The for loop will continually
 	// execute until the ticker is stopped or the program exits. This code is useful for creating a repeating task at a
@@ -241,11 +241,11 @@ func (e *Service) replayChainStatus() {
 	}
 }
 
-// replayTradeInit - This function is used to replay a trade init. It takes an order and a side (BID or ASK) as parameters. It then queries
+// trade - This function is used to replay a trade init. It takes an order and a side (BID or ASK) as parameters. It then queries
 // the database for orders with the same base unit, quote unit and user ID, and with a status of "PENDING". It then
 // iterates through the results and checks if the order's price is higher than the item's price for a BID position and
 // lower for an ASK position. If this is the case, it calls the replayTradeProcess() function. Finally, it logs any matches or failed matches.
-func (e *Service) replayTradeInit(order *pbspot.Order, side pbspot.Side) {
+func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 
 	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
 	// error and returning.
@@ -314,7 +314,7 @@ func (e *Service) replayTradeInit(order *pbspot.Order, side pbspot.Side) {
 				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
 				// trade process associated with them. The order and item parameters contain the necessary information needed to
 				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				e.replayTradeProcess(order, &item)
+				e.process(order, &item)
 
 			} else {
 				e.Context.Logger.Infof("[BID]: no matches found: (item [%v]) >= (order [%v])", order.GetPrice(), item.GetPrice())
@@ -333,7 +333,7 @@ func (e *Service) replayTradeInit(order *pbspot.Order, side pbspot.Side) {
 				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
 				// trade process associated with them. The order and item parameters contain the necessary information needed to
 				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				e.replayTradeProcess(order, &item)
+				e.process(order, &item)
 
 			} else {
 				e.Context.Logger.Infof("[ASK]: no matches found: (order [%v]) <= (item [%v])", order.GetPrice(), item.GetPrice())
@@ -355,10 +355,10 @@ func (e *Service) replayTradeInit(order *pbspot.Order, side pbspot.Side) {
 	}
 }
 
-// replayTradeProcess - This function is used to replay a trade process. It updates two orders with different amounts to determine the result
+// process - This function is used to replay a trade process. It updates two orders with different amounts to determine the result
 // of a trade. It updates the order status in the database with pending in to filled, updates the balance by adding the
 // amount of the order to the balance, and sends a mail. In addition, it logs information about the trade.
-func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
+func (e *Service) process(params ...*pbspot.Order) {
 
 	// The purpose of the code snippet is to declare two variables, value of type float64 and migrate of type query.Migrate.
 	// To migrate variable is initialized with the context from the environment (e.Context).
@@ -527,7 +527,7 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 				return
 			}
 
-			// This code is part of an if statement checking if the value is equal to 0. If the value is equal to 0, the code
+			// This code is part of an if statement checking is the value is equal to 0. If the value is equal to 0, the code
 			// updates the orders table in the database with a status of FILLED and sends an email to the user with details about the order.
 			if value == 0 {
 
@@ -651,10 +651,10 @@ func (e *Service) replayTradeProcess(params ...*pbspot.Order) {
 	}
 }
 
-// replayDeposit - The purpose of this code is to replay deposits on different chains. It retrieves details of the chain from the
+// deposit - The purpose of this code is to replay deposits on different chains. It retrieves details of the chain from the
 // database and depending on the platform (Ethereum or Tron) it calls the depositEthereum or depositTron functions. After
-// that it sleeps for 500 milliseconds and replays the confirmation deposits.
-func (e *Service) replayDeposit() {
+// that it sleeps for 1 Second and replays the confirmation deposits.
+func (e *Service) deposit() {
 
 	// e.run, e.wait, and e.block are all maps in the program. The purpose of these maps is to store boolean, boolean, and
 	// int64 values respectively. These values can be referenced and modified by their associated key which is an int64
@@ -729,33 +729,31 @@ func (e *Service) replayDeposit() {
 
 					// The purpose of this statement is to deposit Ethereum into a blockchain. It is used to send the Ethereum to the
 					// chain and to store it securely.
-					go e.depositEthereum(&chain)
+					e.ethereum(&chain)
 					break
 				case pbspot.Platform_TRON:
 
 					// The purpose of this code is to deposit Tron (a cryptocurrency) on a blockchain platform. It is used to transfer
 					// funds from one account to another and keep a record of the transaction on the blockchain.
-					go e.depositTron(&chain)
+					e.tron(&chain)
 					break
 				}
 
-				time.Sleep(500 * time.Millisecond)
+				time.Sleep(1 * time.Second)
 			}
 
-			// Confirmation deposits assets - The e.replayConfirmation() function is used to confirm that a replay has been recorded and saved. It is typically
+			// Confirmation deposits assets - The e.confirmation() function is used to confirm that a replay has been recorded and saved. It is typically
 			// used to ensure that a replay can be accessed and replayed later.
-			e.replayConfirmation()
-
+			e.confirmation()
 		}()
 	}
-
 }
 
-// replayWithdraw - This function is used to replay pending withdraw transactions. It checks for transactions with a status of pending, a
+// withdraw - This function is used to replay pending withdraw transactions. It checks for transactions with a status of pending, a
 // transaction type of withdraws, and a financial type of crypto in the database. It then loops through these
 // transactions and attempts to transfer the funds. It also handles cases where there are fees to be paid, by attempting
 // to transfer funds from a reserve asset with the same platform, symbol, and protocol. It is repeated every 10 seconds.
-func (e *Service) replayWithdraw() {
+func (e *Service) withdraw() {
 
 	// The purpose of this code is to handle a panic and recover gracefully. To defer keyword will execute the following
 	// code whenever the function it is contained in ends, even if the function ends in error. The recover() function is
@@ -767,7 +765,10 @@ func (e *Service) replayWithdraw() {
 		}
 	}()
 
-	for {
+	// The purpose of this code is to create a new ticker that ticks every 10 seconds. The for loop then iterates over the
+	// ticker's channel, which will receive a value every 10 seconds.
+	ticker := time.NewTicker(time.Second * 10)
+	for range ticker.C {
 
 		func() {
 
@@ -775,7 +776,7 @@ func (e *Service) replayWithdraw() {
 			// query the database, passing in the parameters as variables. The query will return rows, which are stored in the
 			// rows variable. The error from the query is stored in the err variable, and an error is printed out if err is not
 			// nil. The rows returned by the query are then closed when the function is finished executing.
-			rows, err := e.Context.Db.Query(`select id, symbol, "to", chain_id, fees, value, price, platform, protocol, claim from transactions where status = $1 and tx_type = $2 and fin_type = $3`, pbspot.Status_PENDING, pbspot.TxType_WITHDRAWS, pbspot.FinType_CRYPTO)
+			rows, err := e.Context.Db.Query(`select id, symbol, "to", chain_id, fees, value, price, platform, protocol, allocation from transactions where status = $1 and assignment = $2 and type = $3`, pbspot.Status_PENDING, pbspot.Assignment_WITHDRAWS, pbspot.Type_CRYPTO)
 			if e.Context.Debug(err) {
 				return
 			}
@@ -786,16 +787,16 @@ func (e *Service) replayWithdraw() {
 			// rows. The for loop will continue looping through the result set until the .Next() method returns false.
 			for rows.Next() {
 
-				// The purpose of the code is to declare three variables, item, reserve, and insure, of type pbspot.Transaction. This
+				// The purpose of the code is to declare three variables, item, reserve, of type pbspot.Transaction. This
 				// allows the program to use those three variables to interact with the pbspot.Transaction type.
 				var (
-					item, reserve, insure pbspot.Transaction
+					item, reserve pbspot.Transaction
 				)
 
 				// This code is used to scan a row of data from a database and store each of the values in variables. The if
 				// statement checks for an error while scanning and logs the error with the context.Debug() method. If an error
 				// occurs, the loop will continue, otherwise the values are stored in the variables.
-				if err := rows.Scan(&item.Id, &item.Symbol, &item.To, &item.ChainId, &item.Fees, &item.Value, &item.Price, &item.Platform, &item.Protocol, &item.Claim); e.Context.Debug(err) {
+				if err := rows.Scan(&item.Id, &item.Symbol, &item.To, &item.ChainId, &item.Fees, &item.Value, &item.Price, &item.Platform, &item.Protocol, &item.Allocation); e.Context.Debug(err) {
 					return
 				}
 
@@ -831,25 +832,11 @@ func (e *Service) replayWithdraw() {
 							return
 						}
 
-						//This switch statement is used to determine which platform the item is associated with. Depending on whether the
-						//item is associated with Ethereum or Tron, different operations can be performed.
-						switch item.GetPlatform() {
-						case pbspot.Platform_ETHEREUM:
-
-							// The purpose of this code is to transfer Ethereum from a user's account to a designated recipient. It takes the
-							// user's ID, the item's ID, symbol, recipient, value, protocol, and blockchain as parameters. The 'true'
-							// parameter indicates that the transaction should be executed immediately.
-							e.transferEthereum(reserve.GetUserId(), item.GetId(), item.GetSymbol(), item.GetTo(), item.GetValue(), 0, item.GetProtocol(), chain, true)
-							break
-						case pbspot.Platform_TRON:
-
-							// This code is used to transfer Tron from one user's account to another user's account. The parameters passed in
-							// this function are the user IDs of the sender and receiver, the item ID, symbol, to address, value, protocol,
-							// and chain. The last parameter, 'true', indicates that this transfer is enabled.
-							e.transferTron(reserve.GetUserId(), item.GetId(), item.GetSymbol(), item.GetTo(), item.GetValue(), 0, item.GetProtocol(), chain, true)
-							break
-						}
-
+						// The purpose of this code is to transfer an item from one user to another. The parameters provided in the
+						// transfer function are used to identify the user, item, symbol, recipient, value, price, and protocol. The chain
+						// and pbspot.Allocation_EXTERNAL parameters are used to specify which blockchain the transfer should take place on
+						// and to specify the allocation type.
+						e.transfer(reserve.GetUserId(), item.GetId(), item.GetSymbol(), item.GetTo(), item.GetValue(), 0, item.GetProtocol(), chain, item.GetAllocation())
 					}
 
 				} else {
@@ -872,114 +859,171 @@ func (e *Service) replayWithdraw() {
 							return
 						}
 
-						// This switch statement is used to check the platform of a given item. Depending on which platform the item is on
-						// (Ethereum or Tron), the appropriate action will be taken.
-						switch item.GetPlatform() {
-						case pbspot.Platform_ETHEREUM:
-
-							// This function is used to transfer Ethereum from one user to another. The parameters include user ID, item ID,
-							// item symbol, receiver address, value, price, protocol, and a boolean indicating whether the transaction is
-							// confirmed or not. This function allows for the transfer of Ethereum between users, enabling them to purchase goods and services on the blockchain.
-							e.transferEthereum(reserve.GetUserId(), item.GetId(), item.GetSymbol(), item.GetTo(), item.GetValue(), item.GetPrice(), item.GetProtocol(), chain, true)
-							break
-						case pbspot.Platform_TRON:
-
-							// This is a function used to transfer Tron from one user to another, usually as part of a transaction. The
-							// parameters represent the user ID, item ID, item symbol, recipient address, value, price, protocol (Tron or
-							// another blockchain), and the chain code, respectively. The last parameter is a boolean value that specifies whether the transaction should be broadcast or not.
-							e.transferTron(reserve.GetUserId(), item.GetId(), item.GetSymbol(), item.GetTo(), item.GetValue(), item.GetPrice(), item.GetProtocol(), chain, true)
-							break
-						}
+						// The purpose of this code is to transfer an item from one user to another. The parameters provided in the
+						// transfer function are used to identify the user, item, symbol, recipient, value, price, and protocol. The chain
+						// and pbspot.Allocation_EXTERNAL parameters are used to specify which blockchain the transfer should take place on
+						// and to specify the allocation type.
+						e.transfer(reserve.GetUserId(), item.GetId(), item.GetSymbol(), item.GetTo(), item.GetValue(), item.GetPrice(), item.GetProtocol(), chain, pbspot.Allocation_EXTERNAL)
 
 					} else {
 
-						//This code block is used to check if a transaction can be reversed. If the fees for the transaction are greater
-						//than or equal to two times the amount of the transaction's fees, the code will attempt to find a reserve asset
-						//from which funds can be transferred. If it finds a reserve asset, it will then initiate a transfer of funds from
-						//the reserve asset to the address associated with the transaction. Finally, the code will set the "claim" field of the transaction to true.
-						if !item.GetClaim() {
+						// This statement is checking if the item's allocation is not equal to the pbspot's allocation reward. If the
+						// item's allocation is not equal to the pbspot's allocation reward, then the statement will return false.
+						if item.GetAllocation() != pbspot.Allocation_REWARD {
 
-							// This code is attempting to retrieve the currency for a given parent symbol, and is handling the case where an
-							// error occurs when attempting to get the currency. If the call to getCurrency() returns an error, the function
-							// returns without attempting to do anything else.
-							currency, err := e.getCurrency(chain.GetParentSymbol(), false)
-							if err != nil {
+							// This code is performing an update on the 'transactions' table in the database. Specifically, it is setting the
+							// 'allocation', 'fees', 'hash', 'status' columns to their respective values, based on the transaction ID. The
+							// e.Context.Debug(err) statement is used to print out any errors that might occur in the update, and the return
+							// statement at the end of the code is used to exit the function if an error is encountered.
+							if _, err := e.Context.Db.Exec("update transactions set allocation = $2 where id = $1;", item.GetId(), pbspot.Allocation_REWARD); e.Context.Debug(err) {
 								return
-							}
-
-							// This code is part of a larger program, and its purpose is to transfer funds from a reserve asset to pay fees
-							// associated with a transaction. It checks if the currency has fees that are greater than or equal to double the
-							// item's fees, and if so, it queries the reserves to find the correct asset, platform, protocol, symbol, and
-							// value of the funds to be transferred. It then sets the asset's lock to true, and uses either the Ethereum or Tron transfer functions to move the funds. Finally, it updates the transaction's claim to true.
-							if currency.GetFeesCharges() >= item.GetFees()*2 {
-
-								// Find the reserve asset from which funds will be transferred,
-								// by its platform, as well as by protocol, symbol, and number of funds.
-								// This code is likely part of a larger program that is transferring money from one user to another.
-								// Specifically, it is attempting to find enough funds in a reserve to cover the cost of the transaction, and if
-								// enough funds are found, it will transfer the money to the specified user using either Ethereum or Tron, depending on the platform specified. It will then update the transaction to set the "claim" field to true.
-								if _ = e.Context.Db.QueryRow("select value, address from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), false).Scan(&reserve.Value, &reserve.To); reserve.GetValue() > 0 {
-
-									// The purpose of this code is to set a reserve lock on a user's chain, platform, and protocol, transfer funds
-									// depending on the platform of the item, and update the 'claim' column of a row in the 'transactions' table to
-									// 'true'. If any errors are encountered while performing these actions, the code will skip the current
-									// iteration of the loop it is in and continue looping.
-									if _ = e.Context.Db.QueryRow("select value, user_id from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", chain.GetParentSymbol(), item.GetFees()*2, item.GetPlatform(), pbspot.Protocol_MAINNET, false).Scan(&insure.Value, &insure.UserId); insure.GetValue() > 0 {
-
-										// This code is setting a reserve lock on a user's chain, platform, and protocol. If an error is encountered
-										// while setting the lock, the code will continue without further action.
-										if err := e.setReserveLock(insure.GetUserId(), chain.GetParentSymbol(), item.GetPlatform(), item.GetProtocol()); e.Context.Debug(err) {
-											return
-										}
-
-										// The purpose of this switch statement is to check the platform of the item.
-										// If the item is on the Ethereum platform, then the code within the first case statement will be executed.
-										// If the item is on the Tron platform, then the code within the second case statement will be executed.
-										switch item.GetPlatform() {
-										case pbspot.Platform_ETHEREUM:
-											e.transferEthereum(insure.GetUserId(), item.GetId(), chain.GetParentSymbol(), reserve.GetTo(), item.GetFees(), 0, pbspot.Protocol_MAINNET, chain, false)
-											break
-										case pbspot.Platform_TRON:
-											e.transferTron(insure.GetUserId(), item.GetId(), chain.GetParentSymbol(), reserve.GetTo(), item.GetFees(), 0, pbspot.Protocol_MAINNET, chain, false)
-											break
-										}
-
-										// This code is updating a row in a database table called 'transactions' by setting the 'claim' column to
-										// 'true' for a specific row identified by the 'id' column. The 'if' statement is checking for any errors that
-										// occur during the update process. If an error is detected, the code will skip the current iteration of the loop it is in and continue looping.
-										if _, err := e.Context.Db.Exec("update transactions set claim = $2 where id = $1;", item.GetId(), true); e.Context.Debug(err) {
-											return
-										}
-									}
-								}
-
-							} else {
-								e.Context.Logger.Info("[REVERSE]: there are no fees to pay the reverse fee")
 							}
 						}
 					}
 				}
 			}
 		}()
-
-		// The time.Sleep() function is used to pause the current goroutine for a specified duration. In this case, the
-		// goroutine would be paused for 10 seconds.
-		time.Sleep(10 * time.Second)
 	}
 }
 
-// replayConfirmation - This function is used to check the status of pending deposits. It queries the database for transactions with a status
+// reward - The purpose of this code is to reward users for certain transactions. It uses a ticker to check for pending
+// transactions every 10 seconds. It then queries the database for transactions that are pending and have an allocation of
+// reward. It checks the currency associated with the transaction to see if the fees charged are greater than or equal to
+// double the item's fees. If so, the code sets a reserve lock on the user's chain, platform, and protocol, and transfers
+// the fees depending on the platform of the item. Finally, it updates the transaction's claim to true.
+func (e *Service) reward() {
+
+	// The purpose of this code is to ensure that any errors that occur are handled properly. The defer func() statement
+	// creates a function that will be called when the current function exits. The recover() statement allows the program to
+	// catch any panic errors that occur and print out the error message. The e.Context.Debug() statement then prints out
+	// the error message, allowing the programmer to properly handle the error.
+	defer func() {
+		if r := recover(); e.Context.Debug(r) {
+			return
+		}
+	}()
+
+	// The code above creates a ticker that ticks every 10 seconds. The loop then iterates over the values received from the
+	// ticker, which allows the code to execute a set of instructions on each tick. This could be used, for instance, to
+	// execute a certain task at regular intervals, or to display a message on the screen every 10 seconds.
+	ticker := time.NewTicker(time.Second * 10)
+	for range ticker.C {
+
+		func() {
+
+			// This code is used to query the database to retrieve data from the transactions table. The query is filtered by the
+			// allocation and status parameters, which are passed in as arguments to the query. The rows object is then used to
+			// iterate over the retrieved data. The defer statement is used to ensure that the rows object is closed when the function ends.
+			rows, err := e.Context.Db.Query(`select id, symbol, chain_id, fees, value, platform, protocol from transactions where allocation = $1 and status = $2`, pbspot.Allocation_REWARD, pbspot.Status_PENDING)
+			if e.Context.Debug(err) {
+				return
+			}
+			defer rows.Close()
+
+			// This code is part of a loop. The purpose of this loop is to iterate through the rows of a database table and
+			// perform an action for each row. The rows.Next() statement is used to move to the next row in the table.
+			for rows.Next() {
+
+				// The purpose of this code is to declare two variables, item and reserve, of the type pbspot.Transaction. This is a
+				// way to create two variables that are of the same type and can be used to store related information.
+				var (
+					item, reserve pbspot.Transaction
+				)
+
+				// This code is used to scan a row from a database and assign the values to the specified variables. If there is an
+				// error during the scanning, the error will be printed using the Debug method from the e.Context object and the function will return.
+				if err := rows.Scan(&item.Id, &item.Symbol, &item.ChainId, &item.Fees, &item.Value, &item.Platform, &item.Protocol); e.Context.Debug(err) {
+					return
+				}
+
+				// This code is used to get the chain with the corresponding id. The if statement checks to see if there is an error
+				// when getting the chain and if so, it will return. The purpose of the code is to retrieve the chain with the given
+				// id and to check for any errors while doing so.
+				chain, err := e.getChain(item.GetChainId(), true)
+				if e.Context.Debug(err) {
+					return
+				}
+
+				// This code is attempting to retrieve the currency for a given parent symbol, and is handling the case where an
+				// error occurs when attempting to get the currency. If the call to getCurrency() returns an error, the function
+				// returns without attempting to do anything else.
+				currency, err := e.getCurrency(chain.GetParentSymbol(), false)
+				if e.Context.Debug(err) {
+					return
+				}
+
+				// This code is part of a larger program, and its purpose is to transfer funds from a reserve asset to pay fees
+				// associated with a transaction. It checks if the currency has fees that are greater than or equal to double the
+				// item's fees, and if so, it queries the reserves to find the correct asset, platform, protocol, symbol, and
+				// value of the funds to be transferred. It then sets the asset's lock to true, and uses either the Ethereum or Tron transfer functions to move the funds. Finally, it updates the transaction's claim to true.
+				if currency.GetFeesCharges() >= item.GetFees() {
+
+					// This code is checking a database table called "reserves" to determine if a certain condition is true. The code is
+					// querying the reserves table for rows with specific values for the columns "symbol", "value", "platform",
+					// "protocol" and "lock". It will then check if the value of the "reserve" is greater than 0. If it is, the
+					// condition is true.
+					if _ = e.Context.Db.QueryRow("select value, address, user_id from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), false).Scan(&reserve.Value, &reserve.To, &reserve.UserId); reserve.GetValue() > 0 {
+
+						var (
+							value float64
+						)
+
+						// The purpose of this code is to set a reserve lock on a user's chain, platform, and protocol, transfer funds
+						// depending on the platform of the item, and update the 'claim' column of a row in the 'transactions' table to
+						// 'true'. If any errors are encountered while performing these actions, the code will skip the current
+						// iteration of the loop it is in and continue looping.
+						if _ = e.Context.Db.QueryRow("select value from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", chain.GetParentSymbol(), item.GetFees(), item.GetPlatform(), pbspot.Protocol_MAINNET, false).Scan(&value); value > 0 {
+
+							// This code is setting up a transaction for the parent symbol, chain ID, platform, value, and user ID from a
+							// reserve. It is also setting the Allocation to INTERNAL, the Protocol to MAINNET, and the Assignment to
+							// WITHDRAWS. The purpose of this code is to create a transaction and set the properties necessary for it to be
+							// processed. If there is an error in setting up the transaction, the code will stop and return.
+							_, err := e.setTransaction(&pbspot.Transaction{
+								Symbol:     chain.GetParentSymbol(),
+								Block:      chain.GetBlock(),
+								Parent:     item.GetId(),
+								ChainId:    item.GetChainId(),
+								Platform:   item.GetPlatform(),
+								Value:      item.GetFees(),
+								UserId:     reserve.GetUserId(),
+								To:         reserve.GetTo(),
+								Allocation: pbspot.Allocation_INTERNAL,
+								Protocol:   pbspot.Protocol_MAINNET,
+								Assignment: pbspot.Assignment_WITHDRAWS,
+							})
+							if e.Context.Debug(err) {
+								return
+							}
+
+							// This code is part of a loop, and it is used to update the status of a transaction in a database. The first two
+							// arguments in the Exec() function are the ID and status of the transaction. The third argument is a function that
+							// will debug any error that may occur during execution. If an error occurs, the code will skip the current iteration of the loop and continue on to the next one.
+							if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), pbspot.Status_LOCK); e.Context.Debug(err) {
+								return
+							}
+						}
+					}
+
+				} else {
+					e.Context.Logger.Info("[REVERSE]: there are no fees to pay the reverse fee")
+				}
+			}
+		}()
+	}
+}
+
+// confirmation - This function is used to check the status of pending deposits. It queries the database for transactions with a status
 // of PENDING and tx type of DEPOSIT. It then checks the status of the hash associated with the transaction on the
 // relevant blockchain. If the status is successful, the deposit is credited to the local wallet address and the status
 // of the transaction is changed to FILLED. If the status is unsuccessful, the status is changed to FAILED. If the number
 // of confirmations is not yet met, the number of confirmations is updated in the database.
-func (e *Service) replayConfirmation() {
+func (e *Service) confirmation() {
 
 	// This code is performing a SQL query to select information from a database. The purpose is to select a specific set of
-	// information from the database based on the parameters of the query. The query is selecting the fields id, hash,
+	// information from the database based on the parameters of the query. The query is selecting the fields' id, hash,
 	// symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, and create_at where the status
-	// is equal to pbspot.Status_PENDING and the tx_type is equal to pbspot.TxType_DEPOSIT. The code also checks for an error and closes the rows when finished.
-	rows, err := e.Context.Db.Query(`select id, hash, symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, create_at from transactions where status = $1 and tx_type = $2`, pbspot.Status_PENDING, pbspot.TxType_DEPOSIT)
+	// is equal to pbspot.Status_PENDING and the assignment is equal to pbspot.TxType_DEPOSIT. The code also checks for an error and closes the rows when finished.
+	rows, err := e.Context.Db.Query(`select id, hash, symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, allocation, parent, create_at from transactions where status = $1 and assignment = $2`, pbspot.Status_PENDING, pbspot.Assignment_DEPOSIT)
 	if e.Context.Debug(err) {
 		return
 	}
@@ -998,7 +1042,7 @@ func (e *Service) replayConfirmation() {
 		// This code is part of a loop that is iterating over results from a database query. The purpose of the code is to scan
 		// each row of the query result into their corresponding variables. If an error is encountered while scanning, the loop
 		// continues to the next row. The e.Context.Debug() function logs the error but does not cause the program to stop.
-		if err := rows.Scan(&item.Id, &item.Hash, &item.Symbol, &item.To, &item.Fees, &item.ChainId, &item.UserId, &item.Value, &item.Confirmation, &item.Block, &item.Platform, &item.Protocol, &item.CreateAt); e.Context.Debug(err) {
+		if err := rows.Scan(&item.Id, &item.Hash, &item.Symbol, &item.To, &item.Fees, &item.ChainId, &item.UserId, &item.Value, &item.Confirmation, &item.Block, &item.Platform, &item.Protocol, &item.Allocation, &item.Parent, &item.CreateAt); e.Context.Debug(err) {
 			return
 		}
 
@@ -1028,16 +1072,38 @@ func (e *Service) replayConfirmation() {
 			// chain's confirmation number. If both conditions are true, then the subsequent code will execute.
 			if (chain.GetBlock()-item.GetBlock()) >= chain.GetConfirmation() && item.GetConfirmation() >= chain.GetConfirmation() {
 
-				// This code is checking if there was an error when calling the getCurrency() function. If there was an error, it
-				// will be printed out using the Debug() function and the function will return.
-				currency, err := e.getCurrency(item.GetSymbol(), false)
-				if e.Context.Debug(err) {
-					return
+				// The purpose of this code is to get the price of a requested symbol given a base unit. It uses the GetPrice method
+				// from the e object to get the price, and if the GetPrice method returns an error, the Context.Error() method
+				// handles the error. The code also checks that the protocol is MAINNET before attempting to get the price. If the
+				// price is greater than 0, the chain fees are set using the contract's fees and the price.
+				if item.GetProtocol() != pbspot.Protocol_MAINNET {
+
+					// This code is used to get a contract from the Ethereum network. The contract is retrieved using the item's symbol
+					// and chain ID. If there is an error, the Context.Debug() function will be used to return an error message.
+					contract, err := e.getContract(item.GetSymbol(), item.GetChainId())
+					if e.Context.Debug(err) {
+						return
+					}
+
+					// This code is used to get the price of a requested symbol given a base unit. It uses the GetPrice method from the e
+					// object and passes in a context.Background() and a GetRequestPriceManual object containing the base unit and the
+					// requested symbol. If the GetPrice method returns an error, the error is returned in the response and the Context.Error() method handles the error.
+					price, err := e.GetPrice(context.Background(), &pbspot.GetRequestPriceManual{BaseUnit: chain.GetParentSymbol(), QuoteUnit: item.GetSymbol()})
+					if e.Context.Debug(err) {
+						return
+					}
+
+					// This code is checking to see if the price is greater than 0 before calculating the fees. If the price is greater
+					// than 0, then it calculates the fees by multiplying the contract fees by the price.
+					if price.GetPrice() > 0 {
+						chain.Fees = decimal.New(contract.GetFees()).Mul(price.GetPrice()).Float()
+					}
 				}
 
-				// The purpose of the if statement is to check if the value of the item is greater than or equal to the minimum
-				// deposit amount for the currency. If the condition evaluates to true, then the code inside the statement will execute.
-				if item.GetValue() >= currency.GetMinDeposit() {
+				// This is a conditional statement that checks if the value of the item is greater than the fees of the chain, OR if
+				// the item's allocation is not equal to the internal allocation of pbspot. If either of these two conditions is
+				// true, then the code inside the if statement will be executed.
+				if item.GetValue() > chain.GetFees() && item.GetAllocation() != pbspot.Allocation_INTERNAL {
 
 					// Crediting a new deposit to the local wallet address.
 					// This code is updating the balance of an asset with a given symbol and user ID. The purpose is to update the
@@ -1059,7 +1125,15 @@ func (e *Service) replayConfirmation() {
 					if err := e.Context.Publish(&item, "exchange", "deposit/open", "deposit/status"); e.Context.Debug(err) {
 						return
 					}
+
 				} else {
+
+					// This code is updating the records in the transactions table in the database. The values being changed are the
+					// allocation and status, and the specific record being updated is determined by the ID which is passed in as the
+					// third parameter (parent). If the operation is successful, it will return the transaction, otherwise it will return nil.
+					if _, err := e.Context.Db.Exec("update transactions set allocation = $1, status = $2 where id = $3;", pbspot.Allocation_EXTERNAL, pbspot.Status_PENDING, item.GetParent()); e.Context.Debug(err) {
+						return
+					}
 
 					// The purpose of this line of code is to assign a status to an item. In this case, the status is set to the
 					// constant 'Status_RESERVE', which is a pre-defined constant. This constant is likely used to denote that the item

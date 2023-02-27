@@ -116,21 +116,20 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 
 		// This code is part of an update statement in which the purpose is to update the currency's information in the
 		// database. This statement is written in the Go programming language, and it uses the Exec method to execute a SQL
-		// query that updates the currency's name, symbol, min/max withdraw/deposit/trade, fees, marker, status, fin_type, and
+		// query that updates the currency's name, symbol, min/max withdraw/deposit/trade, fees, marker, status, type, and
 		// chains based on the parameters passed in through the req object. The last parameter, req.GetSymbol(), is used to identify which record should be updated.
-		if _, err := e.Context.Db.Exec("update currencies set name = $1, symbol = $2, min_withdraw = $3, max_withdraw = $4, min_deposit = $5, min_trade = $6, max_trade = $7, fees_trade = $8, fees_discount = $9, marker = $10, status = $11, fin_type = $12, chains = $13 where symbol = $14;",
+		if _, err := e.Context.Db.Exec("update currencies set name = $1, symbol = $2, min_withdraw = $3, max_withdraw = $4, min_trade = $5, max_trade = $6, fees_trade = $7, fees_discount = $8, marker = $9, status = $10, type = $11, chains = $12 where symbol = $13;",
 			req.Currency.GetName(),
 			req.Currency.GetSymbol(),
 			req.Currency.GetMinWithdraw(),
 			req.Currency.GetMaxWithdraw(),
-			req.Currency.GetMinDeposit(),
 			req.Currency.GetMinTrade(),
 			req.Currency.GetMaxTrade(),
 			req.Currency.GetFeesTrade(),
 			req.Currency.GetFeesDiscount(),
 			req.Currency.GetMarker(),
 			req.Currency.GetStatus(),
-			req.Currency.GetFinType(),
+			req.Currency.GetType(),
 			serialize,
 			req.GetSymbol(),
 		); err != nil {
@@ -155,18 +154,17 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 		// This code is inserting new information into a table called currencies. The information being inserted is coming from
 		// the req.Currency object. The information is being inserted into a specific order, corresponding to the columns of
 		// the table. The purpose is to store the information about a currency in the currencies table.
-		if _, err := e.Context.Db.Exec("insert into currencies (name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, marker, fin_type, status, chains) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		if _, err := e.Context.Db.Exec("insert into currencies (name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, marker, type, status, chains) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
 			req.Currency.GetName(),
 			req.Currency.GetSymbol(),
 			req.Currency.GetMinWithdraw(),
 			req.Currency.GetMaxWithdraw(),
-			req.Currency.GetMinDeposit(),
 			req.Currency.GetMinTrade(),
 			req.Currency.GetMaxTrade(),
 			req.Currency.GetFeesTrade(),
 			req.Currency.GetFeesDiscount(),
 			req.Currency.GetMarker(),
-			req.Currency.GetFinType(),
+			req.Currency.GetType(),
 			req.Currency.GetStatus(),
 			serialize,
 		); err != nil {
@@ -314,7 +312,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 
 		// This code is used to query the database. It builds a query with the given parameters (maps, req.GetLimit(), offset).
 		// It then attempts to execute it and, if an error is encountered, the function returns the error. Finally, it closes the rows.
-		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, fin_type, create_at from currencies %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at from currencies %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -338,7 +336,6 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 				&item.Symbol,
 				&item.MinWithdraw,
 				&item.MaxWithdraw,
-				&item.MinDeposit,
 				&item.MinTrade,
 				&item.MaxTrade,
 				&item.FeesTrade,
@@ -347,7 +344,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 				&item.FeesCosts,
 				&item.Marker,
 				&item.Status,
-				&item.FinType,
+				&item.Type,
 				&item.CreateAt,
 			); err != nil {
 				return &response, e.Context.Error(err)
@@ -477,7 +474,7 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 		// This code is used to query a database and fetch data from the database. The query is selecting certain columns from
 		// the table "chains" and ordering them in descending order of id, with a limit and an offset set by the request. If
 		// there is an error, the error is returned. Finally, the rows object is closed.
-		rows, err := e.Context.Db.Query(`select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, tag, status from chains order by id desc limit $1 offset $2`, req.GetLimit(), offset)
+		rows, err := e.Context.Db.Query(`select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees, tag, decimals, status from chains order by id desc limit $1 offset $2`, req.GetLimit(), offset)
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -495,7 +492,7 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 			// This code is used to scan through a row of data and assign each column value to a variable. The variables are
 			// item.Id, item.Name, item.Rpc, etc. The if statement checks for any errors while scanning the row and returns an
 			// error if any occur.
-			if err = rows.Scan(&item.Id, &item.Name, &item.Rpc, &item.Block, &item.Network, &item.ExplorerLink, &item.Platform, &item.Confirmation, &item.TimeWithdraw, &item.FeesWithdraw, &item.Tag, &item.Status); err != nil {
+			if err = rows.Scan(&item.Id, &item.Name, &item.Rpc, &item.Block, &item.Network, &item.ExplorerLink, &item.Platform, &item.Confirmation, &item.TimeWithdraw, &item.Fees, &item.Tag, &item.Decimals, &item.Status); err != nil {
 				return &response, e.Context.Error(err)
 			}
 
@@ -610,7 +607,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 		// of the database fields (name, rpc, network, block, explorer_link, platform, confirmation, time_withdraw,
 		// fees_withdraw, tag, parent_symbol, and status) to values passed in the request (req). The id of the entry
 		// to be updated is also passed in the request. The purpose of this code is to update the values of a particular database entry in the "chains" table.
-		if _, err := e.Context.Db.Exec("update chains set name = $1, rpc = $2, network = $3, block = $4, explorer_link = $5, platform = $6, confirmation = $7, time_withdraw = $8, fees_withdraw = $9, tag = $10, parent_symbol = $11, status = $12 where id = $13;",
+		if _, err := e.Context.Db.Exec("update chains set name = $1, rpc = $2, network = $3, block = $4, explorer_link = $5, platform = $6, confirmation = $7, time_withdraw = $8, fees = $9, tag = $10, parent_symbol = $11, decimals = $12, status = $13 where id = $14;",
 			req.Chain.GetName(),
 			req.Chain.GetRpc(),
 			req.Chain.GetNetwork(),
@@ -619,9 +616,10 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 			req.Chain.GetPlatform(),
 			req.Chain.GetConfirmation(),
 			req.Chain.GetTimeWithdraw(),
-			req.Chain.GetFeesWithdraw(),
+			req.Chain.GetFees(),
 			req.Chain.GetTag(),
 			req.Chain.GetParentSymbol(),
+			req.Chain.GetDecimals(),
 			req.Chain.GetStatus(),
 			req.GetId(),
 		); err != nil {
@@ -634,7 +632,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 		// values of the 'req.Chain' object into the specified fields of the 'chains' table. The variables that are being
 		// inserted are the name, RPC, network, block, explorer link, platform, confirmation, time withdraw, fees withdraw,
 		// tag, parent symbol, and status of the chain object.
-		if _, err := e.Context.Db.Exec("insert into chains (name, rpc, network, block, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, tag, parent_symbol, status) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+		if _, err := e.Context.Db.Exec("insert into chains (name, rpc, network, block, explorer_link, platform, confirmation, time_withdraw, fees, tag, parent_symbol, status) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
 			req.Chain.GetName(),
 			req.Chain.GetRpc(),
 			req.Chain.GetNetwork(),
@@ -643,7 +641,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 			req.Chain.GetPlatform(),
 			req.Chain.GetConfirmation(),
 			req.Chain.GetTimeWithdraw(),
-			req.Chain.GetFeesWithdraw(),
+			req.Chain.GetFees(),
 			req.Chain.GetTag(),
 			req.Chain.GetParentSymbol(),
 			req.Chain.GetStatus(),
@@ -1056,7 +1054,7 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 		// joining the two tables via the chain_id column. The query includes a limit and offset, which are specified in the
 		// 'req' object, as well as any additional conditions specified in the 'maps' object. The data returned is stored in
 		// the 'rows' object and is then used to construct a response. If an error occurs, it is logged and the response is returned.
-		rows, err := e.Context.Db.Query(fmt.Sprintf("select c.id, c.symbol, c.chain_id, c.address, c.fees_withdraw, c.protocol, n.platform, n.parent_symbol from contracts c inner join chains n on n.id = c.chain_id %s order by c.id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := e.Context.Db.Query(fmt.Sprintf("select c.id, c.symbol, c.chain_id, c.address, c.fees, c.decimals, c.protocol, n.platform, n.parent_symbol from contracts c inner join chains n on n.id = c.chain_id %s order by c.id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -1077,7 +1075,8 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 				&item.Symbol,
 				&item.ChainId,
 				&item.Address,
-				&item.FeesWithdraw,
+				&item.Fees,
+				&item.Decimals,
 				&item.Protocol,
 				&item.Platform,
 				&item.ParentSymbol,
@@ -1188,6 +1187,19 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 		return &response, e.Context.Error(err)
 	}
 
+	// The purpose of this code is to get the chain specified in the request, using the getChain method from the e object,
+	// and save it in a variable called chain. If there is an error, the code will return an error.
+	chain, err := e.getChain(req.Contract.GetChainId(), false)
+	if err != nil {
+		return nil, err
+	}
+
+	// This code checks to make sure that the fee of the contract is not less than the fee of the network of the parent. If
+	// the fee of the contract is less than the fee of the network, an error message is returned.
+	if req.Contract.GetFees() < chain.GetFees() {
+		return &response, e.Context.Error(status.Errorf(32798, "the fee of the contract must not be less than the fee of the network of the parent %v face value", chain.GetParentSymbol()))
+	}
+
 	// This code is checking to see if the request ID is greater than 0. If the ID is greater than 0, then the code will
 	// execute whatever follows the if statement.
 	if req.GetId() > 0 {
@@ -1195,11 +1207,11 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 		// This code is used to update existing contracts in the database. It takes the updated information from the request
 		// (req) and assigns it to the corresponding fields in the database. It also checks for any errors and returns the
 		// response accordingly.
-		if _, err := e.Context.Db.Exec("update contracts set symbol = $1, chain_id = $2, address = $3, fees_withdraw = $4, protocol = $5, decimals = $6 where id = $7;",
+		if _, err := e.Context.Db.Exec("update contracts set symbol = $1, chain_id = $2, address = $3, fees = $4, protocol = $5, decimals = $6 where id = $7;",
 			req.Contract.GetSymbol(),
 			req.Contract.GetChainId(),
 			req.Contract.GetAddress(),
-			req.Contract.GetFeesWithdraw(),
+			req.Contract.GetFees(),
 			req.Contract.GetProtocol(),
 			req.Contract.GetDecimals(),
 			req.GetId(),
@@ -1212,11 +1224,11 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 		// This code is used to insert data into a contracts table in a database. The six variables in the parameter list
 		// correspond to the columns of the table. The if statement checks for any errors that occur when executing the query
 		// and returns an error if one is found.
-		if _, err := e.Context.Db.Exec("insert into contracts (symbol, chain_id, address, fees_withdraw, protocol, decimals) values ($1, $2, $3, $4, $5, $6)",
+		if _, err := e.Context.Db.Exec("insert into contracts (symbol, chain_id, address, fees, protocol, decimals) values ($1, $2, $3, $4, $5, $6)",
 			req.Contract.GetSymbol(),
 			req.Contract.GetChainId(),
 			req.Contract.GetAddress(),
-			req.Contract.GetFeesWithdraw(),
+			req.Contract.GetFees(),
 			req.Contract.GetProtocol(),
 			req.Contract.GetDecimals(),
 		); err != nil {
@@ -1311,13 +1323,13 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 	// This switch statement is used to create an SQL query depending on the transaction type requested. Depending on the
 	// request, it will append different strings to the "maps" array, which can then be used in an SQL query. In the default
 	// case, it will append a string with both transaction types.
-	switch req.GetTxType() {
-	case pbspot.TxType_DEPOSIT:
-		maps = append(maps, fmt.Sprintf("where tx_type = %d", pbspot.TxType_DEPOSIT))
-	case pbspot.TxType_WITHDRAWS:
-		maps = append(maps, fmt.Sprintf("where tx_type = %d", pbspot.TxType_WITHDRAWS))
+	switch req.GetAssignment() {
+	case pbspot.Assignment_DEPOSIT:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_DEPOSIT))
+	case pbspot.Assignment_WITHDRAWS:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_WITHDRAWS))
 	default:
-		maps = append(maps, fmt.Sprintf("where (tx_type = %d or tx_type = %d)", pbspot.TxType_WITHDRAWS, pbspot.TxType_DEPOSIT))
+		maps = append(maps, fmt.Sprintf("where (assignment = %d or assignment = %d)", pbspot.Assignment_WITHDRAWS, pbspot.Assignment_DEPOSIT))
 	}
 
 	// This code checks if the request (req) contains a search term (GetSearch()) that is longer than 0. If it does, it
@@ -1353,7 +1365,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 		// ordering them by the 'id' column in descending order. The limit and offset parameters are supplied from the
 		// req.GetLimit() and offset variables. If an error occurs when running the query, it will return an error message. The
 		// rows.Close() function is being used to close the query and free up any resources used by it.
-		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, hash, value, price, fees, chain_id, confirmation, "to", user_id, tx_type, fin_type, platform, protocol, status, create_at from transactions %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, hash, value, price, fees, chain_id, confirmation, "to", user_id, assignment, type, platform, protocol, status, create_at from transactions %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -1383,8 +1395,8 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 				&item.Confirmation,
 				&item.To,
 				&item.UserId,
-				&item.TxType,
-				&item.FinType,
+				&item.Assignment,
+				&item.Type,
 				&item.Platform,
 				&item.Protocol,
 				&item.Status,

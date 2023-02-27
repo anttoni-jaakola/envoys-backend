@@ -186,28 +186,38 @@ service Api {
             body: "*"
         };
     }
-    // Set chain.
+    // This code is an example of an RPC (Remote Procedure Call) in the Google API. It is used to set a chain rule,
+    // which is a rule that is used to determine how data should be linked together or processed. The code defines
+    // the URL that should be used to send the request, as well as the format of the body of the request. This code
+    // allows the client to send a request to the API and receive a response, allowing the API to handle the chain rule.
     rpc SetChainRule (SetRequestChainRule) returns (ResponseChain) {
         option (google.api.http) = {
             post: "/v2/admin/spot/set-chain",
             body: "*"
         };
     }
-    // Delete chain.
+    // This code is defining an RPC (remote procedure call) called DeleteChainRule. This RPC will be used to delete a
+    // chain rule from a system using an HTTP POST request. The request body of the POST request must contain the
+    // DeleteRequestChainRule object, and the response will be a ResponseChain object.
     rpc DeleteChainRule (DeleteRequestChainRule) returns (ResponseChain) {
         option (google.api.http) = {
             post: "/v2/admin/spot/delete-chain",
             body: "*"
         };
     }
-    // Get pairs.
+    // This RPC is used to retrieve a specific pair rule from a server. The GetRequestPairsRule is a request object
+    // that contains the parameters needed to retrieve the desired pair rule and the ResponsePair is the response
+    // object that contains the requested pair rule. The option "google.api.http" specifies the HTTP method and URL
+    // that the request should be sent to in order to retrieve the pair rule.
     rpc GetPairsRule (GetRequestPairsRule) returns (ResponsePair) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-pairs",
             body: "*"
         };
     }
-    // Get pair.
+    // This is an RPC (remote procedure call) which is used to retrieve a pair rule from a server. The request is
+    // sent using an HTTP POST request to the "/v2/admin/spot/get-pair" endpoint and the body of the request contains
+    // the data that is needed to retrieve the pair rule. The response is returned as a ResponsePair.
     rpc GetPairRule (GetRequestPairRule) returns (ResponsePair) {
         option (google.api.http) = {
             post: "/v2/admin/spot/get-pair",
@@ -378,6 +388,15 @@ enum Assigning {
     DEFAULT = 3;
 }
 
+// Enums are used to define a set of named constants. In this example, the enum Allocation defines three named constants:
+// External, Internal, and Fees. These constants can be used to assign a numerical value to the constants, which makes
+// them easier to work with in code.
+enum Allocation {
+    EXTERNAL = 0;
+    INTERNAL = 1;
+    REWARD = 2;
+}
+
 // The enum Side is used to define the different sides of a trade. ASK is the side of the trade where a trader is looking
 // to sell an asset, and BID is the side of the trade where a trader is looking to buy an asset. By assigning numerical
 // values to each side, it makes it easier to keep track of the different sides of a trade, side "bid" - "buy" and "ask" - "sell".
@@ -386,26 +405,26 @@ enum Side {
     BID = 1;
 }
 
-// The enum TradeType is a way to assign a numerical value to each type of trade. In this case, MARKET is assigned the
+// The enum Trading is a way to assign a numerical value to each type of trade. In this case, MARKET is assigned the
 // value 0, and LIMIT is assigned the value 1. This is useful when creating a trading system, as it allows trades to be
 // easily identified and categorized.
-enum TradeType {
+enum Trading {
     MARKET = 0;
     LIMIT = 1;
 }
 
-// Enums are used to define a set of named constants. In this example, the enum TxType is used to assign numerical values
+// Enums are used to define a set of named constants. In this example, the enum Assignment is used to assign numerical values
 // to two named constants: DEPOSIT and WITHDRAWS. This can be used as an identifier for a type of transaction, such as a
 // deposit or a withdrawal.
-enum TxType {
+enum Assignment {
     DEPOSIT = 0;
     WITHDRAWS = 1;
 }
 
-// Enums are used in programming to create a set of named constants. In this example, the enum FinType is used to
+// Enums are used in programming to create a set of named constants. In this example, the enum Type is used to
 // categorize financial types, specifically Crypto and Fiat. The = 0 and = 1 are used to assign numerical values to the
 // constants for easier comparison.
-enum FinType {
+enum Type {
     CRYPTO = 0;
     FIAT = 1;
 }
@@ -413,7 +432,7 @@ enum FinType {
 // Enums are used to define a set of constant values. In this case, the enum is defining two constant values, SUPPLY and
 // REVERSE, which are used to represent different types of fees. This can be useful for code readability and for making
 // sure that the code is consistent in its use of defined constants.
-enum FeesType {
+enum Used {
     SUPPLY = 0;
     REVERSE = 1;
 }
@@ -429,6 +448,7 @@ enum Status {
     RESERVE = 3;
     PROCESSING = 4;
     FAILED = 5;
+    LOCK = 6;
 }
 
 // Enums are used to declare a set of named constants. In this case, the enum Summary is declaring two constants, BASE
@@ -472,7 +492,7 @@ message Contract {
     string parent_symbol = 4;
     string symbol = 5;
     string address = 6;
-    double fees_withdraw = 7;
+    double fees = 7;
     int32 decimals = 8;
     Platform platform = 9;
     Protocol protocol = 10;
@@ -491,17 +511,16 @@ message Currency {
     double fees_costs = 9;
     double min_withdraw = 10;
     double max_withdraw = 11;
-    double min_deposit = 12;
-    double min_trade = 13;
-    double max_trade = 14;
-    double volume = 15;
-    repeated Chain chains = 16;
-    repeated Pair pairs = 17;
-    repeated int64 chains_ids = 18;
-    bool marker = 19;
-    bool icon = 20;
-    bool status = 21;
-    FinType fin_type = 22;
+    double min_trade = 12;
+    double max_trade = 13;
+    double volume = 14;
+    repeated Chain chains = 15;
+    repeated Pair pairs = 16;
+    repeated int64 chains_ids = 17;
+    bool marker = 18;
+    bool icon = 19;
+    bool status = 20;
+    Type type = 21;
 }
 
 // Chain message structure.
@@ -519,10 +538,11 @@ message Chain {
     bool status = 11;
     bool exist = 12;
     double reserve = 13;
-    double fees_withdraw = 14;
-    Platform platform = 15;
-    Contract contract = 16;
-    Tag tag = 17;
+    double fees = 14;
+    int32 decimals = 15;
+    Platform platform = 16;
+    Contract contract = 17;
+    Tag tag = 18;
 }
 
 // Pair message structure.
@@ -599,10 +619,16 @@ message Order {
     int32 count = 9;
     Param param = 10;
     Assigning assigning = 11;
-    Status status = 12;
+    Trading type = 12;
+    Status status = 13;
 }
 
-// Transaction message structure.
+// This message provides a structure for a transaction on a blockchain network. It defines the transaction's internal ID,
+// chain/blockchain internal ID, account user internal ID, currency symbol, blockchain hash ID, transaction creation
+// time, recipient's address, address from whom the transfer was made, number of funds, blockchain network fee for
+// transferring funds, freeze currency conversion price, blockchain network confirmations, number of blocks in the
+// blockchain network, data update via socket gateway, allocation, assignment, type, platform, protocol, status, chain,
+// and parent.
 message Transaction {
     // Transaction internal ID.
     int64 id = 1;
@@ -632,14 +658,14 @@ message Transaction {
     int64 block = 13;
     // Data update via socket gateway [true - update, false - create].
     bool hook = 14;
-    // Requiring commission for withdrawal of funds.
-    bool claim = 15;
-    TxType tx_type = 16;
-    FinType fin_type = 17;
+    Allocation allocation = 15;
+    Assignment assignment = 16;
+    Type type = 17;
     Platform platform = 18;
     Protocol protocol = 19;
     Status status = 20;
     Chain chain = 21;
+    int64 parent = 22;
 }
 
 // Analysis message structure.
@@ -782,7 +808,7 @@ message SetRequestAsset {
     string symbol = 1;
     Platform platform = 2;
     Protocol protocol = 3;
-    FinType fin_type = 4;
+    Type type = 4;
 }
 message ResponseAsset {
     repeated Currency fields = 1;
@@ -822,7 +848,7 @@ message SetRequestOrder {
     double quantity = 2;
     string base_unit = 3;
     string quote_unit = 4;
-    TradeType trade_type = 5;
+    Trading trading = 5;
     Assigning assigning = 6;
 }
 message GetRequestOrders {
@@ -890,7 +916,7 @@ message GetRequestTransactionsManual {
     int64 page = 3;
     string symbol = 4;
     string search = 5;
-    TxType tx_type = 6;
+    Assignment assignment = 6;
 }
 message ResponseTransaction {
     repeated Transaction fields = 1;

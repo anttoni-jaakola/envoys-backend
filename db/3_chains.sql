@@ -13,7 +13,7 @@ create table if not exists public.chains
     platform      integer          default 0                     not null,
     confirmation  integer          default 3                     not null,
     time_withdraw integer          default 1800                  not null,
-    fees_withdraw double precision default 0.5                   not null,
+    fees          double precision default 0.5                   not null,
     tag           integer,
     parent_symbol varchar          default ''::character varying not null,
     status        boolean          default false                 not null
@@ -31,7 +31,7 @@ create unique index if not exists chains_id_uindex
 create unique index if not exists chains_name_uindex
     on public.chains (name);
 
-insert into public.chains (id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, tag, parent_symbol, status)
+insert into public.chains (id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees, tag, parent_symbol, status)
 values  (7, 'MC Gateway', 'https://github.com/', 0, 0, '', 4, 0, 10, 0, '', 0, '', false),
         (3, 'Binance Smart Chain', 'https://bsc-dataseed.binance.org', 0, 56, 'https://bscscan.com/tx', 1, 12, 10, 0.0008, 3, 'bnb', false),
         (6, 'Visa Gateway', 'https://github.com', 0, 0, '', 3, 0, 10, 0, '', 0, '', false),

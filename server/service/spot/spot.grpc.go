@@ -445,8 +445,8 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// This is a switch statement that is used to evaluate the trade type of the request object. Depending on the trade
 	// type, different actions can be taken. For example, if the trade type is "buy", the code may execute a certain set of
 	// instructions to purchase the item, and if the trade type is "sell", the code may execute a different set of instructions to sell the item.
-	switch req.GetTradeType() {
-	case pbspot.TradeType_MARKET:
+	switch req.GetTrading() {
+	case pbspot.Trading_MARKET:
 
 		// The purpose of this code is to set the price of the order (order.Price) to the market price of the requested base
 		// and quote units, assigning, and price, which is retrieved from the "e.getMarket" function.
@@ -458,7 +458,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 			order.Quantity, order.Value = decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float(), decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float()
 		}
 
-	case pbspot.TradeType_LIMIT:
+	case pbspot.Trading_LIMIT:
 
 		// The purpose of this code is to set the value of the order.Price variable to the value returned by the GetPrice()
 		// method of the req object.
@@ -476,6 +476,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	order.QuoteUnit = req.GetQuoteUnit()
 	order.Assigning = req.GetAssigning()
 	order.Status = pbspot.Status_PENDING
+	order.Type = req.GetTrading()
 	order.CreateAt = time.Now().UTC().Format(time.RFC3339)
 
 	// This code is checking for an error in the helperOrder() function and if one is found, it returns an error response
@@ -509,10 +510,10 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 			return &response, e.Context.Error(err)
 		}
 
-		// The purpose of e.replayTradeInit(&order, pbspot.Side_BID) is to replay a trade initiation with the given order and
+		// The purpose of e.trade(&order, pbspot.Side_BID) is to replay a trade initiation with the given order and
 		// side (BID). This is typically used when the trade is being initiated manually by an operator or trader. It allows
 		// the trade to be replayed with the same parameters for accuracy and consistency.
-		e.replayTradeInit(&order, pbspot.Side_BID)
+		e.trade(&order, pbspot.Side_BID)
 
 		break
 	case pbspot.Assigning_SELL:
@@ -530,10 +531,10 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 			return &response, e.Context.Error(err)
 		}
 
-		// The purpose of e.replayTradeInit(&order, pbspot.Side_ASK) is to replay a trade initiation with the given order and
+		// The purpose of e.trade(&order, pbspot.Side_ASK) is to replay a trade initiation with the given order and
 		// side (ASK). This is typically used when the trade is being initiated manually by an operator or trader. It allows
 		// the trade to be replayed with the same parameters for accuracy and consistency.
-		e.replayTradeInit(&order, pbspot.Side_ASK)
+		e.trade(&order, pbspot.Side_ASK)
 
 		break
 	default:
@@ -755,12 +756,12 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 		return &response, e.Context.Error(err)
 	}
 
-	// The switch statement is used to check the value of the req.GetFinType() expression and then execute the relevant case
+	// The switch statement is used to check the value of the req.GetType() expression and then execute the relevant case
 	// statement depending on the result. The purpose of this is to allow the code to behave differently depending on the
-	// value of the expression. For example, if the value of req.GetFinType() is "fixed", it will run the first case
+	// value of the expression. For example, if the value of req.GetType() is "fixed", it will run the first case
 	// statement, if it is "variable" it will run the second, and so on.
-	switch req.GetFinType() {
-	case pbspot.FinType_CRYPTO:
+	switch req.GetType() {
+	case pbspot.Type_CRYPTO:
 
 		// The purpose of this code is to declare a variable named "cross" and set it to a CrossChain object. This allows the
 		// code to reference the CrossChain object and use it in the program.
@@ -826,7 +827,7 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 			return &response, e.Context.Error(err)
 		}
 
-	case pbspot.FinType_FIAT:
+	case pbspot.Type_FIAT:
 
 		// The purpose of this code is to set the asset for the given symbol, using the provided authentication details. If
 		// there is an error encountered while attempting to set the asset, the response variable is returned and the error is logged.
@@ -890,17 +891,14 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 			// If it does, it will execute the code inside the if statement.
 			if contract, _ := e.getContract(row.GetSymbol(), row.GetChainsIds()[i]); contract.GetId() > 0 {
 
-				// The purpose of the code is to assign two variables with the same value. The first variable, chain.FeesWithdraw, is
-				// assigned the value returned by the function contract.GetFeesWithdraw(). The second variable, contract.FeesWithdraw, is assigned the value 0.
-				chain.FeesWithdraw, contract.FeesWithdraw = contract.GetFeesWithdraw(), 0
+				// The purpose of the code is to assign two variables with the same value. The first variable, chain.Fees, is
+				// assigned the value returned by the function contract.GetFees(). The second variable, contract.FeesWithdraw, is assigned the value 0.
+				chain.Fees, contract.Fees = contract.GetFees(), 0
 
 				// This code is used to get the price of a requested symbol given a base unit. It uses the GetPrice method from the e
 				// object and passes in a context.Background() and a GetRequestPriceManual object containing the base unit and the
 				// requested symbol. If the GetPrice method returns an error, the error is returned in the response and the Context.Error() method handles the error.
-				price, err := e.GetPrice(context.Background(), &pbspot.GetRequestPriceManual{
-					BaseUnit:  chain.GetParentSymbol(),
-					QuoteUnit: req.GetSymbol(),
-				})
+				price, err := e.GetPrice(context.Background(), &pbspot.GetRequestPriceManual{BaseUnit: chain.GetParentSymbol(), QuoteUnit: req.GetSymbol()})
 				if err != nil {
 					return &response, e.Context.Error(err)
 				}
@@ -908,7 +906,7 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 				// The purpose of this code is to calculate the fees for withdrawing from a particular chain. The chain.FeesWithdraw
 				// variable is assigned to a decimal value which is calculated by multiplying the chain.GetFeesWithdraw() value with
 				// the price.GetPrice() value. The result is then converted to a floating point number.
-				chain.FeesWithdraw = decimal.New(chain.GetFeesWithdraw()).Mul(price.GetPrice()).Float()
+				chain.Fees = decimal.New(chain.GetFees()).Mul(price.GetPrice()).Float()
 
 				// The purpose of this statement is to set the contract for the chain. This statement is typically used in a
 				// blockchain context and assigns the contract object to the chain object. This allows the chain to access the
@@ -958,6 +956,12 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 		maps     []string
 	)
 
+	// This code checks if the limit of the request is set to 0. If it is, then it sets the limit to 30. This is likely done
+	// so that a request has a sensible limit, even if one wasn't specified.
+	if req.GetLimit() == 0 {
+		req.Limit = 500
+	}
+
 	// This code is used to set a limit to the request. It checks if req.GetLimit() is greater than 0. If so, it sets the
 	// limit variable to a string with the limit set to that amount. This is likely used to set a limit on the amount of
 	// data that will be returned in the response.
@@ -968,7 +972,7 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 	// This code is checking to see if the "From" and "To" values in the request are greater than 0. If they are, a
 	// formatted string will be appended to the "maps" array containing a timestamp that is less than the "To" value in the
 	// request. This code is likely used to filter a query based on a time range.
-	if req.GetFrom() > 0 && req.GetTo() > 0 {
+	if req.GetTo() > 0 {
 		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') < to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetTo()))
 	}
 
@@ -1275,16 +1279,16 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 
 	// This switch statement is used to create a query condition based on the transaction type. Depending on the transaction
 	// type, the query string will be amended to include the appropriate condition. If the transaction type is deposit, the
-	// query string will include the condition where tx_type = pbspot.TxType_DEPOSIT. If the transaction type is withdraws,
-	// the query string will include the condition where tx_type = pbspot.TxType_WITHDRAWS. If the transaction type is
-	// neither deposit nor withdraws, the query string will include the condition where (tx_type = pbspot.TxType_WITHDRAWS or tx_type = pbspot.TxType_DEPOSIT).
-	switch req.GetTxType() {
-	case pbspot.TxType_DEPOSIT:
-		maps = append(maps, fmt.Sprintf("where tx_type = %d", pbspot.TxType_DEPOSIT))
-	case pbspot.TxType_WITHDRAWS:
-		maps = append(maps, fmt.Sprintf("where tx_type = %d", pbspot.TxType_WITHDRAWS))
+	// query string will include the condition where assignment = pbspot.Assignment_DEPOSIT. If the transaction type is withdraws,
+	// the query string will include the condition where assignment = pbspot.Assignment_WITHDRAWS. If the transaction type is
+	// neither deposit nor withdraws, the query string will include the condition where (assignment = pbspot.Assignment_WITHDRAWS or assignment = pbspot.Assignment_DEPOSIT).
+	switch req.GetAssignment() {
+	case pbspot.Assignment_DEPOSIT:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_DEPOSIT))
+	case pbspot.Assignment_WITHDRAWS:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_WITHDRAWS))
 	default:
-		maps = append(maps, fmt.Sprintf("where (tx_type = %d or tx_type = %d)", pbspot.TxType_WITHDRAWS, pbspot.TxType_DEPOSIT))
+		maps = append(maps, fmt.Sprintf("where (assignment = %d or assignment = %d)", pbspot.Assignment_WITHDRAWS, pbspot.Assignment_DEPOSIT))
 	}
 
 	// This code is checking the length of the request's symbol and, if greater than zero, appending a string to the maps
@@ -1331,7 +1335,7 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 		// query string includes fields from the transactions table, a WHERE clause generated from the maps variable, a limit
 		// (req.GetLimit()), and an offset (offset). The rows, err variable is used to execute the query and return the
 		// results. To defer rows.Close() statement is used to ensure that the database connection is closed when the query is done.
-		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, hash, value, price, fees, confirmation, "to", chain_id, user_id, tx_type, fin_type, platform, protocol, status, create_at from transactions %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, hash, value, price, fees, confirmation, "to", chain_id, user_id, assignment, type, platform, protocol, status, create_at from transactions %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -1362,8 +1366,8 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 				&item.To,
 				&item.ChainId,
 				&item.UserId,
-				&item.TxType,
-				&item.FinType,
+				&item.Assignment,
+				&item.Type,
 				&item.Platform,
 				&item.Protocol,
 				&item.Status,
@@ -1518,12 +1522,6 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		}
 	}
 
-	// This code is checking if any errors arise when withdrawing a certain quantity of a certain currency from a certain
-	// platform or protocol. If an error occurs, the code returns an error response.
-	if err := e.helperWithdraw(req.GetQuantity(), e.getReserve(req.GetSymbol(), req.GetPlatform(), contract.GetProtocol()), e.getBalance(req.GetSymbol(), auth), currency.GetMaxWithdraw(), currency.GetMinWithdraw(), fees); err != nil {
-		return &response, e.Context.Error(err)
-	}
-
 	// This code checks to see if the protocol used by the contract is not the mainnet protocol. This is important to ensure
 	// that the contract uses the correct protocol, as different protocols have different rules and requirements.
 	if contract.GetProtocol() != pbspot.Protocol_MAINNET {
@@ -1544,23 +1542,29 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		// the cost of an individual item.
 		req.Price = price.GetPrice()
 
-		// The purpose of this statement is to assign the value returned from the GetFeesWithdraw() method of the contract
-		// object to the FeesWithdraw property of the chain object.
-		chain.FeesWithdraw = contract.GetFeesWithdraw()
+		// The purpose of this statement is to assign the value returned from the GetFees() method of the contract
+		// object to the GetFees property of the chain object.
+		chain.Fees = contract.GetFees()
 
 		// The purpose of this statement is to calculate the fees that are associated with a withdrawal request. The statement
 		// uses the GetFeesWithdraw() and GetPrice() functions to retrieve the fee rate and the price of the request,
 		// respectively. It then uses decimal.New to create a new decimal object and multiply it by the price to get the fees
 		// associated with the withdrawal request. Finally, it uses the Float() function to convert the resulting decimal
 		// object into a float value for further calculations.
-		fees = decimal.New(contract.GetFeesWithdraw()).Mul(req.GetPrice()).Float()
+		fees = decimal.New(contract.GetFees()).Mul(req.GetPrice()).Float()
 
 	} else {
 
 		// The purpose of this line of code is to get the fee associated with withdrawing funds from a chain, such as a
 		// blockchain. This line of code calls the GetFeesWithdraw() method, which retrieves the fee associated with
 		// withdrawing funds from the chain.
-		fees = chain.GetFeesWithdraw()
+		fees = chain.GetFees()
+	}
+
+	// This code is checking if any errors arise when withdrawing a certain quantity of a certain currency from a certain
+	// platform or protocol. If an error occurs, the code returns an error response.
+	if err := e.helperWithdraw(req.GetQuantity(), e.getReserve(req.GetSymbol(), req.GetPlatform(), contract.GetProtocol()), e.getBalance(req.GetSymbol(), auth), currency.GetMaxWithdraw(), currency.GetMinWithdraw(), fees); err != nil {
+		return &response, e.Context.Error(err)
 	}
 
 	// This if statement is checking to see if the address given by the request is the same as the address that it is attempting to send the request to.
@@ -1579,7 +1583,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// method of the database to execute an SQL insert statement. The values of the transaction being inserted are provided
 	// as parameters in the insert statement. Finally, the code checks for any errors that may have occurred during the
 	// insertion, and returns an appropriate response.
-	if _, err := e.Context.Db.Exec(`insert into transactions (symbol, value, price, "to", chain_id, platform, protocol, fees, user_id, tx_type, fin_type) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+	if _, err := e.Context.Db.Exec(`insert into transactions (symbol, value, price, "to", chain_id, platform, protocol, fees, user_id, assignment, type) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
 		req.GetSymbol(),
 		req.GetQuantity(),
 		req.GetPrice(),
@@ -1587,12 +1591,12 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		req.GetId(),
 		req.GetPlatform(),
 		contract.GetProtocol(),
-		chain.GetFeesWithdraw(),
+		chain.GetFees(),
 		auth,
-		pbspot.TxType_WITHDRAWS,
-		currency.GetFinType(),
+		pbspot.Assignment_WITHDRAWS,
+		currency.GetType(),
 	); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, e.Context.Error(status.Error(554322, "transaction hash is already in the list, please contact support"))
 	}
 
 	// This code checks if an error occurs when the setSecure function is called. If an error occurs, it returns an error

@@ -33,6 +33,25 @@ func (p *Params) Network(id int64) {
 	p.network = big.NewInt(id)
 }
 
+// gasUsed - This function is used to return the amount of gas used by a certain platform. Depending on the platform, this amount
+// can vary, and the boolean parameter is used to determine if the amount of gas used should be 65000 or 21000 for
+// Ethereum. For Tron, the amount of gas used is always 10000000. If the platform is none of the listed, 0 is returned.
+func (p *Params) gasUsed(c bool) uint64 {
+	switch p.platform {
+
+	case pbspot.Platform_ETHEREUM:
+		if c {
+			return 65000
+		} else {
+			return 21000
+		}
+	case pbspot.Platform_TRON:
+		return 10000000
+	}
+
+	return 0
+}
+
 // Transfer - The purpose of this code is to transfer funds from one user to another on a blockchain platform. It checks the
 // platform being used, creates and signs a transaction, and then sends it for processing. It also stores the result of
 // the transaction in the p.response object, and then returns the transaction's hash and any error that may have occurred during the process.
@@ -84,7 +103,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 				Nonce:    nonce.Uint64(),
 				To:       &to,
 				Value:    big.NewInt(0),
-				Gas:      uint64(tx.Gas),
+				Gas:      p.gasUsed(true),
 				GasPrice: big.NewInt(gasPrice),
 				Data:     tx.Data,
 			})
@@ -125,7 +144,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 				Nonce:    nonce.Uint64(),
 				To:       &to,
 				Value:    tx.Value,
-				Gas:      uint64(tx.Gas),
+				Gas:      p.gasUsed(false),
 				GasPrice: big.NewInt(gasPrice),
 			})
 			if err != nil {
@@ -167,13 +186,13 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 				ContractAddress  string `json:"contract_address"`
 				FunctionSelector string `json:"function_selector"`
 				Parameter        string `json:"parameter"`
-				FeeLimit         int    `json:"fee_limit"`
+				FeeLimit         uint64 `json:"fee_limit"`
 				OwnerAddress     string `json:"owner_address"`
 			}{
-				ContractAddress:  tx.Contract,
+				ContractAddress:  address.New(tx.Contract).Hex(true),
 				FunctionSelector: "transfer(address,uint256)",
 				Parameter:        strings.TrimPrefix(hexutil.Encode(tx.Data), "0x"),
-				FeeLimit:         tx.Gas,
+				FeeLimit:         p.gasUsed(true),
 				OwnerAddress:     address.New(owner.String()).Hex(true),
 			}
 
@@ -197,7 +216,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 				OwnerAddress string   `json:"owner_address"`
 				Amount       *big.Int `json:"amount"`
 			}{
-				ToAddress:    tx.To,
+				ToAddress:    address.New(tx.To).Hex(true),
 				OwnerAddress: address.New(owner.String()).Hex(true),
 				Amount:       tx.Value,
 			}
@@ -458,13 +477,13 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 				ContractAddress  string `json:"contract_address"`
 				FunctionSelector string `json:"function_selector"`
 				Parameter        string `json:"parameter"`
-				FeeLimit         int    `json:"fee_limit"`
+				FeeLimit         uint64 `json:"fee_limit"`
 				OwnerAddress     string `json:"owner_address"`
 			}{
-				ContractAddress:  tx.Contract,
+				ContractAddress:  address.New(tx.Contract).Hex(true),
 				FunctionSelector: "transfer(address,uint256)",
 				Parameter:        strings.TrimPrefix(hexutil.Encode(tx.Data), "0x"),
-				FeeLimit:         tx.Gas,
+				FeeLimit:         p.gasUsed(true),
 				OwnerAddress:     address.New(owner.String()).Hex(true),
 			}
 
@@ -488,7 +507,7 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 				OwnerAddress string   `json:"owner_address"`
 				Amount       *big.Int `json:"amount"`
 			}{
-				ToAddress:    tx.To,
+				ToAddress:    address.New(tx.To).Hex(true),
 				OwnerAddress: address.New(owner.String()).Hex(true),
 				Amount:       tx.Value,
 			}
@@ -513,6 +532,18 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 	constant, err := p.get()
 	if err != nil {
 		return fee, err
+	}
+
+	// This code is used to check if there is an error in the response of a given operation. If there is an error present in
+	// the response, it will return a new error with the message associated with the error.
+	if err, ok := constant["error"]; ok {
+		return fee, errors.New(err.(map[string]interface{})["message"].(string))
+	}
+
+	// This if statement is checking to see if the key "Error" exists in the constant map. If it does, then it is returning
+	// a fee and creating a new error using the value of the key. This is likely being used to handle an error condition.
+	if err, ok := constant["Error"]; ok {
+		return fee, errors.New(err.(string))
 	}
 
 	// This code is using the comma ok idiom to check if the key "result" is present in the constant map. If the key is
@@ -559,6 +590,9 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 		// This code is used to calculate a fee. The first line calculates the fee as 10 times the length of the string in the
 		// raw variable. The second line checks if the price is greater than or equal to the fee divided by 10. If it is, then the fee is set to 0.
 		fee = decimal.New(int64(len(raw.(string)))).Mul(10).Int64()
+
+		// This code checks to see if the variable 'energies' is true. If it is, then it checks to see if the variable 'price'
+		// is greater than or equal to 10 times the variable 'fee'. If it is, then the variable 'fee' is set to 0.
 		if price >= decimal.New(fee).Div(10).Int64() {
 			fee = 0
 		}
@@ -642,7 +676,7 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 		}
 	}
 
-	return fee, errors.New("constant contract not found!...")
+	return fee, errors.New("constant fee calculate not found!...")
 }
 
 // buildTransaction - The purpose of this code is to build a transaction for a given platform, such as Ethereum or Tron. It checks for the
@@ -849,7 +883,7 @@ func (p *Params) Data(to string, amount []byte) (data []byte, err error) {
 	case pbspot.Platform_TRON:
 
 		// This code is used to decode an address string into a byte slice. The address.New(to, true).Hex(true)[2:] is used to
-		// get the hex-encoded address from the to variable. The hex.DecodeString() is then used to decode the hex-encoded
+		// get the hex-encoded address from the two variable. The hex.DecodeString() is then used to decode the hex-encoded
 		// address into a byte slice and store it in the decode variable. If an error occurs, the function returns the data and the error.
 		decode, err := hex.DecodeString(address.New(to, true).Hex(true)[2:])
 		if err != nil {

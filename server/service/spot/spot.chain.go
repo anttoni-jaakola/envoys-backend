@@ -15,11 +15,11 @@ import (
 	"strings"
 )
 
-// depositEthereum - This code is part of a Service object in the code which handles Ethereum deposits. The purpose of this code is to
+// ethereum - This code is part of a Service object in the code which handles Ethereum deposits. The purpose of this code is to
 // update the Ethereum block height and scan the new block for any transactions that involve deposits. It will then
 // publish the deposit transaction to an exchange. It also includes error handling, such as attempting to debug any
 // errors that occur throughout the process.
-func (e *Service) depositEthereum(chain *pbspot.Chain) {
+func (e *Service) ethereum(chain *pbspot.Chain) {
 
 	// The purpose of this code is to use to defer keyword to recover from a panic. It does this by catching the panic with
 	// the recover() function, and then using the e.Context.Debug() function to log the recovered panic. If the panic is
@@ -34,7 +34,7 @@ func (e *Service) depositEthereum(chain *pbspot.Chain) {
 	// new client connection to the blockchain platform, and the second line is checking for any errors that may have
 	// occurred during the connection. If an error is found, the code will exit and not continue.
 	client, err := blockchain.Dial(chain.GetRpc(), chain.GetPlatform())
-	if e.Context.Debug(err) {
+	if err != nil { // No debug....
 		return
 	}
 
@@ -84,8 +84,8 @@ func (e *Service) depositEthereum(chain *pbspot.Chain) {
 					item.Symbol = chain.GetParentSymbol()
 					item.ChainId = chain.GetId()
 					item.Platform = chain.GetPlatform()
-					item.FinType = pbspot.FinType_CRYPTO
-					item.TxType = pbspot.TxType_DEPOSIT
+					item.Type = pbspot.Type_CRYPTO
+					item.Assignment = pbspot.Assignment_DEPOSIT
 					item.Value = value
 					item.Hash = tx.Hash
 					item.Block = chain.GetBlock()
@@ -170,8 +170,8 @@ func (e *Service) depositEthereum(chain *pbspot.Chain) {
 									item.Protocol = contract.GetProtocol()
 									item.ChainId = chain.GetId()
 									item.Platform = chain.GetPlatform()
-									item.FinType = pbspot.FinType_CRYPTO
-									item.TxType = pbspot.TxType_DEPOSIT
+									item.Type = pbspot.Type_CRYPTO
+									item.Assignment = pbspot.Assignment_DEPOSIT
 									item.Value = value
 									item.Hash = tx.Hash
 									item.Block = chain.GetBlock()
@@ -221,11 +221,11 @@ func (e *Service) depositEthereum(chain *pbspot.Chain) {
 	e.done(chain.GetId())
 }
 
-// depositTron - The purpose of this code is to deposit cryptocurrency on a blockchain. It checks the block number and goes through the
+// tron - The purpose of this code is to deposit cryptocurrency on a blockchain. It checks the block number and goes through the
 // list of transactions on the blockchain to find deposits. It then checks the type of transaction and parses the data to
 // check if the deposit is valid. If it is valid, it sets up the transaction and publishes it. Finally, it updates the
 // block number so the next deposit can be checked.
-func (e *Service) depositTron(chain *pbspot.Chain) {
+func (e *Service) tron(chain *pbspot.Chain) {
 
 	// The purpose of this code is to handle a panic (or run-time error) that may occur during execution. The defer keyword
 	// is used to ensure that the function is run even if the code panics. The recover() function returns the value that was
@@ -242,7 +242,7 @@ func (e *Service) depositTron(chain *pbspot.Chain) {
 	// client connection to the blockchain using the RPC URL and platform credentials. The second line checks for any errors
 	// that may have occurred during the connection process. If there is an error, the function will terminate.
 	client, err := blockchain.Dial(chain.GetRpc(), chain.GetPlatform())
-	if e.Context.Debug(err) {
+	if err != nil { // No debug....
 		return
 	}
 
@@ -293,8 +293,8 @@ func (e *Service) depositTron(chain *pbspot.Chain) {
 					item.Symbol = chain.GetParentSymbol()
 					item.ChainId = chain.GetId()
 					item.Platform = chain.GetPlatform()
-					item.FinType = pbspot.FinType_CRYPTO
-					item.TxType = pbspot.TxType_DEPOSIT
+					item.Type = pbspot.Type_CRYPTO
+					item.Assignment = pbspot.Assignment_DEPOSIT
 					item.Value = decimal.New(value).Div(1000000).Float() // value / 1000000
 					item.Hash = tx.Hash
 					item.Block = chain.GetBlock()
@@ -384,8 +384,8 @@ func (e *Service) depositTron(chain *pbspot.Chain) {
 									item.Protocol = contract.GetProtocol()
 									item.ChainId = chain.GetId()
 									item.Platform = chain.GetPlatform()
-									item.FinType = pbspot.FinType_CRYPTO
-									item.TxType = pbspot.TxType_DEPOSIT
+									item.Type = pbspot.Type_CRYPTO
+									item.Assignment = pbspot.Assignment_DEPOSIT
 									item.Value = value
 									item.Hash = tx.Hash
 									item.Block = chain.GetBlock()
@@ -437,11 +437,11 @@ func (e *Service) depositTron(chain *pbspot.Chain) {
 	e.done(chain.GetId())
 }
 
-// transferEthereum - This function is used in a blockchain application to transfer Ethereum. It performs a variety of actions such as
+// transfer - This function is used in a blockchain application to transfer Ethereum. It performs a variety of actions such as
 // dialing the correct RPC, creating a keypair and a private key, estimating the gas for the transaction, setting a
 // reserve account for the funds being transferred, and setting the reserve account to unlock. Finally, it publishes the
 // transaction to the exchange and sends out an email notification.
-func (e *Service) transferEthereum(userId, txId int64, symbol string, to string, value, price float64, protocol pbspot.Protocol, chain *pbspot.Chain, subscribe bool) {
+func (e *Service) transfer(userId, txId int64, symbol string, to string, value, price float64, protocol pbspot.Protocol, chain *pbspot.Chain, allocation pbspot.Allocation) {
 
 	//This code is used to handle the panic situations in a program. The defer statement ensures that the function
 	//following it will be executed either when the function returns normally or when the function panics. In this code,
@@ -460,9 +460,9 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 		migrate = query.Migrate{
 			Context: e.Context,
 		}
-		fees, convert float64
-		transfer      *blockchain.Transfer
-		wei           *big.Int
+		fees, charges, convert float64
+		transfer               *blockchain.Transfer
+		wei                    *big.Int
 	)
 
 	// This code is establishing a connection between a client and a blockchain. The blockchain.Dial() function is used to
@@ -515,8 +515,7 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 		// transaction (Gas), and the value of the transaction in the smallest denomination of the cryptocurrency (Value).
 		transfer = &blockchain.Transfer{
 			To:    to,
-			Gas:   21000,
-			Value: decimal.New(value).Integer(18),
+			Value: decimal.New(value).Integer(chain.GetDecimals()),
 		}
 
 		// EstimateGas is a function used to estimate the gas required to execute a given transaction. The code snippet is
@@ -529,18 +528,20 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 
 		// The purpose of this code is to create a new decimal value with 18 decimal places of precision, based on the
 		// `estimate` value that was provided. It is done using the `decimal.New()` and `Floating()` functions from the decimal library.
-		fees = decimal.New(estimate).Floating(18)
+		fees = decimal.New(estimate).Floating(chain.GetDecimals())
 
 		// This code is used to calculate the number of wei (a unit of account used in the Ethereum blockchain) associated with
 		// a transaction. If the user subscribes, the amount of wei is calculated by subtracting the fees from the value. If
 		// the user does not subscribe, the amount of wei is simply the value.
-		if subscribe {
-			wei = decimal.New(decimal.New(value).Sub(fees).Float()).Integer(18)
-		} else {
-			wei = decimal.New(value).Integer(18)
+		switch allocation {
+		case pbspot.Allocation_EXTERNAL:
+			wei = decimal.New(decimal.New(value).Sub(fees).Float()).Integer(chain.GetDecimals())
+		case pbspot.Allocation_INTERNAL:
+			wei = decimal.New(value).Integer(chain.GetDecimals())
 		}
 
-		// The purpose of the code is to create a new value of 1.5 wei and assign it to the variable 'transfer.Value'. Wei is a unit of ether, a cryptocurrency.
+		// The purpose of this line of code is to assign a value of wei to the transfer variable. Wei is a unit of measurement
+		// used in the Ethereum blockchain to represent a tiny fraction of Ether (the cryptocurrency).
 		transfer.Value = wei
 	} else {
 
@@ -563,7 +564,6 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 		// data. The transfer will be used to execute a transaction on the blockchain.
 		transfer = &blockchain.Transfer{
 			Contract: contract.GetAddress(),
-			Gas:      65000,
 			Data:     data,
 		}
 
@@ -577,7 +577,7 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 		// The purpose of this line of code is to convert a decimal value to a floating-point value with 18 decimal places. The
 		// decimal.New() function takes an estimate as an argument and the Floating() method is used to convert the value to a
 		// floating-point type with 18 decimal places.
-		fees = decimal.New(estimate).Floating(18)
+		fees = decimal.New(estimate).Floating(chain.GetDecimals())
 
 		// The purpose of this code is to calculate the total cost of a product by multiplying the fees and the price together,
 		// and then converting the result to a floating-point number.
@@ -611,18 +611,36 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 		return
 	}
 
-	// The purpose of this statement is to check if the variable "subscribe" is true. If it is, the code that follows the
-	// statement will be executed.
-	if subscribe {
+	// This is an if statement used to determine which protocol should be used. In this case, it is checking if the
+	// protocol is set to the mainnet protocol. If it is, then the code within the statement will be executed. If it is
+	// not, then the code will not be executed and the program will continue with the next statement.
+	if protocol == pbspot.Protocol_MAINNET {
 
-		var (
-			charges float64
-		)
+		// The purpose of this statement is to determine if the value of the variable "allocation" is equal to the constant
+		// "pbspot.Allocation_Internal". If it is equal, then the code block following the statement will be executed.
+		if allocation == pbspot.Allocation_INTERNAL {
 
-		// This is an if statement used to determine which protocol should be used. In this case, it is checking if the
-		// protocol is set to the mainnet protocol. If it is, then the code within the statement will be executed. If it is
-		// not, then the code will not be executed and the program will continue with the next statement.
-		if protocol == pbspot.Protocol_MAINNET {
+			// This statement is used to add the reserve amount for a user to their account. The parameters passed to the
+			// setReserve function are the userId, owner, chain symbol, amount, platform, protocol, and balance type. The
+			// statement then checks for any errors that occurred while setting the reserve, and if there was an error, the statement will return.
+			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+				return
+			}
+
+			// This code is part of a function that is used to insert fees into a database. The purpose of the code is to insert a
+			// new row into the 'fees' table with the given parameters (userId, owner, to, chain.GetParentSymbol(),
+			// chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE). If an error occurs, the code will log the error and then return.
+			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.Used_REVERSE); e.Context.Debug(err) {
+				return
+			}
+
+			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
+			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
+			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
+				return
+			}
+
+		} else {
 
 			// This code is a part of a function that is attempting to set a reserve for a user on a given platform and chain. The
 			// purpose of the if statement is to check if an error occurs when the reserve is being set. If an error occurs, the
@@ -631,50 +649,56 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 				return
 			}
 
-			// The purpose of this equation is to calculate the total charges associated with a purchase. The charges are equal to the sum of the fees and taxes associated with the purchase.
-			charges = fees
-
-		} else {
-
-			// This code is checking to see if a reserve is set for a given userId, owner, chain symbol, fees, platform, and
-			// balance. If the reserve is set, it will continue the code, but if there is an error, it will debug the error and then return.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// Update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
-			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
-			if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// This code is attempting to insert data into a database. The code is using the Exec() function from the Db object.
-			// It is passing in parameters for the insert query as well as the userId, owner, to, chain.GetParentSymbol(),
-			// chain.GetPlatform(), fees, and pbspot.FeesType_SUPPLY. If there is an error, it will be printed to the console
-			// using the Debug() function. If an error occurs, the code will return.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), fees, pbspot.FeesType_SUPPLY); e.Context.Debug(err) {
-				return
-			}
-
-			// Token commission - update the collection account, the commission that was deducted from the amount of the token is credited to the exchange, the commission is calculated according to the formula and commission of the parent account,
-			// for example: since we make commissions for the transfer exclusively from the parent account, we need to minus the commission of 0.006 eth from the amount of 1000 tst using conversion at the price of the token,
-			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); this amount is 985.3 tst and will be credited for the transfer,
-			// and the amount of 14.7 tst will be credited to the stock exchange, since the reverse was charged at the expense of the stock exchange to pay for gas.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, convert); e.Context.Debug(err) {
-				return
-			}
-
-			// This line of code multiplies the fees by the price and converts the result to a float. In other words, this line of
-			// code is used to calculate the charges associated with a particular purchase.
-			charges = decimal.New(fees).Mul(price).Float()
 		}
 
-		// This code is executing an SQL statement to update the transactions table. It is setting the fees, hash, and status
-		// of a transaction with a specific ID. The e.Context.Debug(err) line is used to check for any errors that may have
-		// occurred during the update and, if any errors are found, the function will return.
-		if _, err := e.Context.Db.Exec("update transactions set fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees); e.Context.Debug(err) {
+		// The purpose of this equation is to calculate the total charges associated with a purchase. The charges are equal to the sum of the fees and taxes associated with the purchase.
+		charges = fees
+
+	} else {
+
+		// This code is checking to see if a reserve is set for a given userId, owner, chain symbol, fees, platform, and
+		// balance. If the reserve is set, it will continue the code, but if there is an error, it will debug the error and then return.
+		if err := e.setReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
 			return
 		}
+
+		// Update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
+		// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
+		if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			return
+		}
+
+		// This code is attempting to insert data into a database. The code is using the Exec() function from the Db object.
+		// It is passing in parameters for the insert query as well as the userId, owner, to, chain.GetParentSymbol(),
+		// chain.GetPlatform(), fees, and pbspot.FeesType_SUPPLY. If there is an error, it will be printed to the console
+		// using the Debug() function. If an error occurs, the code will return.
+		if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), fees, pbspot.Used_SUPPLY); e.Context.Debug(err) {
+			return
+		}
+
+		// Token commission - update the collection account, the commission that was deducted from the amount of the token is credited to the exchange, the commission is calculated according to the formula and commission of the parent account,
+		// for example: since we make commissions for the transfer exclusively from the parent account, we need to minus the commission of 0.006 eth from the amount of 1000 tst using conversion at the price of the token,
+		// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); this amount is 985.3 tst and will be credited for the transfer,
+		// and the amount of 14.7 tst will be credited to the stock exchange, since the reverse was charged at the expense of the stock exchange to pay for gas.
+		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, convert); e.Context.Debug(err) {
+			return
+		}
+
+		// This line of code multiplies the fees by the price and converts the result to a float. In other words, this line of
+		// code is used to calculate the charges associated with a particular purchase.
+		charges = decimal.New(fees).Mul(price).Float()
+	}
+
+	// This code is executing an SQL statement to update the transactions table. It is setting the fees, hash, and status
+	// of a transaction with a specific ID. The e.Context.Debug(err) line is used to check for any errors that may have
+	// occurred during the update and, if any errors are found, the function will return.
+	if _, err := e.Context.Db.Exec("update transactions set fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees); e.Context.Debug(err) {
+		return
+	}
+
+	// The purpose of this code is to check if the variable allocation is equal to the constant pbspot.Allocation_External.
+	// If it is, then some additional code will be executed.
+	if allocation == pbspot.Allocation_EXTERNAL {
 
 		// This piece of code is used to publish a transaction message on a message broker. The message contains the
 		// transaction ID, fees, and hash. The message is sent to the exchange topic with the label "withdraw/status". The code
@@ -691,332 +715,6 @@ func (e *Service) transferEthereum(userId, txId int64, symbol string, to string,
 		// email the user identified by the userId parameter with the subject "withdrawal", the value of the
 		// withdrawal, and the symbol associated with the withdrawal.
 		go migrate.SendMail(userId, "withdrawal", value, symbol)
-
-	} else {
-
-		// This is an if statement that is checking the value of the variable "protocol" against a specific value,
-		// pbspot.Protocol_MAINNET. If the value of the protocol variable is equal to the value of pbspot.Protocol_MAINNET,
-		// then the code within the statement will be executed. This is used to ensure that the code is only executed if the
-		// protocol is set to the correct value.
-		if protocol == pbspot.Protocol_MAINNET {
-
-			// This statement is used to add the reserve amount for a user to their account. The parameters passed to the
-			// setReserve function are the userId, owner, chain symbol, amount, platform, protocol, and balance type. The
-			// statement then checks for any errors that occurred while setting the reserve, and if there was an error, the statement will return.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// This code is part of a function that is used to insert fees into a database. The purpose of the code is to insert a
-			// new row into the 'fees' table with the given parameters (userId, owner, to, chain.GetParentSymbol(),
-			// chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE). If an error occurs, the code will log the error and then return.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE); e.Context.Debug(err) {
-				return
-			}
-
-			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
-			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
-				return
-			}
-		}
-	}
-
-	// This code is making sure that a reserve is unlocked in order to allow a user with a given ID, symbol, platform, and
-	// protocol to access it. The "if err" statement is checking for any errors that might occur when attempting to set the
-	// reserve unlock. If an error is encountered, the code will return, otherwise it will continue with execution.
-	if err := e.setReserveUnlock(userId, symbol, chain.GetPlatform(), protocol); e.Context.Debug(err) {
-		return
-	}
-}
-
-// transferTron - This function is used to transfer Tron (a cryptocurrency) from one user to another. It takes the user ID, transaction
-// ID, symbol, address to send to, value, price, protocol, chain and whether to subscribe or not as parameters. The
-// function then attempts to dial the chain's RPC and get the owner, private key, and client. It then checks the protocol
-// and sets the transfer accordingly, calculating the fees and converting the value if needed. It then attempts to
-// transfer the Tron and if successful, updates the reserve and transaction status accordingly. If there is an error, the
-// function will panic and debug the error. Finally, it unlocks the reserve account.
-func (e *Service) transferTron(userId, txId int64, symbol, to string, value, price float64, protocol pbspot.Protocol, chain *pbspot.Chain, subscribe bool) {
-
-	// This code is used to handle an unexpected error. The defer statement prevents the program from panicking, and
-	// instead, recovers from the error and prints out a debug message. This allows the program to continue functioning
-	// normally without crashing.
-	defer func() {
-		if r := recover(); e.Context.Debug(r) {
-			return
-		}
-	}()
-
-	// The code snippet declares six variables - cross, migrate, fees, convert, transfer, and wei - each with a different
-	// type. The purpose of this is to declare variables with different types that will be used later in the code. The types
-	// of the variables indicate that they will be used for a keypair, query, float calculations, blockchain transfer, and
-	// big integer calculations, respectively.
-	var (
-		cross   keypair.CrossChain
-		migrate = query.Migrate{
-			Context: e.Context,
-		}
-		fees, convert float64
-		transfer      *blockchain.Transfer
-		wei           *big.Int
-	)
-
-	// This code is used to establish a connection between the blockchain and a client. The first line of code attempts to
-	// dial the blockchain and the client using the GetRpc() and GetPlatform() methods. The second line checks for any
-	// errors that may have occurred during the dialing process and prints them out if the debug flag is set to true. If
-	// there are errors, the code execution is stopped and no further action is taken.
-	client, err := blockchain.Dial(chain.GetRpc(), chain.GetPlatform())
-	if e.Context.Debug(err) {
-		return
-	}
-
-	// This code is likely part of a larger program that is attempting to get entropy (a measure of randomness) from a user
-	// ID. The first line attempts to retrieve the entropy from a user ID and the second line checks if that action caused
-	// an error. If an error occurred, the code will exit the function.
-	entropy, err := e.getEntropy(userId)
-	if e.Context.Debug(err) {
-		return
-	}
-
-	// This code is creating a new "cross" object that is used to securely store data. The owner and private variables are
-	// used to reference the cross object. The fmt.Sprintf() function is used to format a string using the
-	// e.Context.Secrets[1] value. The entropy and chain.GetPlatform() values are used to provide additional security
-	// parameters. The e.Context.Debug() function is used to log any errors that occur during the creation of the cross object.
-	owner, private, err := cross.New(fmt.Sprintf("%v-&*39~763@)", e.Context.Secrets[1]), entropy, chain.GetPlatform())
-	if e.Context.Debug(err) {
-		return
-	}
-
-	// This code is used to convert a hexadecimal string to an Elliptic Curve Digital Signature Algorithm (ECDSA) private
-	// key. The crypto.HexToECDSA() function takes in a hexadecimal string as an argument, and the strings.TrimPrefix()
-	// function is used to remove the "0x" prefix from the string. The if statement checks for errors, and if an error
-	// occurs, the code returns without completing the rest of the code.
-	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(private, "0x"))
-	if e.Context.Debug(err) {
-		return
-	}
-
-	// The client.Private() function is used to set the private key associated with the client. This private key is then
-	// used by the client to authenticate itself to the server, allowing access to protected resources on the server.
-	client.Private(privateKey)
-
-	// This line of code is checking if the protocol used is the mainnet protocol. If it is, then the code will continue to
-	// execute. If it is not, then it will jump to the next line of code.
-	if protocol == pbspot.Protocol_MAINNET {
-
-		// The purpose of this code is to create a transfer record for a blockchain transaction. The transfer record contains
-		// information about the recipient address, the amount of gas used for the transaction, and the value of the
-		// transaction. The recipient address is converted to hexadecimal to make it easier to read, and the value is converted
-		// to an integer with 6 decimal places.
-		transfer = &blockchain.Transfer{
-			To:    address.New(to).Hex(true),
-			Gas:   10000000,
-			Value: decimal.New(value).Integer(6),
-		}
-
-		// EstimateGas is used to determine the amount of gas needed to execute a transaction on the Ethereum network. The
-		// estimate, err := client.EstimateGas(transfer) line of code is used to call the EstimateGas function on the client
-		// and assign the result to the estimate variable. The if e.Context.Debug(err) { return } line of code is used to check
-		// for any errors that may have occurred during the EstimateGas function call. If an error is present, the return keyword will terminate the function.
-		estimate, err := client.EstimateGas(transfer)
-		if e.Context.Debug(err) {
-			return
-		}
-
-		// This statement is used to set the fees variable to the value of estimate, rounded to 6 decimal places. The
-		// decimal.New() method is used to convert the estimate value from a float to a decimal, and Floating() is used to
-		// round the decimal to 6 decimal places.
-		fees = decimal.New(estimate).Floating(6)
-
-		// This code is used to calculate the value of 'wei' depending on the boolean value of the 'subscribe' variable. If
-		// 'subscribe' is true, then 'wei' is set to the difference between 'value' and 'fees'. Otherwise, 'wei' is set to the
-		// value of 'value'.
-		if subscribe {
-			wei = decimal.New(decimal.New(value).Sub(fees).Float()).Integer(6)
-		} else {
-			wei = decimal.New(value).Integer(6)
-		}
-
-		// The purpose of this line of code is to assign a value of wei to the transfer variable. Wei is a unit of measurement
-		// used in the Ethereum blockchain to represent a tiny fraction of Ether (the cryptocurrency).
-		transfer.Value = wei
-	} else {
-
-		// This code is used to retrieve the contract associated to the given symbol and chain ID. It checks for any errors
-		// that could have occurred during the retrieval process. If an error is found, the code will stop and return.
-		contract, err := e.getContract(symbol, chain.GetId())
-		if e.Context.Debug(err) {
-			return
-		}
-
-		// This code is used to set the data for a client address and value. Specifically, it creates a new hexadecimal address
-		// for the recipient (to), converts the value to an integer using the contract's decimal value, and then stores the
-		// data in bytes. If an error occurs, the code returns without completing the task.
-		data, err := client.Data(address.New(to).Hex(true), decimal.New(value).Integer(contract.GetDecimals()).Bytes())
-		if err != nil {
-			return
-		}
-
-		// The purpose of the code is to create a transfer object that contains the contract address, the amount of gas needed
-		// to complete the transaction, and the data necessary to complete the transfer. This object is then used to make a blockchain transaction.
-		transfer = &blockchain.Transfer{
-			Contract: address.New(contract.GetAddress()).Hex(true),
-			Gas:      10000000,
-			Data:     data,
-		}
-
-		// EstimateGas is a function from the client that takes a transfer as an argument and returns an estimate of the amount
-		// of gas that would be required for the transfer. The if statement is checking for any errors that may occur during
-		// the estimation process, and if there is an error, the function returns.
-		estimate, err := client.EstimateGas(transfer)
-		if e.Context.Debug(err) {
-			return
-		}
-
-		// The purpose of this line of code is to convert an estimate (which may be an integer or a float) to a decimal type
-		// with 6 decimal places. This can be used for example to price items in a shopping cart or to calculate taxes.
-		fees = decimal.New(estimate).Floating(6)
-
-		// This code is used to convert a number from one data type to another. In this case, it is used to multiply two
-		// decimal values (fees and price) and convert the result to a float data type.
-		convert = decimal.New(fees).Mul(price).Float()
-
-		// This code is used to send a given amount of tokens to a given address. The data variable is used to store the
-		// transaction data, which is calculated by converting the given value to an integer, taking into account the decimal
-		// places of the contract. To err variable is used to store any errors that occur in the process. If an error occurs, the function returns.
-		data, err = client.Data(address.New(to).Hex(true), decimal.New(decimal.New(value).Sub(convert).Float()).Integer(contract.GetDecimals()).Bytes())
-		if err != nil {
-			return
-		}
-
-		// The purpose of this line of code is to assign the value of the variable 'data' to the variable 'transfer.Data'.
-		transfer.Data = data
-	}
-
-	// This code is using the client.Transfer() method to initiate a transfer from one account to another, and checking for
-	// any errors. To err variable is used to capture any errors that may occur during the transfer. If
-	// e.Context.Debug(err) returns true, then the code will return without doing anything else.
-	hash, err := client.Transfer(transfer)
-	if e.Context.Debug(err) {
-		return
-	}
-
-	// The purpose of this code is to check for any errors that may occur when executing the client.Transaction() function.
-	// If an error is returned, the e.Context.Debug(err) statement will log the error and then the code will return.
-	if err = client.Transaction(); e.Context.Debug(err) {
-		return
-	}
-
-	// The purpose of this statement is to check if the variable "subscribe" is true. If it is, the code that follows the
-	// statement will be executed.
-	if subscribe {
-
-		var (
-			charges float64
-		)
-
-		// The purpose of this code is to check whether the protocol is set to the mainnet protocol. If it is, the code will
-		// continue to execute, otherwise it will not.
-		if protocol == pbspot.Protocol_MAINNET {
-
-			// This code is checking for an error when setting a reserve for a user, and if an error is present, it prints the
-			// error to the debug log and then returns. This code is likely part of a larger function that sets a reserve for a
-			// user with a particular value and settings, so this check is ensuring that the reserve is properly set and that any errors are logged in the debug log.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), value, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// The purpose of this equation is to calculate the total amount of charges owed. The equation adds together fees and taxes to determine the total amount of charges.
-			charges = fees
-		} else {
-
-			// This code checks if there is an error when calling the setReserve() function, which is used to reserve funds for a
-			// specific user on a blockchain. If there is an error, the code will return without executing any further code. The
-			// purpose of this code is to ensure that the setReserve() function executes correctly before any other code is executed.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// Update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
-			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
-			if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// Token commission - update the collection account, the commission that was deducted from the amount of the token is credited to the exchange, the commission is calculated according to the formula and commission of the parent account,
-			// for example: since we make commissions for the transfer exclusively from the parent account, we need to minus the commission of 0.006 eth from the amount of 1000 tst using conversion at the price of the token,
-			// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); this amount is 985.3 tst and will be credited for the transfer,
-			// and the amount of 14.7 tst will be credited to the stock exchange, since the reverse was charged at the expense of the stock exchange to pay for gas.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, convert); e.Context.Debug(err) {
-				return
-			}
-
-			// This code is attempting to insert data into a database. The code is using the Exec() function from the Db object.
-			// It is passing in parameters for the insert query as well as the userId, owner, to, chain.GetParentSymbol(),
-			// chain.GetPlatform(), fees, and pbspot.FeesType_SUPPLY. If there is an error, it will be printed to the console
-			// using the Debug() function. If an error occurs, the code will return.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), fees, pbspot.FeesType_SUPPLY); e.Context.Debug(err) {
-				return
-			}
-
-			// The purpose of this code is to calculate the charge amount based on the fees and the price. The decimal.New(fees)
-			// function creates a new decimal from the fees value, and then the Mul(price) function multiplies that value with the
-			// price. Finally, the Float() function converts the result to a float value.
-			charges = decimal.New(fees).Mul(price).Float()
-		}
-
-		// This code is performing an update query on the "transactions" table in a database. The purpose of this query is to
-		// update the existing values for the specified record in the table with the given parameters. Specifically, the "fees"
-		// column will be set to the value of the "fees" variable, the "hash" column will be set to the value of the "hash"
-		// variable, the "status" column will be set to the value of the "pbspot.Status_FILLED" variable, and the "id" column
-		// will be set to the value of the "txId" variable. The e.Context.Debug(err) line is checking if there is an error and returning if there is.
-		if _, err := e.Context.Db.Exec("update transactions set fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees); e.Context.Debug(err) {
-			return
-		}
-
-		// This code is using the Context Publish method to publish a transaction to an exchange. The transaction includes an
-		// ID, fees, and hash. The purpose of this code is to send the transaction to the exchange and provide a status update
-		// on the withdrawal. If there is an error, it will be logged and the process will return.
-		if err := e.Context.Publish(&pbspot.Transaction{
-			Id:   txId,
-			Fees: charges,
-			Hash: hash,
-		}, "exchange", "withdraw/status"); e.Context.Debug(err) {
-			return
-		}
-
-		// The purpose of this function is to email a user when they make a withdrawal from their account. The
-		// parameters provided are the userId, the type of transaction (withdrawal), the amount of the transaction (value), and the currency symbol (symbol).
-		go migrate.SendMail(userId, "withdrawal", value, symbol)
-
-	} else {
-
-		// This is a condition that checks if the protocol being used is the Mainnet protocol. If the protocol being used is
-		// the Mainnet protocol, then the condition evaluates to true and the code following it will execute. If the protocol
-		// being used is not the Mainnet protocol, then the condition evaluates to false and the code following it will not execute.
-		if protocol == pbspot.Protocol_MAINNET {
-
-			// This code is intended to set a reserve for a user on a blockchain platform. The user ID, owner, symbol, value,
-			// platform, protocol and balance are all supplied to the setReserve function. If any errors occur during the process,
-			// the program will return. Otherwise, the reserve will be set successfully.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
-				return
-			}
-
-			// This code is part of a function that is used to insert fees into a database. The purpose of the code is to insert a
-			// new row into the 'fees' table with the given parameters (userId, owner, to, chain.GetParentSymbol(),
-			// chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE). If an error occurs, the code will log the error and then return.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE); e.Context.Debug(err) {
-				return
-			}
-
-			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
-			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
-				return
-			}
-
-		}
 	}
 
 	// This code is making sure that a reserve is unlocked in order to allow a user with a given ID, symbol, platform, and

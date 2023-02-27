@@ -6,7 +6,7 @@ create table if not exists public.contracts
     symbol        varchar,
     chain_id      integer,
     address       varchar,
-    fees_withdraw double precision default 0.5 not null,
+    fees          double precision default 0.5 not null,
     protocol      integer          default 0   not null,
     decimals      integer          default 18  not null
 );
@@ -26,7 +26,7 @@ create unique index if not exists contracts_address_uindex
 create unique index if not exists contracts_id_uindex
     on public.contracts (id);
 
-insert into public.contracts (id, symbol, chain_id, address, fees_withdraw, protocol, decimals)
+insert into public.contracts (id, symbol, chain_id, address, fees, protocol, decimals)
 values  (1, 'link', 2, '0x514910771af9ca656af840dff83e8264ecf986ca', 2.24, 1, 18),
         (2, 'bnb', 2, '0xB8c77482e45F1F44dE1745F52C74426C631bDD52', 0.01, 1, 18),
         (3, 'aave', 2, '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', 0.35, 1, 18),

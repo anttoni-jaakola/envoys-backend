@@ -10,6 +10,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"google.golang.org/grpc/status"
 	"os"
 	"path/filepath"
@@ -34,11 +35,12 @@ type Service struct {
 // Initialization - The purpose of this code is to start up multiple goroutines to run functions related to a service. In this case, the
 // functions that are started are replayPriceScale(), replayMarket(), replayChainStatus(), replayDeposit(), and replayWithdraw().
 func (e *Service) Initialization() {
-	go e.replayPriceScale()
-	go e.replayMarket()
-	go e.replayChainStatus()
-	go e.replayDeposit()
-	go e.replayWithdraw()
+	go e.price()
+	go e.market()
+	go e.chain()
+	go e.deposit()
+	go e.withdraw()
+	go e.reward()
 }
 
 // getSecure - This function is used to get a secure string from the database, based on the user's authentication information. It
@@ -203,7 +205,7 @@ func (e *Service) setTrade(param ...*pbspot.Order) error {
 // order's details, and inserts the data into the 'orders' table. It then returns the id of the newly created order and any potential errors.
 func (e *Service) setOrder(order *pbspot.Order) (id int64, err error) {
 
-	if err := e.Context.Db.QueryRow("insert into orders (assigning, base_unit, quote_unit, price, value, quantity, user_id) values ($1, $2, $3, $4, $5, $6, $7) returning id", order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetValue(), order.GetUserId()).Scan(&id); err != nil {
+	if err := e.Context.Db.QueryRow("insert into orders (assigning, base_unit, quote_unit, price, value, quantity, user_id, type) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id", order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetValue(), order.GetUserId(), order.GetType()).Scan(&id); err != nil {
 		return id, err
 	}
 
@@ -286,28 +288,34 @@ func (e *Service) setBalance(symbol string, userId int64, quantity float64, cros
 	return nil
 }
 
-// setTransaction - This function is used to set a transaction in the database. It first checks if the transaction already exists in the
-// database, and if it does not, it then inserts the transaction into the database, assigns the transaction an ID,
-// creation date and a status, and sets the chain and chain id. It then returns the transaction or an error.
+// setTransaction - The purpose of this code is to set the transaction of a service. It checks if a transaction exists, then generates a
+// unique identifier if it does not. It then inserts the transaction information into a database table, and sets the
+// chain associated with the transaction. It then sets the chain.RPC and chainId values to empty strings and zero
+// respectively. It then checks if the transaction has a parent, and if it does, it updates the allocation and status of
+// the transaction and its parent in the database. Finally, it returns the transaction if the operation was successful, or nil if not.
 func (e *Service) setTransaction(transaction *pbspot.Transaction) (*pbspot.Transaction, error) {
 
-	// This code is attempting to query the database for a record with a given hash. The row and err variables are used to
-	// store the result of the query. The query itself is using a parameterised query with the parameter being the hash from
-	// the given transaction object. The defer statement ensures the row is closed when the function finishes.
-	row, err := e.Context.Db.Query("select id from transactions where hash = $1", transaction.GetHash())
-	if err != nil {
-		return nil, err
-	}
-	defer row.Close()
+	// The purpose of the code snippet is to declare two variables, exist and err. exist is of type bool and err is of type
+	// error. This is typically used when programming to indicate the existence of an error or to store the value of an error.
+	var (
+		exist bool
+		err   error
+	)
 
-	// The if statement is used to check if the row.Next() function returns a value of false. This statement is used to
-	// check if there are any more rows to be processed. If the value is false, then there are no more rows to process.
-	if !row.Next() {
+	// The purpose of this code is to check if the transaction exists in e.getTransactionExist(transaction.GetHash()). If
+	// the transaction does not exist (i.e. !exist is true) then the code will execute the statements that follow.
+	if _ = e.Context.Db.QueryRow("select exists(select id from transactions where hash = $1)::bool", transaction.GetHash()).Scan(&exist); !exist {
+
+		// This code is used to generate a unique identifier (in this case a UUID) for a transaction if it doesn't already have
+		// one. This UUID can be used to identify the transaction uniquely and ensure that it is not a duplicate of another transaction.
+		if len(transaction.GetHash()) == 0 {
+			transaction.Hash = uuid.NewV1().String()
+		}
 
 		// This code is a SQL query to insert transaction information into a database table called "transactions". It is
-		// assigning values to each of the 13 columns in the table, and then returning the Id, CreateAt, and Status columns in
+		// assigning values to each of the 13 columns in the table, and then returning the id, CreateAt, and Status columns in
 		// the same row. It is then using the Scan() function to assign the returned values to the transaction object.
-		if err := e.Context.Db.QueryRow(`insert into transactions (symbol, hash, value, fees, confirmation, "to", block, chain_id, user_id, tx_type, fin_type, platform, protocol) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning id, create_at, status`,
+		if err := e.Context.Db.QueryRow(`insert into transactions (symbol, hash, value, fees, confirmation, "to", block, chain_id, user_id, assignment, type, platform, protocol, allocation, parent) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) returning id, create_at, status;`,
 			transaction.GetSymbol(),
 			transaction.GetHash(),
 			transaction.GetValue(),
@@ -317,19 +325,21 @@ func (e *Service) setTransaction(transaction *pbspot.Transaction) (*pbspot.Trans
 			transaction.GetBlock(),
 			transaction.GetChainId(),
 			transaction.GetUserId(),
-			transaction.GetTxType(),
-			transaction.GetFinType(),
+			transaction.GetAssignment(),
+			transaction.GetType(),
 			transaction.GetPlatform(),
 			transaction.GetProtocol(),
+			transaction.GetAllocation(),
+			transaction.GetParent(),
 		).Scan(&transaction.Id, &transaction.CreateAt, &transaction.Status); err != nil {
-			return nil, err
+			return transaction, err
 		}
 
 		// This code is getting the chain associated with the transaction. The first line is getting the chain, and the second
 		// line checks if there has been an error. If there is an error, the code returns nil and the error.
 		transaction.Chain, err = e.getChain(transaction.GetChainId(), false)
 		if err != nil {
-			return nil, err
+			return transaction, err
 		}
 
 		// This code sets the Chain.Rpc and ChainId values of the transaction variable to empty strings and zero respectively.
@@ -337,6 +347,21 @@ func (e *Service) setTransaction(transaction *pbspot.Transaction) (*pbspot.Trans
 		transaction.Chain.Rpc, transaction.ChainId = "", 0
 
 		return transaction, nil
+	} else {
+
+		// This code is used to update the status of a transaction in a database. The first `if` statement checks if the
+		// transaction has a parent. If it does, the code will execute two `Exec` commands in order to update the allocation
+		// and status of the transaction and its parent in the database.
+		if _ = e.Context.Db.QueryRow("select exists(select id from transactions where hash = $1 and allocation = $2)::bool", transaction.GetHash(), pbspot.Allocation_INTERNAL).Scan(&exist); exist {
+
+			// This code is used to update a transaction in a database. It sets the assignment to DEPOSIT and the status to
+			// PENDING by using the hash of the transaction as an identifier. The if statement is used to check for any errors
+			// that may occur while executing the query. If an error occurs, the transaction is returned without any changes.
+			if _, err := e.Context.Db.Exec("update transactions set assignment = $1, status = $2 where hash = $3;", pbspot.Assignment_DEPOSIT, pbspot.Status_PENDING, transaction.GetHash()); err != nil {
+				return transaction, nil
+			}
+
+		}
 	}
 
 	return nil, nil
@@ -556,13 +581,12 @@ func (e *Service) getCurrency(symbol string, status bool) (*pbspot.Currency, err
 	// This code is performing a query of a database table called "currencies" and scanning the results into a response
 	// object. The query is using the symbol parameter to filter the results and strings.Join(maps, " ") to join any
 	// additional parameters. If the query fails, an error is returned.
-	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, fin_type, create_at, chains from currencies where symbol = '%v' %s", symbol, strings.Join(maps, " "))).Scan(
+	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at, chains from currencies where symbol = '%v' %s", symbol, strings.Join(maps, " "))).Scan(
 		&response.Id,
 		&response.Name,
 		&response.Symbol,
 		&response.MinWithdraw,
 		&response.MaxWithdraw,
-		&response.MinDeposit,
 		&response.MinTrade,
 		&response.MaxTrade,
 		&response.FeesTrade,
@@ -571,7 +595,7 @@ func (e *Service) getCurrency(symbol string, status bool) (*pbspot.Currency, err
 		&response.FeesCosts,
 		&response.Marker,
 		&response.Status,
-		&response.FinType,
+		&response.Type,
 		&response.CreateAt,
 		&chains,
 	); err != nil {
@@ -610,7 +634,7 @@ func (e *Service) getContract(symbol string, chainId int64) (*pbspot.Contract, e
 
 	// This code is checking the database for a contract with the specified symbol and chain ID and then storing the results
 	// of the query in a contract struct. If the query fails, to err is returned.
-	if err := e.Context.Db.QueryRow(`select id, address, fees_withdraw, protocol, decimals from contracts where symbol = $1 and chain_id = $2`, symbol, chainId).Scan(&contract.Id, &contract.Address, &contract.FeesWithdraw, &contract.Protocol, &contract.Decimals); err != nil {
+	if err := e.Context.Db.QueryRow(`select id, address, fees, protocol, decimals from contracts where symbol = $1 and chain_id = $2`, symbol, chainId).Scan(&contract.Id, &contract.Address, &contract.Fees, &contract.Protocol, &contract.Decimals); err != nil {
 		return &contract, err
 	}
 
@@ -631,7 +655,7 @@ func (e *Service) getContractById(id int64) (*pbspot.Contract, error) {
 	// symbol, chain ID, address, fees withdraw, protocol, decimals, and platform of the contract. The query uses the Scan()
 	// method to store the retrieved data in the contract variable. The if statement is used to check for errors and return
 	// the contract along with an error if one occurs.
-	if err := e.Context.Db.QueryRow(`select c.id, c.symbol, c.chain_id, c.address, c.fees_withdraw, c.protocol, c.decimals, n.platform from contracts c inner join chains n on n.id = c.chain_id where c.id = $1`, id).Scan(&contract.Id, &contract.Symbol, &contract.ChainId, &contract.Address, &contract.FeesWithdraw, &contract.Protocol, &contract.Decimals, &contract.Platform); err != nil {
+	if err := e.Context.Db.QueryRow(`select c.id, c.symbol, c.chain_id, c.address, c.fees, c.protocol, c.decimals, n.platform from contracts c inner join chains n on n.id = c.chain_id where c.id = $1`, id).Scan(&contract.Id, &contract.Symbol, &contract.ChainId, &contract.Address, &contract.Fees, &contract.Protocol, &contract.Decimals, &contract.Platform); err != nil {
 		return &contract, err
 	}
 
@@ -656,7 +680,7 @@ func (e *Service) getChain(id int64, status bool) (*pbspot.Chain, error) {
 	// This code is used to query a database for a row of data which matches the given id. The query is built by joining the
 	// strings in the maps array and is passed to the QueryRow method. The data is then scanned into the chain object and
 	// returned. If there is an error, it will be returned instead.
-	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees_withdraw, tag, parent_symbol, status from chains where id = %[1]d %[2]s", id, strings.Join(maps, " "))).Scan(
+	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees, tag, parent_symbol, decimals, status from chains where id = %[1]d %[2]s", id, strings.Join(maps, " "))).Scan(
 		&chain.Id,
 		&chain.Name,
 		&chain.Rpc,
@@ -666,12 +690,13 @@ func (e *Service) getChain(id int64, status bool) (*pbspot.Chain, error) {
 		&chain.Platform,
 		&chain.Confirmation,
 		&chain.TimeWithdraw,
-		&chain.FeesWithdraw,
+		&chain.Fees,
 		&chain.Tag,
 		&chain.ParentSymbol,
+		&chain.Decimals,
 		&chain.Status,
 	); err != nil {
-		return &chain, err
+		return &chain, errors.New("chain not found or chain network off")
 	}
 
 	return &chain, nil

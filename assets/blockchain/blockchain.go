@@ -74,6 +74,7 @@ type Params struct {
 	query    []string
 	private  *ecdsa.PrivateKey
 	network  *big.Int
+	gas      uint64
 	success  bool
 	stop     bool
 }
