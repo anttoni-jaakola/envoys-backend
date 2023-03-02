@@ -18,7 +18,7 @@ create table if not exists public.currencies
     marker        boolean                  default false              not null,
     chains        jsonb                    default '[]'::jsonb        not null,
     status        boolean                  default false              not null,
-    fin_type      integer                  default 0                  not null,
+    type          integer                  default 0                  not null,
     create_at     timestamp with time zone default CURRENT_TIMESTAMP
 );
 
@@ -40,7 +40,7 @@ create unique index if not exists currencies_id_uindex
 create unique index if not exists currencies_symbol_uindex
     on public.currencies (symbol);
 
-insert into public.currencies (id, name, symbol, min_withdraw, max_withdraw, min_deposit, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, type, create_at)
+insert into public.currencies (id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, type, create_at)
 values  (1, 'Omisego', 'omg', 0.0100, 100.00000000, 0.0100, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, false, '[2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
         (2, 'Binance', 'bnb', 0.0100, 100.00000000, 0.0010, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, true, '[3, 2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
         (3, 'Chain Link', 'link', 0.0100, 100.00000000, 0.0100, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, false, '[2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),

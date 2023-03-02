@@ -316,7 +316,26 @@ service Api {
     // that specifies the post request path and the body of the request.
     rpc SetReserveUnlockRule (SetRequestReserveUnlockManual) returns (ResponseReserve) {
         option (google.api.http) = {
-            post: "/v2/admin/spot/get-reserve-unlock",
+            post: "/v2/admin/spot/set-reserve-unlock",
+            body: "*"
+        };
+    }
+    // This code is used to create a remote procedure call (RPC) for an API. The RPC is named GetRepaymentsRule and
+    // takes in a GetRequestRepaymentsRule as an argument, and returns a ResponseRepayment as the result. The API
+    // call is specified as a POST request to the "/v2/admin/spot/get-repayments" URL, and the body of the request will be "*".
+    rpc GetRepaymentsRule (GetRequestRepaymentsRule) returns (ResponseRepayment) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/get-repayments",
+            body: "*"
+        };
+    }
+    // This RPC (remote procedure call) sets a repayment rule for a loan account. The SetRequestRepaymentRule object
+    // contains all the information needed to set the repayment rule for a loan, and the ResponseRepayment object
+    // contains the response from the server regarding the set rule. The google.api.http option specifies the URL (in
+    // this case, '/v2/admin/spot/set-repayment') and the type of request (in this case, 'post' request) that should be used to access the RPC.
+    rpc SetRepaymentsRule (SetRequestRepaymentRule) returns (ResponseRepayment) {
+        option (google.api.http) = {
+            post: "/v2/admin/spot/set-repayment",
             body: "*"
         };
     }
@@ -427,14 +446,6 @@ enum Assignment {
 enum Type {
     CRYPTO = 0;
     FIAT = 1;
-}
-
-// Enums are used to define a set of constant values. In this case, the enum is defining two constant values, SUPPLY and
-// REVERSE, which are used to represent different types of fees. This can be useful for code readability and for making
-// sure that the code is consistent in its use of defined constants.
-enum Used {
-    SUPPLY = 0;
-    REVERSE = 1;
 }
 
 // Enums are used in programming to create a set of constants. In this example, the enum Status is used to assign a
@@ -964,5 +975,31 @@ message SetRequestReserveUnlockManual {
 }
 message ResponseReserve {
     repeated Reserve fields = 1;
+    int32 count = 2;
+}
+
+// Repayments structures.
+message Repayment {
+    int64 id = 1;
+    double value = 2;
+    double fees = 3;
+    string symbol = 4;
+    string create_at = 5;
+    bool repayment = 6;
+    Protocol protocol = 7;
+    Platform platform = 8;
+    Allocation allocation = 9;
+    Status status = 10;
+}
+message GetRequestRepaymentsRule {
+    int64 limit = 1;
+    int64 page = 2;
+    Status status = 3;
+}
+message SetRequestRepaymentRule {
+    string id = 1;
+}
+message ResponseRepayment {
+    repeated Repayment fields = 1;
     int32 count = 2;
 }

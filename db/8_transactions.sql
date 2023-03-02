@@ -15,6 +15,7 @@ create table if not exists public.transactions
     platform     integer,
     protocol     integer,
     allocation   integer                  default 0                     not null,
+    repayment    boolean                  default false                 not null,
     price        double precision         default 0                     not null,
     parent       integer                  default 0                     not null,
     status       integer                  default 2                     not null,

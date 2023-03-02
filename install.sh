@@ -43,9 +43,8 @@ sudo -i -u postgres psql -c "grant all privileges on database envoys to envoys;"
 sudo sed -i "s|# host    .*|host all all all scram-sha-256|g" /etc/postgresql/14/main/pg_hba.conf
 sudo service postgresql restart
 
-sudo -i -u envoys psql -X -c "create extension if not exists timescaledb cascade;"
-
 sudo useradd envoys
+sudo -i -u envoys psql -X -c "create extension if not exists timescaledb cascade;"
 for index in db/* ; do
   sudo -i -u envoys psql envoys < "${index}"
 done

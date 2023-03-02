@@ -153,7 +153,7 @@ func (e *Service) market() {
 				// This code is part of a loop that is looping over a list of currency pairs. The purpose of this code is to insert
 				// the information from each pair (assigning, base_unit, quote_unit, price, quantity, market) into a table called
 				// trades. The code is checking for any errors and if there is an error, it is continuing the loop.
-				if _, err := e.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6)`, pbspot.Assigning_MARKET_PRICE, pair.GetBaseUnit(), pair.GetQuoteUnit(), pair.GetPrice(), 0, true); e.Context.Debug(err) {
+				if _, err := e.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, pbspot.Assigning_MARKET_PRICE, pair.GetBaseUnit(), pair.GetQuoteUnit(), pair.GetPrice(), 0, true); e.Context.Debug(err) {
 					continue
 				}
 
@@ -944,68 +944,50 @@ func (e *Service) reward() {
 					return
 				}
 
-				// This code is attempting to retrieve the currency for a given parent symbol, and is handling the case where an
-				// error occurs when attempting to get the currency. If the call to getCurrency() returns an error, the function
-				// returns without attempting to do anything else.
-				currency, err := e.getCurrency(chain.GetParentSymbol(), false)
-				if e.Context.Debug(err) {
-					return
-				}
+				// This code is checking a database table called "reserves" to determine if a certain condition is true. The code is
+				// querying the reserves table for rows with specific values for the columns "symbol", "value", "platform",
+				// "protocol" and "lock". It will then check if the value of the "reserve" is greater than 0. If it is, the
+				// condition is true.
+				if _ = e.Context.Db.QueryRow("select value, address, user_id from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), false).Scan(&reserve.Value, &reserve.To, &reserve.UserId); reserve.GetValue() > 0 {
 
-				// This code is part of a larger program, and its purpose is to transfer funds from a reserve asset to pay fees
-				// associated with a transaction. It checks if the currency has fees that are greater than or equal to double the
-				// item's fees, and if so, it queries the reserves to find the correct asset, platform, protocol, symbol, and
-				// value of the funds to be transferred. It then sets the asset's lock to true, and uses either the Ethereum or Tron transfer functions to move the funds. Finally, it updates the transaction's claim to true.
-				if currency.GetFeesCharges() >= item.GetFees() {
+					var (
+						value float64
+					)
 
-					// This code is checking a database table called "reserves" to determine if a certain condition is true. The code is
-					// querying the reserves table for rows with specific values for the columns "symbol", "value", "platform",
-					// "protocol" and "lock". It will then check if the value of the "reserve" is greater than 0. If it is, the
-					// condition is true.
-					if _ = e.Context.Db.QueryRow("select value, address, user_id from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), false).Scan(&reserve.Value, &reserve.To, &reserve.UserId); reserve.GetValue() > 0 {
+					// The purpose of this code is to set a reserve lock on a user's chain, platform, and protocol, transfer funds
+					// depending on the platform of the item, and update the 'claim' column of a row in the 'transactions' table to
+					// 'true'. If any errors are encountered while performing these actions, the code will skip the current
+					// iteration of the loop it is in and continue looping.
+					if _ = e.Context.Db.QueryRow("select value from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", chain.GetParentSymbol(), item.GetFees()*2, item.GetPlatform(), pbspot.Protocol_MAINNET, false).Scan(&value); value > 0 {
 
-						var (
-							value float64
-						)
+						// This code is setting up a transaction for the parent symbol, chain ID, platform, value, and user ID from a
+						// reserve. It is also setting the Allocation to INTERNAL, the Protocol to MAINNET, and the Assignment to
+						// WITHDRAWS. The purpose of this code is to create a transaction and set the properties necessary for it to be
+						// processed. If there is an error in setting up the transaction, the code will stop and return.
+						_, err := e.setTransaction(&pbspot.Transaction{
+							Symbol:     chain.GetParentSymbol(),
+							Block:      chain.GetBlock(),
+							Parent:     item.GetId(),
+							ChainId:    item.GetChainId(),
+							Platform:   item.GetPlatform(),
+							Value:      item.GetFees(),
+							UserId:     reserve.GetUserId(),
+							To:         reserve.GetTo(),
+							Allocation: pbspot.Allocation_INTERNAL,
+							Protocol:   pbspot.Protocol_MAINNET,
+							Assignment: pbspot.Assignment_WITHDRAWS,
+						})
+						if e.Context.Debug(err) {
+							return
+						}
 
-						// The purpose of this code is to set a reserve lock on a user's chain, platform, and protocol, transfer funds
-						// depending on the platform of the item, and update the 'claim' column of a row in the 'transactions' table to
-						// 'true'. If any errors are encountered while performing these actions, the code will skip the current
-						// iteration of the loop it is in and continue looping.
-						if _ = e.Context.Db.QueryRow("select value from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", chain.GetParentSymbol(), item.GetFees(), item.GetPlatform(), pbspot.Protocol_MAINNET, false).Scan(&value); value > 0 {
-
-							// This code is setting up a transaction for the parent symbol, chain ID, platform, value, and user ID from a
-							// reserve. It is also setting the Allocation to INTERNAL, the Protocol to MAINNET, and the Assignment to
-							// WITHDRAWS. The purpose of this code is to create a transaction and set the properties necessary for it to be
-							// processed. If there is an error in setting up the transaction, the code will stop and return.
-							_, err := e.setTransaction(&pbspot.Transaction{
-								Symbol:     chain.GetParentSymbol(),
-								Block:      chain.GetBlock(),
-								Parent:     item.GetId(),
-								ChainId:    item.GetChainId(),
-								Platform:   item.GetPlatform(),
-								Value:      item.GetFees(),
-								UserId:     reserve.GetUserId(),
-								To:         reserve.GetTo(),
-								Allocation: pbspot.Allocation_INTERNAL,
-								Protocol:   pbspot.Protocol_MAINNET,
-								Assignment: pbspot.Assignment_WITHDRAWS,
-							})
-							if e.Context.Debug(err) {
-								return
-							}
-
-							// This code is part of a loop, and it is used to update the status of a transaction in a database. The first two
-							// arguments in the Exec() function are the ID and status of the transaction. The third argument is a function that
-							// will debug any error that may occur during execution. If an error occurs, the code will skip the current iteration of the loop and continue on to the next one.
-							if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), pbspot.Status_LOCK); e.Context.Debug(err) {
-								return
-							}
+						// This code is part of a loop, and it is used to update the status of a transaction in a database. The first two
+						// arguments in the Exec() function are the ID and status of the transaction. The third argument is a function that
+						// will debug any error that may occur during execution. If an error occurs, the code will skip the current iteration of the loop and continue on to the next one.
+						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), pbspot.Status_LOCK); e.Context.Debug(err) {
+							return
 						}
 					}
-
-				} else {
-					e.Context.Logger.Info("[REVERSE]: there are no fees to pay the reverse fee")
 				}
 			}
 		}()

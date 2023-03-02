@@ -295,7 +295,7 @@ func (e *Service) tron(chain *pbspot.Chain) {
 					item.Platform = chain.GetPlatform()
 					item.Type = pbspot.Type_CRYPTO
 					item.Assignment = pbspot.Assignment_DEPOSIT
-					item.Value = decimal.New(value).Div(1000000).Float() // value / 1000000
+					item.Value = decimal.New(value).Floating(6)
 					item.Hash = tx.Hash
 					item.Block = chain.GetBlock()
 				}
@@ -627,19 +627,6 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 				return
 			}
 
-			// This code is part of a function that is used to insert fees into a database. The purpose of the code is to insert a
-			// new row into the 'fees' table with the given parameters (userId, owner, to, chain.GetParentSymbol(),
-			// chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.FeesType_REVERSE). If an error occurs, the code will log the error and then return.
-			if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), decimal.New(value).Add(fees).Float(), pbspot.Used_REVERSE); e.Context.Debug(err) {
-				return
-			}
-
-			// The fee for the exchange net is double the value for the transfer gas, and the amount for the token withdrawal fee.
-			// When replenishing the transfer wallet to pay the commission, a double commission is withdrawn.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), decimal.New(value).Add(fees).Float()); e.Context.Debug(err) {
-				return
-			}
-
 		} else {
 
 			// This code is a part of a function that is attempting to set a reserve for a user on a given platform and chain. The
@@ -648,7 +635,6 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), value, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
-
 		}
 
 		// The purpose of this equation is to calculate the total charges associated with a purchase. The charges are equal to the sum of the fees and taxes associated with the purchase.
@@ -665,14 +651,6 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 		// Update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
 		// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
 		if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
-			return
-		}
-
-		// This code is attempting to insert data into a database. The code is using the Exec() function from the Db object.
-		// It is passing in parameters for the insert query as well as the userId, owner, to, chain.GetParentSymbol(),
-		// chain.GetPlatform(), fees, and pbspot.FeesType_SUPPLY. If there is an error, it will be printed to the console
-		// using the Debug() function. If an error occurs, the code will return.
-		if _, err := e.Context.Db.Exec(`insert into fees (user_id, "from", "to", symbol, platform, value, type) values ($1, $2, $3, $4, $5, $6, $7)`, userId, owner, to, chain.GetParentSymbol(), chain.GetPlatform(), fees, pbspot.Used_SUPPLY); e.Context.Debug(err) {
 			return
 		}
 

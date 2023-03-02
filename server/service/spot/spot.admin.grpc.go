@@ -1663,3 +1663,100 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 
 	return &response, nil
 }
+
+// GetRepaymentsRule - This code is part of a function that implements a service for retrieving repayment rules. The purpose of the code is
+// to query a database for repayment rules, authenticate the user, and limit the request if no limit is specified. It
+// also calculates the offset for paginated requests. Finally, it appends the retrieved data to a response object and
+// returns the response.
+func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestRepaymentsRule) (*pbspot.ResponseRepayment, error) {
+
+	// The code above defines two variables, response and migrate. The response variable is of type
+	// pbspot.ResponseRepayment, while the migrate variable is of type query.Migrate. The migrate variable is initialized
+	// with the context from the e.Context variable. The purpose of this code is to define two variables for use in the program.
+	var (
+		response pbspot.ResponseRepayment
+		migrate  = query.Migrate{
+			Context: e.Context,
+		}
+	)
+
+	// The purpose of this code is to set a limit on the request if no limit is specified. If req.GetLimit() returns 0, then
+	// the req.Limit will be set to 30.
+	if req.GetLimit() == 0 {
+		req.Limit = 30
+	}
+
+	// This code is part of an authentication process. The purpose of this code is to attempt to authenticate the user and
+	// retrieve the authentication data. If there is an error, it is returned to the caller.
+	auth, err := e.Context.Auth(ctx)
+	if err != nil {
+		return &response, e.Context.Error(err)
+	}
+
+	// The purpose of this code is to check if the user has the necessary authorization (i.e. migrate.Rules) to perform a
+	// certain action (i.e. writing and editing data) related to a specific resource (i.e. repayments). If the user does not
+	// have the necessary authorization, an error message is returned.
+	if !migrate.Rules(auth, "repayments", query.RoleSpot) {
+		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+	}
+
+	// The purpose of this code is to check if there is any transaction with the specified allocation and status in the
+	// database. The code is using the QueryRow() method to return a single row from the database and the Scan() method to
+	// assign the returned value to the response.Count variable. The response.GetCount() method is then used to check if the
+	// count is greater than 0. If it is, then the code inside the if statement is executed.
+	if _ = e.Context.Db.QueryRow("select count(*) as count from transactions where allocation = $1 and status = $2", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE).Scan(&response.Count); response.GetCount() > 0 {
+
+		// This code is setting an offset for a Paginated request. The offset is used to determine the index of the first item
+		// that should be returned. This code is calculating the offset by multiplying the limit (the number of items per page)
+		// with the page number. If the page number is greater than 0, the offset is calculated with the page number minus 1.
+		offset := req.GetLimit() * req.GetPage()
+		if req.GetPage() > 0 {
+			offset = req.GetLimit() * (req.GetPage() - 1)
+		}
+
+		// This code is used to query the database for records. The query is executed with the parameters passed in, which are
+		// the allocation, status, limit, and offset. The query returns the specified records and is then stored in the "rows"
+		// variable. The "defer rows.Close()" statement is used to close the rows variable once the function execution is complete.
+		rows, err := e.Context.Db.Query("select id, value, fees, symbol, protocol, platform, status, allocation, repayment, create_at from transactions where allocation = $1 and status = $2 order by id desc limit $3 offset $4", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, req.GetLimit(), offset)
+		if err != nil {
+			return &response, e.Context.Error(err)
+		}
+		defer rows.Close()
+
+		// The for rows.Next() statement is used in SQL queries to loop through the results of a query. It retrieves the next
+		// row from the result set, and assigns the values of the row to variables specified in the query. This allows the
+		// programmer to iterate through the result set, one row at a time, and process the data as needed.
+		for rows.Next() {
+
+			// The purpose of this code is to declare a variable called asset of the type pbspot.Repayment. This allows the code to
+			// reference this type of asset later in the code.
+			var (
+				asset pbspot.Repayment
+			)
+
+			// The purpose of this code is to scan the rows of a table and assign the data to variables. The variables are of type
+			// asset.Id, asset.Value, asset.Fees, asset.Symbol, asset.Protocol, asset.Platform, asset.Status, asset.Allocation,
+			// asset.Repayment, and asset.CreateAt. If there is an error, then the function will return the response and an error message.
+			if err := rows.Scan(&asset.Id, &asset.Value, &asset.Fees, &asset.Symbol, &asset.Protocol, &asset.Platform, &asset.Status, &asset.Allocation, &asset.Repayment, &asset.CreateAt); err != nil {
+				return &response, e.Context.Error(err)
+			}
+
+			// This statement is used to append a field to the response.Fields array. It is used to add a new element to an array.
+			// The element being added is the asset variable.
+			response.Fields = append(response.Fields, &asset)
+		}
+
+		// This code is used to check if there is an error with the rows object. If there is an error, the code will return the
+		// response object along with an error.
+		if err = rows.Err(); err != nil {
+			return &response, e.Context.Error(err)
+		}
+	}
+
+	return &response, nil
+}
+
+func (e *Service) SetRepaymentsRule(ctx context.Context, rule *pbspot.SetRequestRepaymentRule) (*pbspot.ResponseRepayment, error) {
+	//TODO implement me
+	panic("implement me")
+}
