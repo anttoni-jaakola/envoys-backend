@@ -1671,7 +1671,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestRepaymentsRule) (*pbspot.ResponseRepayment, error) {
 
 	// The code above defines two variables, response and migrate. The response variable is of type
-	// pbspot.ResponseRepayment, while the migrate variable is of type query.Migrate. The migrate variable is initialized
+	// pbspot.ResponseRepayment, while the migrate variable is of type query.Migrate. To migrate variable is initialized
 	// with the context from the e.Context variable. The purpose of this code is to define two variables for use in the program.
 	var (
 		response pbspot.ResponseRepayment
@@ -1700,11 +1700,11 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
-	// The purpose of this code is to check if there is any transaction with the specified allocation and status in the
-	// database. The code is using the QueryRow() method to return a single row from the database and the Scan() method to
-	// assign the returned value to the response.Count variable. The response.GetCount() method is then used to check if the
-	// count is greater than 0. If it is, then the code inside the if statement is executed.
-	if _ = e.Context.Db.QueryRow("select count(*) as count from transactions where allocation = $1 and status = $2", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE).Scan(&response.Count); response.GetCount() > 0 {
+	// This if statement is used to query a database to check if there are any transactions that meet certain criteria. The
+	// criteria are that the allocation must be either INTERNAL or EXTERNAL, the status must be either RESERVE or FILLED,
+	// and the protocol must be MAINNET or greater. Additionally, the fees must be greater than 0. If the query returns a
+	// count of transactions that meet these criteria, the statement will return true.
+	if _ = e.Context.Db.QueryRow("select count(*) as count from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, pbspot.Status_FILLED, pbspot.Protocol_MAINNET).Scan(&response.Count); response.GetCount() > 0 {
 
 		// This code is setting an offset for a Paginated request. The offset is used to determine the index of the first item
 		// that should be returned. This code is calculating the offset by multiplying the limit (the number of items per page)
@@ -1714,10 +1714,12 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 			offset = req.GetLimit() * (req.GetPage() - 1)
 		}
 
-		// This code is used to query the database for records. The query is executed with the parameters passed in, which are
-		// the allocation, status, limit, and offset. The query returns the specified records and is then stored in the "rows"
-		// variable. The "defer rows.Close()" statement is used to close the rows variable once the function execution is complete.
-		rows, err := e.Context.Db.Query("select id, value, fees, symbol, protocol, platform, status, allocation, repayment, create_at from transactions where allocation = $1 and status = $2 order by id desc limit $3 offset $4", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, req.GetLimit(), offset)
+		// This code is responsible for querying a database for a set of records that meet certain conditions. Specifically, it
+		// is looking for records from the "transactions" table where the allocation is either 'internal' or 'external', the
+		// status is either 'reserve' or 'filled', and the protocol is either 'mainnet' or 'testnet'. It is also limiting the
+		// results to records with a fee greater than 0, and ordering the results by the ID field in descending order. Finally,
+		// it is limiting the results to a certain number and specifying an offset.
+		rows, err := e.Context.Db.Query("select id, value, fees, symbol, chain_id, protocol, platform, status, allocation, repayment, create_at from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0 order by id desc limit $7 offset $8", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, pbspot.Status_FILLED, pbspot.Protocol_MAINNET, req.GetLimit(), offset)
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -1728,22 +1730,31 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 		// programmer to iterate through the result set, one row at a time, and process the data as needed.
 		for rows.Next() {
 
-			// The purpose of this code is to declare a variable called asset of the type pbspot.Repayment. This allows the code to
-			// reference this type of asset later in the code.
+			// The purpose of this code is to declare a variable called item of the type pbspot.Repayment. This allows the code to
+			// reference this type of item later in the code.
 			var (
-				asset pbspot.Repayment
+				item pbspot.Repayment
 			)
 
 			// The purpose of this code is to scan the rows of a table and assign the data to variables. The variables are of type
-			// asset.Id, asset.Value, asset.Fees, asset.Symbol, asset.Protocol, asset.Platform, asset.Status, asset.Allocation,
-			// asset.Repayment, and asset.CreateAt. If there is an error, then the function will return the response and an error message.
-			if err := rows.Scan(&asset.Id, &asset.Value, &asset.Fees, &asset.Symbol, &asset.Protocol, &asset.Platform, &asset.Status, &asset.Allocation, &asset.Repayment, &asset.CreateAt); err != nil {
+			// item.Id, item.Value, item.Fees, item.Symbol, item.Protocol, item.Platform, item.Status, item.Allocation,
+			// item.Repayment, and item.CreateAt. If there is an error, then the function will return the response and an error message.
+			if err := rows.Scan(&item.Id, &item.Value, &item.Fees, &item.Symbol, &item.ChainId, &item.Protocol, &item.Platform, &item.Status, &item.Allocation, &item.Repayment, &item.CreateAt); err != nil {
 				return &response, e.Context.Error(err)
 			}
 
+			// This code is retrieving a chain from the e (environment) object, based on the chain ID in the item object, and then
+			// setting the ParentSymbol field of the item object to the chain's ParentSymbol. The purpose is to set the
+			// ParentSymbol field of the item object.
+			chain, err := e.getChain(item.GetChainId(), false)
+			if err != nil {
+				return nil, err
+			}
+			item.ParentSymbol = chain.GetParentSymbol()
+
 			// This statement is used to append a field to the response.Fields array. It is used to add a new element to an array.
-			// The element being added is the asset variable.
-			response.Fields = append(response.Fields, &asset)
+			// The element being added is the item variable.
+			response.Fields = append(response.Fields, &item)
 		}
 
 		// This code is used to check if there is an error with the rows object. If there is an error, the code will return the

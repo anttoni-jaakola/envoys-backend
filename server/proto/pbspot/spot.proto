@@ -981,15 +981,17 @@ message ResponseReserve {
 // Repayments structures.
 message Repayment {
     int64 id = 1;
-    double value = 2;
-    double fees = 3;
-    string symbol = 4;
-    string create_at = 5;
-    bool repayment = 6;
-    Protocol protocol = 7;
-    Platform platform = 8;
-    Allocation allocation = 9;
-    Status status = 10;
+    int64 chain_id = 2;
+    double value = 3;
+    double fees = 4;
+    string symbol = 5;
+    string parent_symbol = 6;
+    string create_at = 7;
+    bool repayment = 8;
+    Protocol protocol = 9;
+    Platform platform = 10;
+    Allocation allocation = 11;
+    Status status = 12;
 }
 message GetRequestRepaymentsRule {
     int64 limit = 1;

@@ -461,6 +461,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			Context: e.Context,
 		}
 		fees, charges, convert float64
+		repayment              bool
 		transfer               *blockchain.Transfer
 		wei                    *big.Int
 	)
@@ -654,10 +655,22 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			return
 		}
 
-		// Token commission - update the collection account, the commission that was deducted from the amount of the token is credited to the exchange, the commission is calculated according to the formula and commission of the parent account,
-		// for example: since we make commissions for the transfer exclusively from the parent account, we need to minus the commission of 0.006 eth from the amount of 1000 tst using conversion at the price of the token,
-		// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); this amount is 985.3 tst and will be credited for the transfer,
-		// and the amount of 14.7 tst will be credited to the stock exchange, since the reverse was charged at the expense of the stock exchange to pay for gas.
+		// The purpose of this code is to check if the value of reverse is greater than or equal to the fees. The reverse
+		// variable is set to the return value of the function e.getReverse(), which takes four parameters: userId, owner, symbol, and chain.GetPlatform().
+		if reverse := e.getReverse(userId, owner, chain.GetParentSymbol(), chain.GetPlatform()); reverse >= fees {
+
+			// This code is used to set a reverse transaction for the given user, owner, symbol, fees, platform and balance type.
+			// If there is an error in setting the reverse transaction, the error is logged and the code returns.
+			if err := e.setReverse(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Balance_MINUS); e.Context.Debug(err) {
+				return
+			}
+
+			// The purpose of setting repayment to true is to indicate that a repayment has been made or is due on an account.
+			repayment = true
+		}
+
+		// This code is used to update the fees_charges for a currency specified by the symbol variable. The fees_charges will
+		// be increased by the amount in the convert variable. If there is an error, the code will log it using the Debug method and then return.
 		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, convert); e.Context.Debug(err) {
 			return
 		}
@@ -667,10 +680,10 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 		charges = decimal.New(fees).Mul(price).Float()
 	}
 
-	// This code is executing an SQL statement to update the transactions table. It is setting the fees, hash, and status
+	// This code is executing an SQL statement to update the transactions table. It is setting the repayment, fees, hash, and status
 	// of a transaction with a specific ID. The e.Context.Debug(err) line is used to check for any errors that may have
 	// occurred during the update and, if any errors are found, the function will return.
-	if _, err := e.Context.Db.Exec("update transactions set fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees); e.Context.Debug(err) {
+	if _, err := e.Context.Db.Exec("update transactions set repayment = $5, fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees, repayment); e.Context.Debug(err) {
 		return
 	}
 

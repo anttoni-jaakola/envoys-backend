@@ -845,18 +845,16 @@ func (e *Service) setReserve(userId int64, address, symbol string, value float64
 		switch cross {
 		case pbspot.Balance_PLUS:
 
-			// This is an example of an if statement used to update a database table. The statement checks to see if the execution
-			// of an update query is successful. If the execution is unsuccessful, an error is returned. The query updates the
-			// reserves table by adding a given value to the existing value for a given user and symbol, platform, protocol, and address.
+			// This code is updating a database table called "reserves" with values provided by the user. The code first checks to
+			// see if the update is successful, and if it fails, it returns an error.
 			if _, err := e.Context.Db.Exec("update reserves set value = value + $6 where user_id = $1 and symbol = $2 and platform = $3 and protocol = $4 and address = $5;", userId, symbol, platform, protocol, address, value); err != nil {
 				return err
 			}
 			break
 		case pbspot.Balance_MINUS:
 
-			// This code is used to update a database table called "reserves". It subtracts the given value from the existing
-			// value in the database for the given user_id, symbol, platform, protocol and address. If an error occurs, it returns
-			// the error.
+			// This code is updating a database table called "reserves" with values provided by the user. The code first checks to
+			// see if the update is successful, and if it fails, it returns an error.
 			if _, err := e.Context.Db.Exec("update reserves set value = value - $6 where user_id = $1 and symbol = $2 and platform = $3 and protocol = $4 and address = $5;", userId, symbol, platform, protocol, address, value); err != nil {
 				return err
 			}
@@ -921,6 +919,71 @@ func (e *Service) getStatus(base, quote string) bool {
 	}
 
 	return true
+}
+
+// setReverse - The purpose of this code is to query a database for a specific set of information, insert data into a database table,
+// and update the value of an existing record in the database. The code uses SQL queries to perform these operations and
+// also checks for errors that may occur in the process.
+func (e *Service) setReverse(userId int64, address, symbol string, value float64, platform pbspot.Platform, cross pbspot.Balance) error {
+
+	// This code is querying a database for a specific set of information. The code is using placeholders ($1, $2, etc.) to
+	// make the query more secure by preventing SQL injection. The row variable is the result of the query, and the defer
+	// statement ensures that the connection to the database is closed after the query has finished. Finally, the if
+	// statement is used to check for any errors that might occur during the query.
+	row, err := e.Context.Db.Query("select id from reserves where user_id = $1 and symbol = $2 and platform = $3 and protocol = $4 and address = $5", userId, symbol, platform, pbspot.Protocol_MAINNET, address)
+	if err != nil {
+		return err
+	}
+	defer row.Close()
+
+	// The purpose of this statement is to check if there is a row available to be read from a database. If so, the code
+	// within the if block will run. If not, it will skip the code within the if block.
+	if row.Next() {
+
+		switch cross {
+		case pbspot.Balance_PLUS:
+
+			// This code is updating a database entry with the given parameters. The specific entry is the 'reverse' field of the
+			// 'reserves' table, and the update is an increase by the amount of 'value'. The other parameters (userId, symbol,
+			// platform, protocol, address) are used to specify which entry should be updated. If an error is encountered, the
+			// code will return an error.
+			if _, err := e.Context.Db.Exec("update reserves set reverse = reverse + $6 where user_id = $1 and symbol = $2 and platform = $3 and protocol = $4 and address = $5;", userId, symbol, platform, pbspot.Protocol_MAINNET, address, value); err != nil {
+				return err
+			}
+			break
+		case pbspot.Balance_MINUS:
+
+			// This code is updating a database entry with the given parameters. The specific entry is the 'reverse' field of the
+			// 'reserves' table, and the update is an increase by the amount of 'value'. The other parameters (userId, symbol,
+			// platform, protocol, address) are used to specify which entry should be updated. If an error is encountered, the
+			// code will return an error.
+			if _, err := e.Context.Db.Exec("update reserves set reverse = reverse - $6 where user_id = $1 and symbol = $2 and platform = $3 and protocol = $4 and address = $5;", userId, symbol, platform, pbspot.Protocol_MAINNET, address, value); err != nil {
+				return err
+			}
+			break
+		}
+
+		return nil
+	}
+
+	// This code is performing an SQL query to insert data into a database table called "reserves". The data being inserted
+	// consists of user_id, symbol, platform, protocol, address, and value. If there is an error in executing the query, the
+	// function will return the error.
+	if _, err = e.Context.Db.Exec("insert into reserves (user_id, symbol, platform, protocol, address, value, reverse) values ($1, $2, $3, $4, $5, $6, $7)", userId, symbol, platform, pbspot.Protocol_MAINNET, address, value, value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// getReverse - This code is used to get the reverse of a certain user's address for a certain platform and symbol from a database. It
+// takes in the userId, address, symbol, and platform as parameters, and returns the reverse value stored in the database.
+func (e *Service) getReverse(userId int64, address, symbol string, platform pbspot.Platform) (reverse float64) {
+
+	// The purpose of this code is to query a database for the sum of values from a specific set of reserves (symbol,
+	// platform, and protocol) and store the result in the reserve variable.
+	_ = e.Context.Db.QueryRow(`select reverse from reserves where user_id = $1 and address = $2 and symbol = $3 and platform = $4 and protocol = $5`, userId, address, symbol, platform, pbspot.Protocol_MAINNET).Scan(&reverse)
+	return reverse
 }
 
 // done - This function is used to mark an item with a given ID as done. The wait map is a collection of items with an

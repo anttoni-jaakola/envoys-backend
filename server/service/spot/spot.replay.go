@@ -1095,9 +1095,6 @@ func (e *Service) confirmation() {
 						return
 					}
 
-					// The purpose of the item.Hook = true statement is to indicate that the item is hooked in a certain way. This can
-					// be used to indicate whether an item has been connected to another item, or has been "hooked" in some way.
-					// The item.Status = pbspot.Status_FILLED statement is used to set the status of the item to "FILLED". This indicates that the item has been filled with the necessary information, such as the item's name, description, or other details.
 					item.Hook = true
 					item.Status = pbspot.Status_FILLED
 
@@ -1117,9 +1114,13 @@ func (e *Service) confirmation() {
 						return
 					}
 
-					// The purpose of this line of code is to assign a status to an item. In this case, the status is set to the
-					// constant 'Status_RESERVE', which is a pre-defined constant. This constant is likely used to denote that the item
-					// has been reserved or set aside for a specific purpose.
+					// This code is setting up a reverse balance change in a database, and is checking for errors while doing so. The if
+					// statement is checking to see if the setReverse() function returns an error, and if it does, it prints the error
+					// to the debug log and returns. If the setReverse() function does not return an error, the code continues to execute.
+					if err := e.setReverse(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), pbspot.Balance_PLUS); e.Context.Debug(err) {
+						return
+					}
+
 					item.Status = pbspot.Status_RESERVE
 				}
 
