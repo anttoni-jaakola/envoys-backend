@@ -960,9 +960,10 @@ message Reserve {
     string address = 3;
     string symbol = 4;
     double value = 5;
-    bool lock = 6;
-    Protocol protocol = 7;
-    Platform platform = 8;
+    double reverse = 6;
+    bool lock = 7;
+    Protocol protocol = 8;
+    Platform platform = 9;
 }
 message GetRequestReservesManual {
     int64 id = 1;

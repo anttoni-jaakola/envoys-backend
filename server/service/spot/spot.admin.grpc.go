@@ -1495,7 +1495,7 @@ func (e *Service) GetReservesRule(ctx context.Context, req *pbspot.GetRequestRes
 		// from a slice of strings (maps). The query string is then used to query the database using the Context.Db.Query
 		// function. The query result is then stored in the rows variable. The rows.Close function is used to close the
 		// database connection when the query is finished.
-		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, user_id, value, address, platform, protocol, lock from reserves %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, user_id, value, reverse, address, platform, protocol, lock from reserves %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, e.Context.Error(err)
 		}
@@ -1522,6 +1522,7 @@ func (e *Service) GetReservesRule(ctx context.Context, req *pbspot.GetRequestRes
 				&item.Symbol,
 				&item.UserId,
 				&item.Value,
+				&item.Reverse,
 				&item.Address,
 				&item.Platform,
 				&item.Protocol,
