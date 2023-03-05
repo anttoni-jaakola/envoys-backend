@@ -9,3 +9,4 @@ config.json
 static/swagger/
 .DS_Store
 *.pb.go
+*.pb.gw.go
