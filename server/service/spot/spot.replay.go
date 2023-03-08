@@ -387,42 +387,29 @@ func (e *Service) process(params ...*pbspot.Order) {
 	// quantity of the orders and sets the necessary parameters for the order. Finally, it logs the parameters of the order.
 	if params[instance].GetValue() > 0 {
 
-		// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
-		// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
-		// stored in the "value" variable and the function will continue. If the query fails, the function will return.
-		if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[0].GetId(), params[instance].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
-			return
-		}
+		// The purpose of the for loop is to iterate over the parameters passed in and update the "value" of the specified
+		// order in the database. It also sets the status of the order to FILLED if the value is equal to 0. The code also
+		// checks for any errors that may occur during the process. Lastly, the code sends an email to the user associated with the order once the order is filled.
+		for i := 0; i < 2; i++ {
 
-		if value == 0 {
-
-			// This code is performing an update on the orders table in a database. It is setting the status of the order with the
-			// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
-			// occur during the process. If an error is found, the code will return without proceeding.
-			if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[0].GetId(), pbspot.Status_FILLED); err != nil {
+			// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
+			// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
+			// stored in the "value" variable and the function will continue. If the query fails, the function will return.
+			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[i].GetId(), params[instance].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
 				return
 			}
 
-			go migrate.SendMail(params[0].GetUserId(), "order_filled", params[0].GetId(), e.getQuantity(params[0].GetAssigning(), params[0].GetQuantity(), params[0].GetPrice(), false), params[0].GetBaseUnit(), params[0].GetQuoteUnit(), params[0].GetAssigning())
-		}
+			if value == 0 {
 
-		// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
-		// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
-		// stored in the "value" variable and the function will continue. If the query fails, the function will return.
-		if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[1].GetId(), params[instance].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
-			return
-		}
+				// This code is performing an update on the orders table in a database. It is setting the status of the order with the
+				// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
+				// occur during the process. If an error is found, the code will return without proceeding.
+				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[i].GetId(), pbspot.Status_FILLED); err != nil {
+					return
+				}
 
-		if value == 0 {
-
-			// This code is performing an update on the orders table in a database. It is setting the status of the order with the
-			// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
-			// occur during the process. If an error is found, the code will return without proceeding.
-			if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[1].GetId(), pbspot.Status_FILLED); err != nil {
-				return
+				go migrate.SendMail(params[i].GetUserId(), "order_filled", params[i].GetId(), e.getQuantity(params[i].GetAssigning(), params[i].GetQuantity(), params[i].GetPrice(), false), params[i].GetBaseUnit(), params[i].GetQuoteUnit(), params[i].GetAssigning())
 			}
-
-			go migrate.SendMail(params[1].GetUserId(), "order_filled", params[1].GetId(), e.getQuantity(params[1].GetAssigning(), params[1].GetQuantity(), params[1].GetPrice(), false), params[1].GetBaseUnit(), params[1].GetQuoteUnit(), params[1].GetAssigning())
 		}
 
 		switch params[1].GetAssigning() {
