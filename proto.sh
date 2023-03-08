@@ -3,7 +3,6 @@
 swagger="static/swagger"
 [ ! -d "$swagger" ] && mkdir -p "$swagger"
 
-
 grpc_path="$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway"
 if ! [ -f $grpc_path ]; then
     grpc_path=$(find $GOPATH/pkg/mod/github.com/grpc-ecosystem -name "grpc-gateway@*" -type d |  head -n 1)
@@ -22,7 +21,6 @@ if [ "$findedGOPATH" == "false" ]; then
     echo "add $GOPATH/bin to PATH"
     PATH="$PATH:$GOPATH/bin"
 fi
-
 
 for d in server/proto/* ; do
 

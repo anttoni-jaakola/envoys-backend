@@ -360,292 +360,135 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 // amount of the order to the balance, and sends a mail. In addition, it logs information about the trade.
 func (e *Service) process(params ...*pbspot.Order) {
 
-	// The purpose of the code snippet is to declare two variables, value of type float64 and migrate of type query.Migrate.
-	// To migrate variable is initialized with the context from the environment (e.Context).
+	// The purpose of this code is to declare and initialize a set of four variables. The first three variables are "value",
+	// "equal", and "instance", and they are all declared as type float64, bool, and int, respectively. The last variable is
+	// "migrate", and is declared as type query.Migrate, and is initialized with a Context set to e.Context.
 	var (
-		value   float64
-		migrate = query.Migrate{
+		value    float64
+		equal    bool
+		instance int
+		migrate  = query.Migrate{
 			Context: e.Context,
 		}
 	)
 
-	// This code is part of a trade matching algorithm for a spot market. The purpose of the code is to match two orders and
-	// settle the trade according to the parameters of each order. The code first checks if the amount of the current order
-	// is greater than or equal to the amount of the found order. If so, then it checks if the amount of the found order is
-	// greater than zero and proceeds to update the order values and statuses accordingly. It also sets the fees and
-	// parameters for each order. If the amount of the current order is less than the amount of the found order, the code
-	// does the same thing but with the amount of the current order. Finally, it logs the details of the trade.
+	// This code is comparing two values (from the params array) to determine if they are equal or not. If they are equal,
+	// it sets the 'equal' boolean to true and the 'instance' variable to 1. If they are not equal, it sets the 'equal'
+	// boolean to false and the 'instance' variable to 0.
 	if params[0].GetValue() >= params[1].GetValue() {
+		equal = true
+		instance = 1
+	} else {
+		equal = false
+		instance = 0
+	}
 
-		// This code is used to update an order status from pending to filled when the order is completed. It also updates the
-		// quantity of the orders and sets the necessary parameters for the order. Finally, it logs the parameters of the order.
-		if params[1].GetValue() > 0 {
+	// This code is used to update an order status from pending to filled when the order is completed. It also updates the
+	// quantity of the orders and sets the necessary parameters for the order. Finally, it logs the parameters of the order.
+	if params[instance].GetValue() > 0 {
 
-			// This code is performing an update query on the database. The query is updating the "value" field in the "orders"
-			// table. The parameters for the query are the ID (params[0].GetId()), the value to subtract (params[1].GetValue()),
-			// and the current status (pbspot.Status_PENDING). The code is also returning the updated value (value) after the
-			// query is executed. The "if err" statement is used to check for any errors that may have occurred during the query
-			// execution. If an error is found, the code returns.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[0].GetId(), params[1].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
-				return
-			}
-
-			// This code is used to update the status of an order to "filled" and to send an email with the order details to the
-			// user who placed the order. The code checks if the value is 0, and if it is, it executes an SQL query that updates the order status to "filled".
-			if value == 0 {
-
-				// This code is updating the status of an order in a database. Specifically, it is setting the status of the order
-				// with the ID specified in params[0].GetId() to FILLED. It is using the Exec() method of the Db object to execute
-				// the update statement. The if statement is checking if there is an error in executing the statement and, if so,
-				// returning to prevent further execution.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[0].GetId(), pbspot.Status_FILLED); err != nil {
-					return
-				}
-
-				// The purpose of this code is to send an email when an order is filled. The parameters passed in include the user
-				// ID, the order ID, the quantity, the price, the base unit, the quote unit, and the assigning details. This code is
-				// used to notify the user that their order has been filled and to provide them with details about the order.
-				go migrate.SendMail(params[0].GetUserId(), "order_filled", params[0].GetId(), e.getQuantity(params[0].GetAssigning(), params[0].GetQuantity(), params[0].GetPrice(), false), params[0].GetBaseUnit(), params[0].GetQuoteUnit(), params[0].GetAssigning())
-			}
-
-			// This code is performing an update query on the 'orders' table in a database according to the provided parameters.
-			// Specifically, the query is updating a value in the table by subtracting the value in the second parameter from the
-			// original value. It is then returning the updated value. The 'if' statement is checking to ensure that the query is
-			// working properly and returning an error if it fails.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[1].GetId(), params[1].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
-				return
-			}
-
-			// The purpose of this code is to update an order's status in the database, and then email the user
-			// associated with the order with specific details about the order. The code first checks to make sure the value is 0,
-			// and then it executes a database query to update the order's status.
-			if value == 0 {
-
-				// The purpose of this code is to execute an update statement on the database associated with the context of 'e'. The
-				// update statement is setting the status of an order with a given ID to 'filled'. If there is an error in executing
-				// the statement, the code will return.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[1].GetId(), pbspot.Status_FILLED); err != nil {
-					return
-				}
-
-				// The purpose of this code is to send an email when an order is filled. The parameters passed in include the user
-				// ID, the order ID, the quantity, the price, the base unit, the quote unit, and the assigning details. This code is
-				// used to notify the user that their order has been filled and to provide them with details about the order.
-				go migrate.SendMail(params[1].GetUserId(), "order_filled", params[1].GetId(), e.getQuantity(params[1].GetAssigning(), params[1].GetQuantity(), params[1].GetPrice(), false), params[1].GetBaseUnit(), params[1].GetQuoteUnit(), params[1].GetAssigning())
-			}
-
-			// The purpose of this code is to update the balance of two users when they take part in a spot market trade. The
-			// switch statement checks the assigning of the trade and updates the corresponding balances accordingly. It also sets
-			// the parameters such as fees, maker, turn and equal in the order of each user.
-			switch params[1].GetAssigning() {
-			case pbspot.Assigning_BUY:
-
-				// The purpose of this code is to calculate the total quantity and fees of a given quote unit, value, and price. It
-				// takes the parameters of the quote unit, value, and price as inputs, then it calculates the total quantity and fees
-				// using the getSum function and returns the calculated values.
-				quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.New(params[1].GetValue()).Mul(params[1].GetPrice()).Float(), false)
-
-				// The purpose of this code is to set the balance of a user with the specified quantity and type. The function checks
-				// for any errors, and if an error is encountered, the function returns.
-				if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
-				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
-				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: false, Equal: true}
-
-				// The purpose of this line of code is to calculate the quantity and fees of a given parameter. The getSum() function
-				// takes in three arguments: the base unit of the first parameter, the value of the second parameter, and a boolean
-				// value that indicates if the quantity should be rounded up. The function then returns two values: the quantity and the fees associated with the parameter.
-				quantity, fees = e.getSum(params[0].GetBaseUnit(), params[1].GetValue(), true)
-
-				// The purpose of this code is to set the balance of a user with the specified quantity and type. The function checks
-				// for any errors, and if an error is encountered, the function returns.
-				if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters for a pbspot order. It sets the fees, whether the order is a
-				// maker order, whether it has a turn and whether it is equal.
-				params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: true, Equal: true}
-
-				break
-			case pbspot.Assigning_SELL:
-
-				// The purpose of this code is to calculate the total quantity and fees of a given base unit, value, and price. It
-				// takes the parameters of the base unit, value, and price as inputs, then it calculates the total quantity and fees
-				// using the getSum function and returns the calculated values.
-				quantity, fees := e.getSum(params[0].GetBaseUnit(), params[1].GetValue(), false)
-
-				// This code is used to set the balance of a user by adding a specified quantity to the user's existing balance. The
-				// parameters used are the base unit, user ID, quantity, and the balance operation (in this case, PLUS). If an error
-				// is encountered, the function returns without further execution.
-				if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
-				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
-				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: true}
-
-				// The purpose of this line of code is to calculate the quantity and fees of a given parameter. The getSum() function
-				// takes in three arguments: the quote unit of the first parameter, the value of the second parameter, and a boolean
-				// value that indicates if the quantity should be rounded up. The function then returns two values: the quantity and the fees associated with the parameter.
-				quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.New(params[1].GetValue()).Mul(params[0].GetPrice()).Float(), true)
-
-				// The purpose of this code is to set the balance of a user with the specified quantity and type. The function checks
-				// for any errors, and if an error is encountered, the function returns.
-				if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters for a pbspot order. It sets the fees, whether the order is a
-				// maker order, whether it has a turn and whether it is equal.
-				params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: false, Equal: true}
-
-				break
-			}
-
-			e.Context.Logger.Infof("[(A)%v]: (Assigning: %v), (Price: [%v]-[%v]), (Value: [%v]-[%v]), (UserID: [%v]-[%v])", params[0].GetAssigning(), params[1].GetAssigning(), params[0].GetPrice(), params[1].GetPrice(), params[0].GetValue(), params[1].GetValue(), params[0].GetUserId(), params[1].GetUserId())
+		// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
+		// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
+		// stored in the "value" variable and the function will continue. If the query fails, the function will return.
+		if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[0].GetId(), params[instance].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
+			return
 		}
 
-		// If the amount of the current order is less than the amount of the found order.
-	} else if params[0].GetValue() < params[1].GetValue() {
+		if value == 0 {
 
-		// This code is part of a larger program that is used to handle orders in a spot trading system. The purpose of this
-		// code is to check if the value of an order is greater than 0 and, if it is, then to update the order status and
-		// update the order's user's balance. It also sends an email notification to the user if the order is filled. Finally,
-		// it logs information about the order.
-		if params[0].GetValue() > 0 {
-
-			// This is a SQL query within an if statement used to update a record in a database. The purpose of this statement is
-			// to update the value of a record with the given id, whose status is PENDING, by subtracting the given value
-			// (params[0].GetValue()). The statement also returns the new value (value) of the updated record. If any error occurs
-			// during the query, the statement returns without executing.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[0].GetId(), params[0].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
+			// This code is performing an update on the orders table in a database. It is setting the status of the order with the
+			// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
+			// occur during the process. If an error is found, the code will return without proceeding.
+			if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[0].GetId(), pbspot.Status_FILLED); err != nil {
 				return
 			}
 
-			// This code is part of an if statement checking is the value is equal to 0. If the value is equal to 0, the code
-			// updates the orders table in the database with a status of FILLED and sends an email to the user with details about the order.
-			if value == 0 {
+			go migrate.SendMail(params[0].GetUserId(), "order_filled", params[0].GetId(), e.getQuantity(params[0].GetAssigning(), params[0].GetQuantity(), params[0].GetPrice(), false), params[0].GetBaseUnit(), params[0].GetQuoteUnit(), params[0].GetAssigning())
+		}
 
-				// This is an example of an if statement used to update a record in a database. The statement is checking if there is
-				// an error when executing the update query. If there is an error, the statement returns. Otherwise, the query is
-				// executed and the record is updated.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[0].GetId(), pbspot.Status_FILLED); err != nil {
-					return
-				}
+		// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
+		// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
+		// stored in the "value" variable and the function will continue. If the query fails, the function will return.
+		if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[1].GetId(), params[instance].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
+			return
+		}
 
-				// This line of code is calling a function called migrate.SendMail, which is used to send an email notification to a
-				// user when a certain event has occurred. The parameters being passed to the function are the user ID, the type of
-				// event (in this case, "order_filled"), the order ID, the quantity of the order, the base unit and quote unit of the
-				// order, and the assigning of the order. This information is used to email the user informing them that their order has been filled.
-				go migrate.SendMail(params[0].GetUserId(), "order_filled", params[0].GetId(), e.getQuantity(params[0].GetAssigning(), params[0].GetQuantity(), params[0].GetPrice(), false), params[0].GetBaseUnit(), params[0].GetQuoteUnit(), params[0].GetAssigning())
-			}
+		if value == 0 {
 
-			// This code is attempting to update a row in the 'orders' table with a new value, based on the parameters received.
-			// The code is first checking to see that the order has a status of 'PENDING' before attempting to update the value in
-			// the row. After the update, the 'value' field is being returned. If there is an error encountered during this process, the code returns.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[1].GetId(), params[0].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
+			// This code is performing an update on the orders table in a database. It is setting the status of the order with the
+			// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
+			// occur during the process. If an error is found, the code will return without proceeding.
+			if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[1].GetId(), pbspot.Status_FILLED); err != nil {
 				return
 			}
 
-			// This code is part of an if-statement. The purpose of this statement is to update an order's status to "FILLED" in
-			// the database and to email the user to indicate that the order has been filled.
-			if value == 0 {
+			go migrate.SendMail(params[1].GetUserId(), "order_filled", params[1].GetId(), e.getQuantity(params[1].GetAssigning(), params[1].GetQuantity(), params[1].GetPrice(), false), params[1].GetBaseUnit(), params[1].GetQuoteUnit(), params[1].GetAssigning())
+		}
 
-				// This is an example of an if statement used to update a record in a database. The statement is checking if there is
-				// an error when executing the update query. If there is an error, the statement returns. Otherwise, the query is
-				// executed and the record is updated.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[1].GetId(), pbspot.Status_FILLED); err != nil {
-					return
-				}
+		switch params[1].GetAssigning() {
+		case pbspot.Assigning_BUY:
 
-				// The purpose of this code is to send an email when an order is filled. The parameters passed in include the user
-				// ID, the order ID, the quantity, the price, the base unit, the quote unit, and the assigning details. This code is
-				// used to notify the user that their order has been filled and to provide them with details about the order.
-				go migrate.SendMail(params[1].GetUserId(), "order_filled", params[1].GetId(), e.getQuantity(params[1].GetAssigning(), params[1].GetQuantity(), params[1].GetPrice(), false), params[1].GetBaseUnit(), params[1].GetQuoteUnit(), params[1].GetAssigning())
+			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
+			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
+			// values to the variables quantity and fees.
+			quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.New(params[instance].GetValue()).Mul(params[1].GetPrice()).Float(), false)
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
+			// the function will return without doing anything.
+			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+				return
 			}
+			params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: false, Equal: equal}
 
-			// The purpose of this code is to update the balance of two users when they take part in a spot market trade. The
-			// switch statement checks the assigning of the trade and updates the corresponding balances accordingly. It also sets
-			// the parameters such as fees, maker, turn and equal in the order of each user.
-			switch params[1].GetAssigning() {
-			case pbspot.Assigning_BUY:
+			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
+			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
+			// values to the variables quantity and fees.
+			quantity, fees = e.getSum(params[0].GetBaseUnit(), params[instance].GetValue(), true)
 
-				// The purpose of this code is to calculate the total quantity and fees of a given quote unit, value, and price. It
-				// takes the parameters of the quote unit, value, and price as inputs, then it calculates the total quantity and fees
-				// using the getSum function and returns the calculated values.
-				quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.New(params[0].GetValue()).Mul(params[1].GetPrice()).Float(), false)
-
-				// The purpose of this code is to set the balance of a user with the specified quantity and type. The function checks
-				// for any errors, and if an error is encountered, the function returns.
-				if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
-				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
-				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: false, Equal: false}
-
-				// The purpose of this line of code is to calculate the quantity and fees of a given parameter. The getSum() function
-				// takes in three arguments: the base unit of the first parameter, the value of the second parameter, and a boolean
-				// value that indicates if the quantity should be rounded up. The function then returns two values: the quantity and the fees associated with the parameter.
-				quantity, fees = e.getSum(params[0].GetBaseUnit(), params[0].GetValue(), true)
-
-				// The purpose of this code is to set the balance of a user with the specified quantity and type. The function checks
-				// for any errors, and if an error is encountered, the function returns.
-				if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters for a pbspot order. It sets the fees, whether the order is a
-				// maker order, whether it has a turn and whether it is equal.
-				params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: true, Equal: false}
-
-				break
-			case pbspot.Assigning_SELL:
-
-				// The purpose of this code is to calculate the total quantity and fees of a given base unit, value, and price. It
-				// takes the parameters of the base unit, value, and price as inputs, then it calculates the total quantity and fees
-				// using the getSum function and returns the calculated values.
-				quantity, fees := e.getSum(params[0].GetBaseUnit(), params[0].GetValue(), false)
-
-				// This code is used to set the balance of a user by adding a specified quantity to the user's existing balance. The
-				// parameters used are the base unit, user ID, quantity, and the balance operation (in this case, PLUS). If an error
-				// is encountered, the function returns without further execution.
-				if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters of a pbspot order. The parameters include the fees, whether the
-				// order is a maker order, whether the order is a turn order, and whether the order is an equal order.
-				params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: false}
-
-				// The purpose of this line of code is to calculate the quantity and fees of a given parameter. The getSum() function
-				// takes in three arguments: the quote unit of the first parameter, the value of the second parameter, and a boolean
-				// value that indicates if the quantity should be rounded up. The function then returns two values: the quantity and the fees associated with the parameter.
-				quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.New(params[0].GetValue()).Mul(params[0].GetPrice()).Float(), true)
-
-				// The purpose of this code is to set the balance of a user with the specified quantity and type. The function checks
-				// for any errors, and if an error is encountered, the function returns.
-				if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
-					return
-				}
-
-				// The purpose of this code is to set the parameters for a pbspot order. It sets the fees, whether the order is a
-				// maker order, whether it has a turn and whether it is equal.
-				params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: false, Equal: false}
-
-				break
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
+			// the function will return without doing anything.
+			if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+				return
 			}
+			params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: true, Equal: equal}
 
-			e.Context.Logger.Infof("[(B)%v]: (Assigning: %v), (Price: [%v]-[%v]), (Value: [%v]-[%v]), (UserID: [%v]-[%v])", params[0].GetAssigning(), params[1].GetAssigning(), params[0].GetPrice(), params[1].GetPrice(), params[0].GetValue(), params[1].GetValue(), params[0].GetUserId(), params[1].GetUserId())
+			break
+		case pbspot.Assigning_SELL:
+
+			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
+			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
+			// values to the variables quantity and fees.
+			quantity, fees := e.getSum(params[0].GetBaseUnit(), params[instance].GetValue(), false)
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
+			// the function will return without doing anything.
+			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+				return
+			}
+			params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: equal}
+
+			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
+			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
+			// values to the variables quantity and fees.
+			quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.New(params[instance].GetValue()).Mul(params[0].GetPrice()).Float(), true)
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
+			// the function will return without doing anything.
+			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+				return
+			}
+			params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: false, Equal: equal}
+
+			break
 		}
 	}
 
+	// The purpose of this code is to check for an error when the setTrade method is called with the given parameters. If
+	// there is an error, it will return without continuing with the code.
 	if err := e.setTrade(params[0], params[1]); err != nil {
 		return
 	}
@@ -955,10 +798,10 @@ func (e *Service) reward() {
 					)
 
 					// The purpose of this code is to set a reserve lock on a user's chain, platform, and protocol, transfer funds
-					// depending on the platform of the item, and update the 'claim' column of a row in the 'transactions' table to
+					// depending on the platform of the item, and update the 'lock' column of a row in the 'transactions' table to
 					// 'true'. If any errors are encountered while performing these actions, the code will skip the current
 					// iteration of the loop it is in and continue looping.
-					if _ = e.Context.Db.QueryRow("select value from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", chain.GetParentSymbol(), item.GetFees()*2, item.GetPlatform(), pbspot.Protocol_MAINNET, false).Scan(&value); value > 0 {
+					if _ = e.Context.Db.QueryRow("select value from reserves where symbol = $1 and value >= $2 and platform = $3 and protocol = $4 and lock = $5", chain.GetParentSymbol(), item.GetFees(), item.GetPlatform(), pbspot.Protocol_MAINNET, false).Scan(&value); value > 0 {
 
 						// This code is setting up a transaction for the parent symbol, chain ID, platform, value, and user ID from a
 						// reserve. It is also setting the Allocation to INTERNAL, the Protocol to MAINNET, and the Assignment to

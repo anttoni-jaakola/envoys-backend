@@ -7,11 +7,13 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/pbads"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbauth"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbkyc"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/cryptogateway/backend-envoys/server/service/account"
 	"github.com/cryptogateway/backend-envoys/server/service/ads"
 	"github.com/cryptogateway/backend-envoys/server/service/auth"
 	"github.com/cryptogateway/backend-envoys/server/service/index"
+	"github.com/cryptogateway/backend-envoys/server/service/kyc"
 	"github.com/cryptogateway/backend-envoys/server/service/spot"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -185,6 +187,7 @@ func Master(option *assets.Context) {
 		pbauth.RegisterApiServer(srv, &auth.Service{Context: option})
 		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
 		pbads.RegisterApiServer(srv, &ads.Service{Context: option})
+		pbkyc.RegisterApiServer(srv, &kyc.Service{Context: option})
 
 		var (
 			spotService = &spot.Service{Context: option}

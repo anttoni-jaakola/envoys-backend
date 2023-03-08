@@ -26,12 +26,28 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Kyc - The type Kyc struct is used to store information related to Know Your Customer (KYC) processes. It contains three fields:
-// FromId, ApiKey, and RedirectUrl. FromId is a unique identifier for the user, ApiKey is used for authentication, and
-// RedirectUrl is the URL to which the user will be redirected after successful authentication. This struct can be used to store the necessary information for KYC processes.
+// Kyc - The Kyc struct is used to store information related to Know Your Customer (KYC) processes. It contains an API key, as
+// well as three structs (S, P, and C) that store information related to the documents required to complete a KYC
+// process. These documents may include a passport, proof of address, and proof of identity. Each struct contains a key
+// and multiplication value, which is likely used to specify the number of documents that need to be submitted for the
+// KYC process. The Kyc struct also contains a RedirectUrl field, which is likely used to redirect the user to a specific
+// page after the KYC process is completed.
 type Kyc struct {
-	FromId      string
-	ApiKey      string
+	ApiKey string
+	Forms  struct {
+		S struct {
+			Key            string
+			Multiplication int32
+		}
+		P struct {
+			Key            string
+			Multiplication int32
+		}
+		C struct {
+			Key            string
+			Multiplication int32
+		}
+	}
 	RedirectUrl string
 }
 
@@ -232,10 +248,12 @@ func (app *Context) Write() *Context {
 		logrus.Fatal(connect.Error())
 	}
 
-	// The app.KycProvider is an instance of the kycaid.NewApi function. It is used to store the Kyc.FromId, Kyc.ApiKey, and any
-	// additional parameters needed to create an API instance for interacting with the KYC service. This API instance can
-	// then be used to access the KYC service for authentication and verification purposes.
-	app.KycProvider = kycaid.NewApi(app.Kyc.FromId, app.Kyc.ApiKey, nil)
+	// This code snippet is creating a new API instance for the app.KycProvider variable. It is using the kycaid.NewApi()
+	// function to do this. If an error occurs, the logrus.Fatal() function is called to log the error and terminate the program.
+	app.KycProvider, err = kycaid.NewApi(app.Kyc, nil)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	// App.Mutex.Unlock() is a function that unlocks a mutex, which is a synchronization primitive that allows only one
 	// thread to access a shared resource at a time. It is used to ensure that multiple threads do not access a shared

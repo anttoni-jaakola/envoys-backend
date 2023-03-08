@@ -418,7 +418,7 @@ func (e *Service) getSum(symbol string, value float64, maker bool) (balance, fee
 
 	// This code is used to calculate the final value of a given value after subtracting fees. The two return values
 	// represent the actual value after subtracting fees and the rounded value after subtracting fees.
-	return value - (value - (value - decimal.New(value).Mul(fees).Float()/100)), value - (value - decimal.New(value).Mul(fees).Float()/100)
+	return decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(fees).Float()).Div(100).Float()).Float(), decimal.New(value).Sub(decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(fees).Float()).Div(100).Float()).Float()).Float()
 }
 
 // getAddress - This function is used to get the address associated with a userId, symbol, platform and protocol. It does this by

@@ -1,4 +1,4 @@
-create table public.advertising
+create table if not exists public.advertising
 (
     id    serial
         primary key,

@@ -28,7 +28,7 @@ func (a *Service) QueryUser(id int64) (*pbaccount.User, error) {
 	// This code is used to query the database for a specific row using the "id" variable. It then assigns the retrieved row
 	// values to the response struct, which holds the values to be returned to the user. If an error occurs during the
 	// query, it is returned to the user instead.
-	if err := a.Context.Db.QueryRow("select id, name, email, status, sample, rules, factor_secure, factor_secret, kyc_secure, kyc_secret, kyc_process from accounts where id = $1", id).Scan(&response.Id, &response.Name, &response.Email, &response.Status, &q.Sample, &q.Rules, &response.FactorSecure, &response.FactorSecret, &response.KycSecure, &response.KycSecret, &response.KycProcess); err != nil {
+	if err := a.Context.Db.QueryRow("select id, name, email, status, sample, rules, factor_secure, factor_secret from accounts where id = $1", id).Scan(&response.Id, &response.Name, &response.Email, &response.Status, &q.Sample, &q.Rules, &response.FactorSecure, &response.FactorSecret); err != nil {
 		return &response, err
 	}
 

@@ -3,11 +3,9 @@ package account
 import (
 	"context"
 	"encoding/json"
-	"github.com/cryptogateway/backend-envoys/assets/common/kycaid"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
 	"github.com/pquerna/otp/totp"
 	"google.golang.org/grpc/status"
-	"strconv"
 )
 
 // SetUser - This function is used to set a user's information manually. It takes in a context and a request containing the user's
@@ -95,10 +93,6 @@ func (a *Service) GetUser(ctx context.Context, _ *pbaccount.GetRequestUser) (*pb
 	//This line of code sets the value of the FactorSecret property of the user object to an empty string. This property is
 	//likely used to store a secret code or token that is used in authentication or security processes.
 	user.FactorSecret = ""
-
-	// The purpose of this line of code is to set the value of the user.KycSecret variable to an empty string. This variable
-	// may be used to store a secret key for user authentication or verification.
-	user.KycSecret = ""
 
 	// This line of code is adding the user variable to the end of the response.Fields slice. The purpose of this is to add
 	// the user to a list of fields that the response contains.
@@ -305,143 +299,6 @@ func (a *Service) GetFactor(ctx context.Context, _ *pbaccount.GetRequestFactor) 
 		// associated with it, respectively.
 		response.Secret = key.Secret()
 		response.Url = key.URL()
-	}
-
-	return &response, nil
-}
-
-// SetKyc - This code is used to set up a KYC (Know Your Customer) verification process for an account. It checks for a valid
-// authentication and if there is an error with the authentication it will return an error response. It then queries the
-// user, creates an application and a form with the user's information, and returns the form ID and URL to the user, so
-// they can complete the KYC process.
-func (a *Service) SetKyc(ctx context.Context, _ *pbaccount.SetRequestKyc) (*pbaccount.ResponseKyc, error) {
-
-	// The purpose of this code is to declare a variable named "response" of type "pbaccount.ResponseKyc". This variable
-	// will be used to store a response from a KYC (Know Your Customer) request.
-	var (
-		response pbaccount.ResponseKyc
-	)
-
-	// This code checks for a valid authentication and if there is an error with the authentication it will return an error
-	// response. It is used to ensure that only authorized users can access the requested resource.
-	auth, err := a.Context.Auth(ctx)
-	if err != nil {
-		return &response, a.Context.Error(err)
-	}
-
-	// This code is querying a user from the object using the auth parameter. If there is an error with the query, the
-	// code will return the response and an error message from the Context object.
-	user, err := a.QueryUser(auth)
-	if err != nil {
-		return &response, a.Context.Error(err)
-	}
-
-	// This code is creating applicants in a KYC (Know Your Customer) process. The purpose is to create an applicant in the
-	// KYC process using the user's email and setting the type as "PERSON". If there is an error, it will return an error
-	// response and an error message.
-	applicants, err := a.Context.KycProvider.CreateApplicants(map[string]string{
-		"type":  "PERSON",
-		"email": user.GetEmail(),
-	})
-	if err != nil {
-		return &response, a.Context.Error(err)
-	}
-
-	// This code is used to update a database record. Specifically, this code updates the field "kyc_secret" in the
-	// "accounts" table, setting the value to "applicants.ApplicantId" for the record with the ID "auth". The "if" statement checks to
-	// see if the operation was successful by checking for any errors. If an error is encountered, it returns an appropriate
-	// response and an error message.
-	if _, err := a.Context.Db.Exec(`update accounts set kyc_secret = $2, kyc_process = $3 where id = $1`, auth, applicants.ApplicantId, true); err != nil {
-		return &response, a.Context.Error(err)
-	}
-
-	// This code is creating a form with specific information and assigning it to a variable. It is then checking if there
-	// is an error while creating the form and if there is an error, it will return an error response. The purpose of this
-	// code is to create a form to be used for KYC (Know Your Customer) verification with specific information included.
-	form, err := a.Context.KycProvider.CreateForm(map[string]string{
-		"applicant_id":          applicants.ApplicantId,
-		"external_applicant_id": strconv.FormatInt(auth, 10),
-		"redirect_url":          a.Context.Kyc.RedirectUrl,
-	})
-	if err != nil {
-		return &response, a.Context.Error(err)
-	}
-
-	// The purpose of these lines of code is to store the form information in the response object. The formId, formUrl, and
-	// the verificationId are all stored in the response object so that they can be accessed and used later.
-	response.FormId = form.FormId
-	response.FormUrl = form.FormUrl
-	response.VerificationId = form.VerificationId
-
-	return &response, nil
-}
-
-// SetKycVerify - This function is used to set a KYC verification for a particular applicant. It fetches the verification details from
-// the KYC provider, checks if the provided verification ID is valid and then updates the accounts table with the
-// applicant's KYC secure status. It returns the response and an error if any.
-func (a *Service) SetKycVerify(_ context.Context, req *pbaccount.SetRequestKycVerify) (*pbaccount.ResponseKycVerify, error) {
-
-	// This variable called "response" is used to store the response of a pbaccount.ResponseKycVerification. This variable
-	// is used to store the response of a KYC verification process, which is used to verify the identity of a person or
-	// organization.
-	var (
-		response pbaccount.ResponseKycVerify
-	)
-
-	// The purpose of this statement is to check the type of request (req) and determine if it matches the type
-	// "kycaid.TypeVerificationCompleted". If it does match, the statement will evaluate to true and the code following the
-	// statement will be executed. If the request is of type 'pending', the code sets the response type to 'pending'.
-	if req.GetType() == kycaid.TypeVerificationCompleted {
-
-		// The purpose of this code is to check if the verification for a request is valid and if it has been verified. The code
-		// checks if the verification ID matches the request and if the request has been verified. If both conditions are true,
-		// then this code will execute.
-		if req.GetVerified() && req.GetStatus() == kycaid.StatusCompleted {
-
-			// This code is updating the 'kyc_secure' column in the 'accounts' table to 'true' using the 'kyc_secret' column and
-			// the value in 'req.GetApplicantId()'. If there is an error, the program will return an error message.
-			if err := a.Context.Db.QueryRow(`update accounts set kyc_secure = $2, kyc_process = $3 where kyc_secret = $1 returning id`, req.GetApplicantId(), true, false).Scan(&response.Id); err != nil {
-				return &response, a.Context.Error(err)
-			}
-			response.Type = "completed"
-		}
-
-		// This code is checking if the profile and document verifications have been completed. If they have not been verified,
-		// then the code updates the 'kyc_secure' column in the 'accounts' table to 'false' and the 'kyc_process' column to
-		// 'false'. It then returns an error message with any comments from the verifications.
-		if !req.GetVerifications().Profile.GetVerified() || !req.GetVerifications().Document.GetVerified() {
-
-			// This code is updating the 'kyc_secure' column in the 'accounts' table to 'true' using the 'kyc_secret' column and
-			// the value in 'req.GetApplicantId()'. If there is an error, the program will return an error message.
-			if err := a.Context.Db.QueryRow(`update accounts set kyc_secure = $2, kyc_process = $3 where kyc_secret = $1 returning id`, req.GetApplicantId(), false, false).Scan(&response.Id); err != nil {
-				return &response, a.Context.Error(err)
-			}
-			response.Type = "error"
-
-			// This code checks if the length of the request's GetVerifications().Profile.GetComment() is greater than 0. If it
-			// is, then the response.Messages array is appended with the contents of the request's
-			// GetVerifications().Profile.GetComment(). The purpose of this code is to make sure that any comments associated with the request's profile are included in the response.
-			if len(req.GetVerifications().Profile.GetComment()) > 0 {
-				response.Messages = append(response.Messages, req.GetVerifications().Profile.GetComment())
-			}
-
-			// This code is checking if the length of the "GetComment" field in the "Document" field of the "GetVerifications"
-			// request is greater than 0. If it is, it adds the value of the "GetComment" field to the "Messages" field of the
-			// response. This is likely done to add a message to the response based on the content of the "GetComment" field.
-			if len(req.GetVerifications().Document.GetComment()) > 0 {
-				response.Messages = append(response.Messages, req.GetVerifications().Document.GetComment())
-			}
-		}
-
-	} else {
-		response.Type = "pending"
-	}
-
-	// This code is used to publish a response to an exchange on the topic "account/kyc-verify". If there is an error while
-	// publishing the response, the function will return the response and an error. The a.Context.Debug function is used to
-	// print out any errors encountered.
-	if err := a.Context.Publish(&response, "exchange", "account/kyc-verify"); a.Context.Debug(err) {
-		return &response, a.Context.Error(err)
 	}
 
 	return &response, nil

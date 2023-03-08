@@ -1,0 +1,202 @@
+syntax = "proto3";
+
+package pbkyc;
+
+option go_package = "server/proto/pbkyc";
+
+import "google/api/annotations.proto";
+import "google/protobuf/any.proto";
+
+service Api {
+  // This is a Remote Procedure Call (RPC). It is a method of inter-process communication used by distributed
+  // applications. The purpose of the RPC is to set a process by sending a SetRequestProcess request to the server, and
+  // receiving a ResponseProcess response. The option (google.api.http) allows the RPC to use HTTP POST requests with a
+  // body of "*" to the URL "/v2/verification/set-process".
+  rpc SetProcess (SetRequestProcess) returns (ResponseProcess) {
+    option (google.api.http) = {
+      post: "/v2/verification/set-process",
+      body: "*"
+    };
+  }
+  // This is a remote procedure call (RPC) that allows a user to set a callback from the SetRequestCallback service to
+  // the ResponseCallback service. The google.api.http option specifies the endpoint that the user must send a post
+  // request to in order to set the callback. The "*" in the body field indicates that any type of data can be sent in
+  // the body of the request.
+  rpc SetCallback (SetRequestCallback) returns (ResponseCallback) {
+    option (google.api.http) = {
+      post: "/v2/verification/set-callback",
+      body: "*"
+    };
+  }
+  // This code is a Remote Procedure Call (RPC) used to set a request as canceled and return a response of
+  // cancellation. The RPC defines an endpoint that can be called via an HTTP POST request. The endpoint is set to
+  // "/v2/verification/set-canceled" and will accept a body as part of the POST request. The response will be a
+  // ResponseCanceled object. This RPC is used to handle canceling requests from clients.
+  rpc SetCanceled (SetRequestCanceled) returns (ResponseCanceled) {
+    option (google.api.http) = {
+      post: "/v2/verification/set-canceled",
+      body: "*"
+    };
+  }
+  // This code is a Remote Procedure Call (RPC) that allows a client application to request and retrieve applicant
+  // information from an external server. The RPC is named "GetApplicant" and takes in a "GetRequestApplicant" object
+  // as a parameter and returns a "ResponseApplicant" object. The option provides the URL for the request (in this
+  // case, "/v2/verification/get-applicant") and specifies that the request should be sent using an HTTP POST request.
+  // The "body" field is set to "*" to indicate that the request should include the body of the request.
+  rpc GetApplicant (GetRequestApplicant) returns (ResponseApplicant) {
+    option (google.api.http) = {
+      post: "/v2/verification/get-applicant",
+      body: "*"
+    };
+  }
+  // This RPC (remote procedure call) is used to retrieve the status of a GetRequestStatus request. The "option
+  // (google.api.http)" section specifies the HTTP method (post) and the endpoint ("/v2/verification/get-status") to be
+  // used for this request, as well as the body that is sent with the request ("*").
+  rpc GetStatus (GetRequestStatus) returns (ResponseStatus) {
+    option (google.api.http) = {
+      post: "/v2/verification/get-status",
+      body: "*"
+    };
+  }
+  // This code is used to set up a Remote Procedure Call (RPC) to the GetPrivilege endpoint. The GetRequestPrivilege parameter is
+  // sent to the endpoint and the endpoint will respond with the ResponsePrivilege. The option (google.api.http) is then
+  // used to set up the HTTP POST request with the endpoint URL and the body that is expected to be sent to the
+  // endpoint.
+  rpc GetPrivilege (GetRequestPrivilege) returns (ResponsePrivilege) {
+    option (google.api.http) = {
+      post: "/v2/verification/get-privilege",
+      body: "*"
+    };
+  }
+}
+
+// Enums are used to create a set of named constants that make code more readable and understandable. In this example,
+// the enum is used to define a type for an object. The constants are NONE, STANDARD, PREMIUM, and CORPORATE. Each
+// constant has a numerical value associated with it, making it easier to identify which type the object is.
+enum Type {
+  NONE = 0;
+  STANDARD  = 1;
+  PREMIUM   = 2;
+  CORPORATE = 3;
+}
+
+// Enums are used in programming to define a set of named constants. In this case, the enum Form is used to define two
+// constants: PERSON and COMPANY. This makes it easier to refer to these constants in the code, rather than using
+// numbers or strings.
+enum Form {
+  PERSON = 0;
+  COMPANY = 1;
+}
+
+// KYC structure.
+message SetRequestCanceled {}
+message ResponseCanceled {
+  bool success = 1;
+}
+message GetRequestPrivilege {}
+message ResponsePrivilege {
+  map<string, int32> multiplication = 1;
+}
+message FormResponse {
+  string form_id = 1;
+  string form_url = 2;
+  string verification_id = 3;
+}
+message GetRequestApplicant {
+  string id = 1;
+}
+message Document {
+  string document_id = 1;
+  string type = 2;
+  string provider = 3;
+  string status = 4;
+  string document_number = 5;
+  string issue_date = 6;
+  string expiry_date = 7;
+  repeated string income_sources = 8;
+  string front_side_id = 9;
+  string front_side = 10;
+  int32 front_side_size = 11;
+  string back_side_id = 12;
+  string back_side = 13;
+  int32 back_side_size = 14;
+  string created_at = 15;
+  repeated string decline_reasons = 16;
+}
+message ResponseApplicant {
+  string applicant_id = 1;
+  google.protobuf.Any external_applicant_id = 2;
+  string type = 3;
+  string created_at = 4;
+  string profile_status = 5;
+  string profile_comment = 6;
+  string first_name = 7;
+  google.protobuf.Any origin_first_name = 8;
+  google.protobuf.Any middle_name = 9;
+  google.protobuf.Any origin_middle_name = 10;
+  string last_name = 11;
+  google.protobuf.Any origin_last_name = 12;
+  string residence_country = 13;
+  string dob = 14;
+  string gender = 15;
+  string email = 16;
+  string phone = 17;
+  google.protobuf.Any wallet_address = 18;
+  google.protobuf.Any telegram_username = 19;
+  google.protobuf.Any pep = 20;
+  google.protobuf.Any custom_field_1 = 21;
+  google.protobuf.Any custom_field_2 = 22;
+  google.protobuf.Any custom_field_3 = 23;
+  google.protobuf.Any custom_field_4 = 24;
+  google.protobuf.Any custom_field_5 = 25;
+  repeated google.protobuf.Any decline_reasons = 26;
+  repeated google.protobuf.Any addresses = 27;
+  repeated Document documents = 28;
+  string verification_status = 29;
+  string verifications_count = 30;
+}
+message Verifications {
+  KycProfile profile = 1;
+  KycDocument document = 2;
+}
+message KycProfile {
+  bool verified = 1;
+  string comment = 2;
+  repeated string decline_reasons = 3;
+}
+message KycDocument {
+  bool verified = 1;
+  string comment = 2;
+  repeated string decline_reasons = 3;
+}
+message SetRequestCallback {
+  string request_id = 1;
+  string type = 2;
+  string verification_id = 3;
+  string applicant_id = 4;
+  string status = 5;
+  bool verified = 6;
+  Verifications verifications = 7;
+}
+message ResponseCallback {
+  int64 id = 1;
+  string type = 2;
+  repeated string messages = 3;
+}
+message SetRequestProcess {
+  Form form = 1;
+  Type type = 2;
+}
+message ResponseProcess {
+  string form_id = 1;
+  string form_url = 2;
+  string verification_id = 3;
+}
+message GetRequestStatus {
+  int64 id = 1;
+}
+message ResponseStatus {
+  bool secure = 1;
+  bool process = 2;
+  Type type = 3;
+}

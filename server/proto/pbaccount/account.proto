@@ -5,7 +5,6 @@ package pbaccount;
 option go_package = "server/proto/pbaccount";
 
 import "google/api/annotations.proto";
-import "google/protobuf/any.proto";
 
 service Api {
     // Account info.
@@ -68,122 +67,6 @@ service Api {
             body: "*"
         };
     }
-    rpc GetKycApplicantRule (GetRequestKycApplicantRule) returns (ResponseKycApplicant) {
-        option (google.api.http) = {
-            post: "/v2/admin/account/get-kyc-applicant",
-            body: "*"
-        };
-    }
-
-    // KYC api.
-    // Set kyc.
-    rpc SetKyc (SetRequestKyc) returns (ResponseKyc) {
-        option (google.api.http) = {
-            post: "/v2/account/set-kyc",
-            body: "*"
-        };
-    }
-    // Set kyc verification.
-    rpc SetKycVerify (SetRequestKycVerify) returns (ResponseKycVerify) {
-        option (google.api.http) = {
-            post: "/v2/account/set-kyc-verify",
-            body: "*"
-        };
-    }
-}
-
-// KYC structure.
-message FormResponse {
-    string form_id = 1;
-    string form_url = 2;
-    string verification_id = 3;
-}
-message GetRequestKycApplicantRule {
-    string id = 1;
-}
-message Document {
-    string document_id = 1;
-    string type = 2;
-    string provider = 3;
-    string status = 4;
-    string document_number = 5;
-    string issue_date = 6;
-    string expiry_date = 7;
-    repeated string income_sources = 8;
-    string front_side_id = 9;
-    string front_side = 10;
-    int32 front_side_size = 11;
-    string back_side_id = 12;
-    string back_side = 13;
-    int32 back_side_size = 14;
-    string created_at = 15;
-    repeated string decline_reasons = 16;
-}
-message ResponseKycApplicant {
-    string applicant_id = 1;
-    google.protobuf.Any external_applicant_id = 2;
-    string type = 3;
-    string created_at = 4;
-    string profile_status = 5;
-    string profile_comment = 6;
-    string first_name = 7;
-    google.protobuf.Any origin_first_name = 8;
-    google.protobuf.Any middle_name = 9;
-    google.protobuf.Any origin_middle_name = 10;
-    string last_name = 11;
-    google.protobuf.Any origin_last_name = 12;
-    string residence_country = 13;
-    string dob = 14;
-    string gender = 15;
-    string email = 16;
-    google.protobuf.Any phone = 17;
-    google.protobuf.Any wallet_address = 18;
-    google.protobuf.Any telegram_username = 19;
-    google.protobuf.Any pep = 20;
-    google.protobuf.Any custom_field_1 = 21;
-    google.protobuf.Any custom_field_2 = 22;
-    google.protobuf.Any custom_field_3 = 23;
-    google.protobuf.Any custom_field_4 = 24;
-    google.protobuf.Any custom_field_5 = 25;
-    repeated google.protobuf.Any decline_reasons = 26;
-    repeated google.protobuf.Any addresses = 27;
-    repeated Document documents = 28;
-    string verification_status = 29;
-    string verifications_count = 30;
-}
-message KycVerifications {
-    KycProfile profile = 1;
-    KycDocument document = 2;
-}
-message KycProfile {
-    bool verified = 1;
-    string comment = 2;
-    repeated string decline_reasons = 3;
-}
-message KycDocument {
-    bool verified = 1;
-    string comment = 2;
-    repeated string decline_reasons = 3;
-}
-message SetRequestKycVerify {
-    string request_id = 1;
-    string type = 2;
-    string verification_id = 3;
-    string applicant_id = 4;
-    string status = 5;
-    bool verified = 6;
-    KycVerifications verifications = 7;
-}
-message ResponseKycVerify {
-    int64 id = 1;
-    string type = 2;
-    repeated string messages = 3;
-}
-message SetRequestKyc {}
-message ResponseKyc {
-    string form_id = 1;
-    string form_url = 2;
-    string verification_id = 3;
 }
 
 // Rule structure.
@@ -213,8 +96,7 @@ message User {
     bool factor_secure = 10;
     string factor_secret = 11;
     bool kyc_secure = 12;
-    bool kyc_process = 13;
-    string kyc_secret = 14;
+    string kyc_secret = 13;
 }
 
 // Action structure.

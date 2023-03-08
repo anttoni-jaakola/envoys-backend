@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbkyc"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -16,18 +16,61 @@ const (
 	StatusCompleted           = "completed"
 )
 
+// Kyc - The Kyc struct is used to store information related to Know Your Customer (KYC) processes. It contains an API key, as
+// well as three structs (S, P, and C) that store information related to the documents required to complete a KYC
+// process. These documents may include a passport, proof of address, and proof of identity. Each struct contains a key
+// and multiplication value, which is likely used to specify the number of documents that need to be submitted for the
+// KYC process. The Kyc struct also contains a RedirectUrl field, which is likely used to redirect the user to a specific
+// page after the KYC process is completed.
+type Kyc struct {
+	ApiKey string
+	Forms  struct {
+		S struct {
+			Key            string
+			Multiplication int
+		}
+		P struct {
+			Key            string
+			Multiplication int
+		}
+		C struct {
+			Key            string
+			Multiplication int
+		}
+	}
+	RedirectUrl string
+}
+
 // Api - is a struct is used to define a type for creating API objects that are used to make API requests. The Key string is
 // used to store an authentication key, and the Client *http.Client is used to store an http client object that is used
 // to make requests.
 type Api struct {
-	Id     string
-	Key    string
+	Kyc    Kyc
 	Client *http.Client
 }
 
-// NewApi - this function creates and returns a new Api struct with the given key and http client. If a client is not provided, it
-// will create a new http.Client automatically.
-func NewApi(id, key string, client *http.Client) *Api {
+// NewApi - The purpose of this code is to create a new Api object from the given params and http.Client objects. It does this by
+// first marshaling the params object into a serialized format and then unmarshaling it into a kyc object. It then checks
+// if the client object is nil, and if it is, it creates a new http.Client object and assigns it to the client variable.
+// Finally, it returns a new Api object with the Kyc and Client objects set.
+func NewApi(params interface{}, client *http.Client) (*Api, error) {
+
+	var (
+		kyc Kyc
+	)
+
+	// This code is used to convert a given data structure (params) into a serialized format using the json.Marshal()
+	// function. If an error occurs during the conversion, the function returns nil and the error.
+	serialize, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	// The purpose of this code snippet is to unmarshal a serialized JSON object into a kyc object, and to return an error
+	// if it is not successful.
+	if err = json.Unmarshal(serialize, &kyc); err != nil {
+		return nil, err
+	}
 
 	// This code is checking if the "client" variable is nil or not. If it is, it creates a new http.Client object and
 	// assigns it to the "client" variable. This is done so that the code has a valid http.Client object to use when making requests.
@@ -35,14 +78,10 @@ func NewApi(id, key string, client *http.Client) *Api {
 		client = &http.Client{}
 	}
 
-	// The purpose of this code is to create and initialize a new instance of an Api struct, which is a type of struct used
-	// to store data related to an API. The code assigns values to the fields of the struct and then returns a pointer to
-	// the new instance of the Api struct.
 	return &Api{
-		Id:     id,
-		Key:    key,
+		Kyc:    kyc,
 		Client: client,
-	}
+	}, nil
 }
 
 // request - the purpose of this code is to create an HTTP request with a given path, body, and method. It sets the authorization
@@ -72,7 +111,7 @@ func (p *Api) request(path string, body map[string]string, method string) (respo
 
 	// This code is setting the Authorization header to a value of "Token" followed by the value of the p.Key variable. This
 	// is likely being used in an HTTP request to authenticate the user who is making the request.
-	req.Header.Set("Authorization", "Token "+p.Key)
+	req.Header.Set("Authorization", "Token "+p.Kyc.ApiKey)
 
 	// The purpose of req.Header.Set("Content-Type", "application/json") is to set the Content-Type header of an HTTP
 	// request to application/json. This informs the server of the type of data that is being sent in the request body, so
@@ -93,12 +132,12 @@ func (p *Api) request(path string, body map[string]string, method string) (respo
 // CreateApplicants - this function is used to create an applicant using a mapping of parameters. It sends a request to the MethodApplicants
 // endpoint using the specified parameters and then decodes the response as an ApplicantsResponse type. Finally, it
 // returns the applicant ID as a string or an error.
-func (p *Api) CreateApplicants(param map[string]string) (*pbaccount.ResponseKycApplicant, error) {
+func (p *Api) CreateApplicants(param map[string]string) (*pbkyc.ResponseApplicant, error) {
 
 	// The purpose of this statement is to declare a variable called "response" of type ApplicantsResponse. This variable
 	// can be used to store values or references to objects of type ApplicantsResponse.
 	var (
-		response pbaccount.ResponseKycApplicant
+		response pbkyc.ResponseApplicant
 	)
 
 	// This code is used to make an API request using a specified method (MethodApplicants) with a given set of parameters
@@ -129,17 +168,30 @@ func (p *Api) CreateApplicants(param map[string]string) (*pbaccount.ResponseKycA
 // CreateForm - the purpose of this code is to make an HTTP request to a given URL with a set of parameters, decode the request body
 // in the JSON format, and check if the response is valid. If it is valid, it will return the response, otherwise, it
 // will return an error message.
-func (p *Api) CreateForm(param map[string]string) (*pbaccount.FormResponse, error) {
+func (p *Api) CreateForm(param map[string]string, types pbkyc.Type) (*pbkyc.FormResponse, error) {
 
 	// This is a variable declaration, which is used to create a variable named "response" of type "FormResponse". The
 	// purpose of this is to allocate memory and store a value, which can be accessed and used in the program.
 	var (
-		response pbaccount.FormResponse
+		response pbkyc.FormResponse
 	)
+
+	// The purpose of the switch form is to assign the correct form ID to the response based on the type of form. The switch
+	// statement is used to evaluate an expression and depending on the value of the expression, it will perform a different
+	// code block. In this case, the expression is the type of form and depending on the type of form, the response.FormId
+	// will be set to the appropriate key.
+	switch types {
+	case pbkyc.Type_STANDARD:
+		response.FormId = p.Kyc.Forms.S.Key
+	case pbkyc.Type_PREMIUM:
+		response.FormId = p.Kyc.Forms.P.Key
+	case pbkyc.Type_CORPORATE:
+		response.FormId = p.Kyc.Forms.C.Key
+	}
 
 	//This code is making an HTTP request to a given URL with a set of parameters. The request function is making the
 	//request and fmt.Sprintf is formatting the URL with the given parameters. If there is an error, the code returns an error.
-	request, err := p.request(fmt.Sprintf("%v/%v/urls", MethodForms, p.Id), param, http.MethodPost)
+	request, err := p.request(fmt.Sprintf("%v/%v/urls", MethodForms, response.GetFormId()), param, http.MethodPost)
 	if err != nil {
 		return &response, err
 	}
@@ -164,12 +216,12 @@ func (p *Api) CreateForm(param map[string]string) (*pbaccount.FormResponse, erro
 // GetApplicantsById - the purpose of this code is to make an API request to get data about an applicant and store it in an
 // ApplicantsResponse variable. It then checks if the ApplicantID is empty and returns an error if it is. Finally, it
 // returns an ApplicantsResponse variable and a nil error if the request is successful.
-func (p *Api) GetApplicantsById(id string) (*pbaccount.ResponseKycApplicant, error) {
+func (p *Api) GetApplicantsById(id string) (*pbkyc.ResponseApplicant, error) {
 
 	// The variable 'response' is declared to be of type 'ApplicantsResponse'. This variable is used to store data related
 	// to an applicant's response. It may contain information like a response to a survey, answers to questions on a job application, etc.
 	var (
-		response pbaccount.ResponseKycApplicant
+		response pbkyc.ResponseApplicant
 	)
 
 	// This code is used to make an API request using a specified method (MethodApplicants) with a given set of parameters

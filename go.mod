@@ -1,6 +1,6 @@
 module github.com/cryptogateway/backend-envoys
 
-go 1.19
+go 1.20
 
 require (
 	github.com/btcsuite/btcd v0.22.0-beta
@@ -9,7 +9,6 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/ethereum/go-ethereum v1.10.22
-	github.com/go-ping/ping v1.1.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/golang/protobuf v1.5.2
@@ -33,11 +32,9 @@ require (
 
 require (
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
-	github.com/fatih/structs v1.1.0 // indirect
 	github.com/pquerna/otp v1.4.0 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
 )
 
 require (
