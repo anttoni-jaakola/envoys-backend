@@ -55,7 +55,7 @@
     * прописать необходимые для нас `RPC Microservices` и сформировать структуру сообщений для наших `RPC Microservices`.
     * сгенерировать интерфейсы `RPC Microservices`, смотреть пункт `2`.
 10. для создания нового клиента/компонента для взаимодействия с `RPC Microservices`:
-    * создать папку в каталоге `server/service`, например, `test`, так как у нас интерфейс `RPC` с именем `pbtest`.
+    * создать папку в каталоге `server/service`, например, `test`, так как у нас `proto` `package` с именем `pbtest`.
     * создать файл `test.go` в папке `test`.
     * прописать в файле `test.go` структуру типа с именем `Service` и прописать следующие параметры: поданного контекста `*assets.Context`. Пример можно посмотреть в файле `server/service/spot/spot.go:28`.
     * прописать в файле `server/server.go` строку регистратора API сервера - `pbtest.RegisterApiServer(srv, &test.Service{Context: option})`. Пример можно посмотреть в файле `server.go:190`.
