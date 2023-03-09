@@ -1794,7 +1794,7 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 
 	// This code checks the user's authentication (auth) to see if they have the appropriate rules ("contracts" and
 	// "deny-record") to write and edit data. If they do not have the necessary rules, it returns an error message.
-	if !migrate.Rules(auth, "reserves", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
+	if !migrate.Rules(auth, "repayments", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
 		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
 	}
 
