@@ -1801,7 +1801,7 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 	// associated with a transaction with an id equal to the id stored in the req variable. The row variable is used to
 	// store the result of the query. The if statement is used to check for any errors that may have occurred during the
 	// query. To defer row.Close() statement is used to close the query after it is finished, to avoid any memory leaks.
-	row, err := e.Context.Db.Query(`select fees, chain_id from transactions where id = $1 and repayment = $2`, req.GetId(), false)
+	row, err := e.Context.Db.Query(`select id, fees, chain_id from transactions where id = $1 and repayment = $2`, req.GetId(), false)
 	if err != nil {
 		return &response, e.Context.Error(err)
 	}
@@ -1819,7 +1819,7 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 
 		// The purpose of this if statement is to scan each row of the database table and store the values from the row into
 		// the item.Fees and item.ChainId variables. If the scan is unsuccessful, the error is returned in the response.
-		if err := row.Scan(&item.Fees, &item.ChainId); err != nil {
+		if err := row.Scan(&item.Id, &item.Fees, &item.ChainId); err != nil {
 			return &response, e.Context.Error(err)
 		}
 
@@ -1839,6 +1839,14 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 		// is using $1 and $2, which are placeholder variables for the first and second parameters given to the Exec() method.
 		// The first parameter is the symbol of the parent chain and the second parameter is the fees associated with the item. If an error occurs, the code will return an error response.
 		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), item.GetFees()); err != nil {
+			return &response, e.Context.Error(err)
+		}
+
+		// This code is part of a larger program and is used to update a database entry for a given transaction. The first
+		// parameter passed to the Exec function is a SQL statement which updates the repayment value of a transaction with a
+		// given id to true. The second parameter is the id of the transaction to be updated. The if statement is used to check
+		// if the execution of the SQL statement was successful or not. If there is an error, the Error function is called and an appropriate response is returned.
+		if _, err := e.Context.Db.Exec("update transactions set repayment = $3 where id = $1 and repayment = $2;", item.GetId(), false, true); err != nil {
 			return &response, e.Context.Error(err)
 		}
 		response.Success = true
