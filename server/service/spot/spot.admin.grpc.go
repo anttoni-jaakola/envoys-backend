@@ -1427,7 +1427,6 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 		if err = rows.Err(); err != nil {
 			return &response, e.Context.Error(err)
 		}
-
 	}
 
 	return &response, nil
@@ -1802,7 +1801,7 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 	// associated with a transaction with an id equal to the id stored in the req variable. The row variable is used to
 	// store the result of the query. The if statement is used to check for any errors that may have occurred during the
 	// query. To defer row.Close() statement is used to close the query after it is finished, to avoid any memory leaks.
-	row, err := e.Context.Db.Query(`select fees, chain_id from transactions where id = $2`, req.GetId())
+	row, err := e.Context.Db.Query(`select fees, chain_id from transactions where id = $1 and repayment = $2`, req.GetId(), false)
 	if err != nil {
 		return &response, e.Context.Error(err)
 	}
