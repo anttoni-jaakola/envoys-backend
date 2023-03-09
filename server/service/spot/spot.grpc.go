@@ -476,7 +476,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	order.QuoteUnit = req.GetQuoteUnit()
 	order.Assigning = req.GetAssigning()
 	order.Status = pbspot.Status_PENDING
-	order.Type = req.GetTrading()
+	order.Trading = req.GetTrading()
 	order.CreateAt = time.Now().UTC().Format(time.RFC3339)
 
 	// This code is checking for an error in the helperOrder() function and if one is found, it returns an error response

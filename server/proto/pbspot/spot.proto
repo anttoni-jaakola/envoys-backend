@@ -610,15 +610,16 @@ message Trade {
     Assigning assigning = 8;
 }
 
+// Order header message structure.
+message Header {
+    bool turn = 1;
+    bool maker = 2;
+    bool equal = 3;
+    double fees = 9;
+}
+
 // Order message structure.
 message Order {
-    // Option message structure.
-    message Param {
-        bool turn = 1;
-        bool maker = 2;
-        bool equal = 3;
-        double fees = 9;
-    }
     int64 id = 1;
     int64 user_id = 2;
     string base_unit = 3;
@@ -628,9 +629,9 @@ message Order {
     double value = 7;
     double quantity = 8;
     int32 count = 9;
-    Param param = 10;
+    Header header = 10;
     Assigning assigning = 11;
-    Trading type = 12;
+    Trading trading = 12;
     Status status = 13;
 }
 

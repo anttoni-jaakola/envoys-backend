@@ -130,40 +130,40 @@ func (e *Service) setTrade(param ...*pbspot.Order) error {
 		// the value of the parameter at index 0 of the array. If the GetEqual method of the parameter at index i returns true,
 		// the Quantity is then set to the value of the parameter at index 1 of the array.
 		param[i].Quantity = param[0].GetValue()
-		if param[i].Param.GetEqual() {
+		if param[i].Header.GetEqual() {
 			param[i].Quantity = param[1].GetValue()
 		}
 
 		// This code is checking if param[i].Param.GetMaker() is true and if it is, it is setting the price of param[i] to the
 		// price of param[0]. This is likely setting the price to a predetermined value, or to a reference point to determine a price.
 		param[i].Price = param[i].GetPrice()
-		if param[i].Param.GetMaker() {
+		if param[i].Header.GetMaker() {
 			param[i].Price = param[0].GetPrice()
 		}
 
 		// This code is used to insert data into the "transfers" table in a database using the parameters provided in the array
 		// "param". The code first checks for any errors in the insertion process, and if there are any, it will return an error.
-		if _, err := e.Context.Db.Exec(`insert into transfers (order_id, assigning, user_id, base_unit, quote_unit, price, quantity, fees) values ($1, $2, $3, $4, $5, $6, $7, $8)`, param[i].GetId(), param[i].GetAssigning(), param[i].GetUserId(), param[i].GetBaseUnit(), param[i].GetQuoteUnit(), param[i].GetPrice(), param[i].GetQuantity(), e.getFees(param[i].GetQuoteUnit(), param[i].Param.GetMaker())); err != nil {
+		if _, err := e.Context.Db.Exec(`insert into transfers (order_id, assigning, user_id, base_unit, quote_unit, price, quantity, fees) values ($1, $2, $3, $4, $5, $6, $7, $8)`, param[i].GetId(), param[i].GetAssigning(), param[i].GetUserId(), param[i].GetBaseUnit(), param[i].GetQuoteUnit(), param[i].GetPrice(), param[i].GetQuantity(), e.getFees(param[i].GetQuoteUnit(), param[i].Header.GetMaker())); err != nil {
 			return err
 		}
 
 		// This statement is checking to see if the value of the parameter at index i in the param array is greater than 0. If
 		// it is, then the code within the if statement will be executed. This is likely being used to check if a fee is
 		// associated with the parameter at index i.
-		if param[i].Param.GetFees() > 0 {
+		if param[i].Header.GetFees() > 0 {
 
 			// The purpose of this code is to determine the symbol to use in a calculation. It is using a parameter from the param
 			// array to decide which symbol to use. If the parameter has a "turn" parameter set to true, the code sets the symbol
 			// to the base unit, otherwise it sets the symbol to the quote unit.
 			symbol := param[0].GetQuoteUnit()
-			if param[i].Param.GetTurn() {
+			if param[i].Header.GetTurn() {
 				symbol = param[0].GetBaseUnit()
 			}
 
 			// This code is updating the "fees_charges" column in the "currencies" table in a database. The "symbol" and
 			// "param[i].Param.GetFees()" are parameters that are passed into the statement. If an error occurs during the
 			// execution of the statement, the function will return the error.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, param[i].Param.GetFees()); err != nil {
+			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, param[i].Header.GetFees()); err != nil {
 				return err
 			}
 		}
@@ -205,7 +205,7 @@ func (e *Service) setTrade(param ...*pbspot.Order) error {
 // order's details, and inserts the data into the 'orders' table. It then returns the id of the newly created order and any potential errors.
 func (e *Service) setOrder(order *pbspot.Order) (id int64, err error) {
 
-	if err := e.Context.Db.QueryRow("insert into orders (assigning, base_unit, quote_unit, price, value, quantity, user_id, type) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id", order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetValue(), order.GetUserId(), order.GetType()).Scan(&id); err != nil {
+	if err := e.Context.Db.QueryRow("insert into orders (assigning, base_unit, quote_unit, price, value, quantity, user_id, trading) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id", order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetValue(), order.GetUserId(), order.GetTrading()).Scan(&id); err != nil {
 		return id, err
 	}
 

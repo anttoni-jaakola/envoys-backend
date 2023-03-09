@@ -426,7 +426,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 				return
 			}
-			params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: false, Equal: equal}
+			params[0].Header = &pbspot.Header{Fees: fees, Maker: false, Turn: false, Equal: equal}
 
 			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
 			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
@@ -439,7 +439,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 				return
 			}
-			params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: true, Equal: equal}
+			params[1].Header = &pbspot.Header{Fees: fees, Maker: true, Turn: true, Equal: equal}
 
 			break
 		case pbspot.Assigning_SELL:
@@ -455,7 +455,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 				return
 			}
-			params[0].Param = &pbspot.Order_Param{Fees: fees, Maker: false, Turn: true, Equal: equal}
+			params[0].Header = &pbspot.Header{Fees: fees, Maker: false, Turn: true, Equal: equal}
 
 			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
 			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
@@ -468,7 +468,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
 				return
 			}
-			params[1].Param = &pbspot.Order_Param{Fees: fees, Maker: true, Turn: false, Equal: equal}
+			params[1].Header = &pbspot.Header{Fees: fees, Maker: true, Turn: false, Equal: equal}
 
 			break
 		}
