@@ -60,5 +60,5 @@
     * прописать в файле `server/service/test/test.go` структуру типа с именем `Service` и прописать следующие параметры: поданного контекста `*assets.Context`. Пример можно посмотреть в файле `server/service/spot/spot.go:28`.
     * прописать в файле `server/server.go` строку регистратора API сервера - `pbtest.RegisterApiServer(srv, &test.Service{Context: option})`. Пример можно посмотреть в файле `server/server.go:190`.
     * прописать в файле `server/gateway/gateway.go` строку API обработчика `pbtest.RegisterApiHandler`. Пример можно посмотреть в файле `server/gateway/gateway.go:358`.
-    * прописать интерфейсы в файле `server/service/test/test.go`, соответствующие имена, которые были прописаны в `server/proto/pbtest/test.proto`. Например, `rpc GetName(...)`. Пример можно посмотреть в файле `server/service/spot/spot.grpc.go:64-211`.
+    * прописать интерфейсы в файле `server/service/test/test.go`, соответствующие имена, которые были прописаны в `server/proto/pbtest/test.proto`. Например, `rpc GetAnalysis(...)`. Пример можно посмотреть в файле `server/service/spot/spot.grpc.go:64-211`.
 11. `Swagger` для интеграции смотрим в папке `static/swagger`.
