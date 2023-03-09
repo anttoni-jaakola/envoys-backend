@@ -1768,7 +1768,84 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 	return &response, nil
 }
 
-func (e *Service) SetRepaymentsRule(ctx context.Context, rule *pbspot.SetRequestRepaymentRule) (*pbspot.ResponseRepayment, error) {
-	//TODO implement me
-	panic("implement me")
+// SetRepaymentsRule - The purpose of the code above is to set a repayment rule for a transaction made with the pbspot service. The code
+// first authenticates the user and checks to see if they have the necessary rules to write and edit data. It then
+// queries the database for the fees and chain_id associated with the transaction. The code then checks to see if the
+// exchange fees are sufficient to cover the deficit and, if so, updates the fees_charges and fees_costs of the currency
+// in the database. Finally, if there is an error, an error response is returned.
+func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestRepaymentRule) (*pbspot.ResponseRepayment, error) {
+
+	// The code above defines two variables, response and migrate. The response variable is of type
+	// pbspot.ResponseRepayment, while the migrate variable is of type query.Migrate. To migrate variable is initialized
+	// with the context from the e.Context variable. The purpose of this code is to define two variables for use in the program.
+	var (
+		response pbspot.ResponseRepayment
+		migrate  = query.Migrate{
+			Context: e.Context,
+		}
+	)
+
+	// This code is part of an authentication process. The purpose of this code is to attempt to authenticate the user and
+	// retrieve the authentication data. If there is an error, it is returned to the caller.
+	auth, err := e.Context.Auth(ctx)
+	if err != nil {
+		return &response, e.Context.Error(err)
+	}
+
+	// This code checks the user's authentication (auth) to see if they have the appropriate rules ("contracts" and
+	// "deny-record") to write and edit data. If they do not have the necessary rules, it returns an error message.
+	if !migrate.Rules(auth, "reserves", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
+		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+	}
+
+	// This code is used to query a database for information. Specifically, it is querying for the fees and chain_id
+	// associated with a transaction with an id equal to the id stored in the req variable. The row variable is used to
+	// store the result of the query. The if statement is used to check for any errors that may have occurred during the
+	// query. To defer row.Close() statement is used to close the query after it is finished, to avoid any memory leaks.
+	row, err := e.Context.Db.Query(`select fees, chain_id from transactions where id = $2`, req.GetId())
+	if err != nil {
+		return &response, e.Context.Error(err)
+	}
+	defer row.Close()
+
+	// The if statement is used to test a condition and execute a block of code if the condition is true. In this case, the
+	// if statement is used to check if the row has a next value. If there is a next value, then the code in the block will be executed.
+	if row.Next() {
+
+		// The line of code above declares a variable, item, of type pbspot.Transaction. This is a type of data structure that
+		// is used to store information about a transaction made using the pbspot service, such as the amount, date, and other details.
+		var (
+			item pbspot.Transaction
+		)
+
+		// The purpose of this if statement is to scan each row of the database table and store the values from the row into
+		// the item.Fees and item.ChainId variables. If the scan is unsuccessful, the error is returned in the response.
+		if err := row.Scan(&item.Fees, &item.ChainId); err != nil {
+			return &response, e.Context.Error(err)
+		}
+
+		// The purpose of this code is to get the chain specified in the request, using the getChain method from the e object,
+		// and save it in a variable called chain. If there is an error, the code will return an error.
+		chain, err := e.getChain(item.GetChainId(), false)
+		if err != nil {
+			return nil, err
+		}
+
+		// This code checks if the exchange fees are sufficient to cover the deficit. If not, it returns an error.
+		if _ = e.Context.Db.QueryRow("select fees_charges from currencies where symbol = $1", chain.GetParentSymbol()).Scan(&item.Value); item.GetFees() > item.GetValue() {
+			return &response, e.Context.Error(status.Error(521233, "exchange fees are insufficient to cover the deficit"))
+		}
+
+		// This code is updating the fees_charges and fees_costs of a currency in a database using the Exec() method. The code
+		// is using $1 and $2, which are placeholder variables for the first and second parameters given to the Exec() method.
+		// The first parameter is the symbol of the parent chain and the second parameter is the fees associated with the item. If an error occurs, the code will return an error response.
+		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), item.GetFees()); err != nil {
+			return &response, e.Context.Error(err)
+		}
+		response.Success = true
+
+		return &response, nil
+	}
+
+	return &response, e.Context.Error(status.Error(865456, "no such transaction exists"))
 }
