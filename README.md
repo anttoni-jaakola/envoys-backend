@@ -50,8 +50,8 @@
 8. `server/service` - содержит набор интерфейсов и функций микросервисов, которые были сгенерированы в пункте `2`.
 9. для создания нового микросервиса:
     * создать папку в каталоге `server/proto`, например, `pbtest`.
-    * создать файл `pbtest.proto` в папке `pbtest`.
-    * прописать в файле `pbtest.proto` следующие параметры: `syntax`, `package`, `option`, `import`. Пример можно посмотреть в файле `server/proto/pbspot/spot.proto`.
+    * создать файл `pbtest.proto` в папке `server/proto/pbtest`.
+    * прописать в файле `server/proto/pbtest/pbtest.proto` следующие параметры: `syntax`, `package`, `option`, `import`. Пример можно посмотреть в файле `server/proto/pbspot/spot.proto`.
     * прописать необходимые для нас `RPC Microservices` и сформировать структуру сообщений для наших `RPC Microservices`.
     * сгенерировать интерфейсы `RPC Microservices`, смотреть пункт `2`.
 10. для создания нового клиента/компонента для взаимодействия с `RPC Microservices`:
