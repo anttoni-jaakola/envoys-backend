@@ -46,7 +46,7 @@ func TestMarketplace_Unit(t *testing.T) {
 				scale:  tt.fields.scale,
 			}
 			if got := p.Unit(tt.args.base, tt.args.quote); got > tt.want {
-				t.Logf("Unit() success = %v, want > %v", got, tt.want)
+				t.Logf("Unit() response = %v, want > %v", got, tt.want)
 			} else {
 				t.Logf("Unit() zero = %v, want == %v", got, tt.want)
 			}

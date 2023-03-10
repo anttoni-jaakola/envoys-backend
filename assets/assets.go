@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets/common/kycaid"
 	"io"
 	"io/ioutil"
@@ -194,7 +195,7 @@ func (app *Context) Write() *Context {
 	// The purpose of this code is to open the file "writer.log" with read-write permissions, create it if it does not
 	// exist, and append to it if it does exist. If there is an error opening the file, the app.Logger.Fatalf function is
 	// called to log the error.
-	writer, err := os.OpenFile("./writer.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	writer, err := os.OpenFile(app.StoragePath+"/writer.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		app.Logger.Fatalf("error opening file: %v", err)
 	}
@@ -413,16 +414,31 @@ func (app *Context) ConfigPath() (path string) {
 		panic(err)
 	}
 
-	// This code checks if the string "dir" contains the substring "cross". If it does, then the variable "path" is set to
-	// the value "../config.json". This allows the code to take different action based on the value of "dir".
-	if strings.Contains(dir, "cross") {
-		path = "../config.json"
-	}
-
+	// The purpose of the line of code is to define the path of a file named config.json. This file can contain
+	// configuration information to be used in the program.
 	path = "./config.json"
 
+	// The purpose of this code is to set the log level to debug when the app is in development mode.
+	// This will enable the app to output more detailed information when it is running in development mode, which is useful for debugging and troubleshooting.
+	if app.Development {
+
+		// The purpose of the root variable is to store the base path of a directory. In this case, the value of the root
+		// variable is "/backend-envoys/", which is the base path of a directory named "backend-envoys". This variable can be
+		// used to access files and directories within the "backend-envoys" directory.
+		root := "/backend-envoys/"
+
+		// This code is used to find the path to the file named "config.json" in the directory "dir". The "root" variable is
+		// used to determine the start of the path. The strings.Index() function is used to find the index of the root string
+		// in the directory string. If the index is not -1 (which it should not be), the fmt.Sprintf() function is used to
+		// determine the path by taking the substring of the directory up to the index of the root plus the length of the root minus one.
+		index := strings.Index(dir, root)
+		if index != -1 {
+			path = fmt.Sprintf("%v/%v", dir[:index+len(root)-1], "config.json")
+		}
+	}
+
 	// This code is intended to check for the existence of a path and panic in case it doesn't exist. The first if statement
-	// checks if a path exists and returns it if it does. The else if statement checks if the error is specifically
+	// checks is a path exists and returns it if it does. The else if statement checks if the error is specifically
 	// os.ErrNotExist, and panics if it is. The else statement handles any other error and panics with the err as its argument.
 	if _, err := os.Stat(path); err == nil {
 		return path
