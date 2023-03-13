@@ -702,9 +702,6 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			return
 		}
 
-		// This code is likely a function call to the migrate package in a programming language. The purpose of this code is to
-		// email the user identified by the userId parameter with the subject "withdrawal", the value of the
-		// withdrawal, and the symbol associated with the withdrawal.
 		go migrate.SendMail(userId, "withdrawal", value, symbol)
 	}
 
