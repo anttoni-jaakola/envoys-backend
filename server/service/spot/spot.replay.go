@@ -8,6 +8,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"time"
@@ -189,7 +190,7 @@ func (e *Service) chain() {
 	// The code is creating a new ticker that will fire every minute (time.Minute * 1). The for loop will continually
 	// execute until the ticker is stopped or the program exits. This code is useful for creating a repeating task at a
 	// regular interval. For example, if you wanted to perform a task every minute, you could use this code to do so.
-	ticker := time.NewTicker(time.Minute * 1)
+	ticker := time.NewTicker(time.Second * 1)
 	for range ticker.C {
 
 		func() {
@@ -257,7 +258,7 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 	// parameters given to query for a specific set of data from the "orders" table. It is using the $1, $2, $3, $4, $5 and
 	// $6 to represent the given parameters. The query is also ordering the results by the "id" column. It is checking for
 	// errors and deferring the closing of the rows.
-	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, side, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), pbspot.Status_PENDING, ExchangeType)
+	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, side, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), pbspot.Status_PENDING, pbasset.Type_SPOT)
 	if e.Context.Debug(err) {
 		return
 	}
@@ -283,7 +284,7 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 		// This code is used to query a database for a specific row. The query is looking for an entry with a specific ID and
 		// status. The two parameters (order.GetId() and pbspot.Status_PENDING) are used to filter the query results. The row
 		// variable will store the results of the query, and the err variable will store any errors that occur.
-		row, err := e.Context.Db.Query("select value from orders where id = $1 and status = $2", order.GetId(), pbspot.Status_PENDING)
+		row, err := e.Context.Db.Query("select value from orders where id = $1 and status = $2 and type = $3", order.GetId(), pbspot.Status_PENDING, pbasset.Type_SPOT)
 		if err != nil {
 			return
 		}
@@ -395,7 +396,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
 			// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
 			// stored in the "value" variable and the function will continue. If the query fails, the function will return.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 returning value;", params[i].GetId(), params[instance].GetValue(), pbspot.Status_PENDING).Scan(&value); err != nil {
+			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 and type = $4 returning value;", params[i].GetId(), params[instance].GetValue(), pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&value); err != nil {
 				return
 			}
 
@@ -404,7 +405,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 				// This code is performing an update on the orders table in a database. It is setting the status of the order with the
 				// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
 				// occur during the process. If an error is found, the code will return without proceeding.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1;", params[i].GetId(), pbspot.Status_FILLED); err != nil {
+				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1 and type = $3;", params[i].GetId(), pbspot.Status_FILLED, pbasset.Type_SPOT); err != nil {
 					return
 				}
 
@@ -921,7 +922,7 @@ func (e *Service) confirmation() {
 					// This code is updating the balance of an asset with a given symbol and user ID. The purpose is to update the
 					// balance with a given value (item.GetValue()) for the user and symbol combination. The code is using the Exec
 					// function on the database object and passing in the appropriate values. If there is an error, the code continues.
-					if _, err := e.Context.Db.Exec("update assets set balance = balance + $3 where symbol = $2 and user_id = $1;", item.GetUserId(), item.GetSymbol(), item.GetValue()); e.Context.Debug(err) {
+					if _, err := e.Context.Db.Exec("update assets set balance = balance + $1 where symbol = $2 and user_id = $3 and type = $4;", item.GetValue(), item.GetSymbol(), item.GetUserId(), pbasset.Type_SPOT); e.Context.Debug(err) {
 						return
 					}
 

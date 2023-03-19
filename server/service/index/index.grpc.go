@@ -71,11 +71,11 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 	// This code is used to query the database for a specific set of data. The query searches for the three fields symbol,
 	// fees_charges, and fees_costs from the currencies table. The query is executed using the i.Context.Db.Query()
 	// function, and the result is returned in the rows variable. If an error occurs during the query, the err variable is
-	// populated with the error and the i.Context.Error() function is used to return the error. The defer statement ensures
+	// populated with the error. The defer statement ensures
 	// that the rows.Close() function is called after the query is complete, which closes the connection to the database.
 	rows, err := i.Context.Db.Query("select symbol, fees_charges, fees_costs from currencies")
 	if err != nil {
-		return &response, i.Context.Error(err)
+		return &response, err
 	}
 	defer rows.Close()
 
@@ -93,7 +93,7 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 		// This code is checking for a potential error while scanning the rows of a database query. If an error is found, the
 		// code is returning an error message and a response.
 		if err := rows.Scan(&reserve.Symbol, &reserve.ValueCharged, &reserve.ValueCosts); err != nil {
-			return &response, i.Context.Error(err)
+			return &response, err
 		}
 
 		// This is a conditional statement checking to see if the sum of the 'value' field from the 'reserves' table is greater
@@ -109,7 +109,7 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 				// the price of the currency pair where the base unit is the reserve.Symbol and the quote unit is "usd". If an error
 				// occurs while attempting to query the database, an error is returned.
 				if err := i.Context.Db.QueryRow("select price from pairs where base_unit = $1 and quote_unit = $2", reserve.Symbol, "usd").Scan(&price); err != nil {
-					return &response, i.Context.Error(err)
+					return &response, err
 				}
 
 				// This code is used to convert the value of a reserve (reserve.ValueCharged) to a decimal value, multiplied by a
@@ -177,7 +177,7 @@ func (i *Service) GetPairs(ctx context.Context, req *pbindex.GetRequestPairs) (*
 		// returned data. If there is an error it will be handled in the "if err" statement and the response will be returned with the error.
 		rows, err := i.Context.Db.Query(fmt.Sprintf("select id, base_unit, quote_unit, price, status from pairs %s order by status desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, i.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -195,7 +195,7 @@ func (i *Service) GetPairs(ctx context.Context, req *pbindex.GetRequestPairs) (*
 			// This code is used to scan the rows of a database query result and assigns the values to the variables in the order
 			// they are specified. If any errors occur during the scanning, it returns an error.
 			if err := rows.Scan(&pair.Id, &pair.BaseUnit, &pair.QuoteUnit, &pair.Price, &pair.Status); err != nil {
-				return &response, i.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is attempting to get the current price of a currency pair (pair) and set the pair.Ratio value to that
@@ -203,7 +203,7 @@ func (i *Service) GetPairs(ctx context.Context, req *pbindex.GetRequestPairs) (*
 			// pair.GetQuoteUnit())), the function will return an error.
 			pair.Ratio, err = i.getPrice(pair.GetBaseUnit(), pair.GetQuoteUnit())
 			if err != nil {
-				return &response, i.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is retrieving the latest 50 candles for a specific trading pair. The request is sent to the spot exchange

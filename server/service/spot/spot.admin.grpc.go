@@ -9,6 +9,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
 	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"strings"
@@ -33,7 +34,7 @@ func (e *Service) GetMarketPriceRule(ctx context.Context, req *pbspot.GetRequest
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if the user has the necessary permissions to make changes to the data. If the user does not
@@ -41,7 +42,7 @@ func (e *Service) GetMarketPriceRule(ctx context.Context, req *pbspot.GetRequest
 	// authorization and the "query.RoleSpot" argument is used to specify the type of action (e.g. writing or editing). If
 	// the user is not authorized to make changes to the data, the code returns an error message.
 	if !migrate.Rules(auth, "pairs", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// The purpose of this code is to check the price of a product in a marketplace. It uses the Price() function of the
@@ -74,32 +75,32 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if the user has the proper permissions to access and edit data. If they do not have the
 	// required authorization, it returns an error message letting them know they are not allowed to access the data.
 	if !migrate.Rules(auth, "currencies", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code checks if the length of the currency name is less than 4 characters. If it is less than 4 characters, it
 	// returns an error message indicating that the currency name must not be less than 4 characters.
 	if len(req.Currency.GetName()) < 4 {
-		return &response, e.Context.Error(status.Error(86618, "currency name must not be less than < 4 characters"))
+		return &response, status.Error(86618, "currency name must not be less than < 4 characters")
 	}
 
 	// This code checks the length of the currency symbol. If the length of the currency symbol is less than 2 characters,
 	// it returns an error message indicating that the currency symbol must not be less than 2 characters. This is to ensure that the currency symbol is valid.
 	if len(req.Currency.GetSymbol()) < 2 {
-		return &response, e.Context.Error(status.Error(17078, "currency symbol must not be less than < 2 characters"))
+		return &response, status.Error(17078, "currency symbol must not be less than < 2 characters")
 	}
 
 	// This code is using the json.Marshal function to convert a Go data structure req.Currency.GetChainsIds() into JSON. If
 	// an error occurs, the error is returned with the Context.Error function.
 	serialize, err := json.Marshal(req.Currency.GetChainsIds())
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This line of code converts the symbol (which is a string) to lowercase letters. This is often used when doing string
@@ -133,7 +134,7 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 			serialize,
 			req.GetSymbol(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to update all the relevant tables in a database when the currency symbol changes. It
@@ -141,10 +142,10 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 		// so, it updates the associated tables with the new symbol.
 		if req.GetSymbol() != req.Currency.GetSymbol() {
 			_, _ = e.Context.Db.Exec("update wallets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update assets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
+			_, _ = e.Context.Db.Exec("update assets set symbol = $2 where symbol = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), pbasset.Type_SPOT)
 			_, _ = e.Context.Db.Exec("update trades set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update transfers set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2)  where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update orders set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2)  where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
+			_, _ = e.Context.Db.Exec("update transfers set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
+			_, _ = e.Context.Db.Exec("update orders set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 and type = $3 or quote_unit = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), pbasset.Type_SPOT)
 			_, _ = e.Context.Db.Exec("update reserves set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
 			_, _ = e.Context.Db.Exec("update currencies set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
 		}
@@ -168,7 +169,7 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 			req.Currency.GetStatus(),
 			serialize,
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	}
@@ -191,7 +192,7 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 		// given name, and resizes it to a resolution of 300x300. If the migration fails for any reason, it will return an
 		// error in the response.
 		if err := migrate.Image(req.GetImage(), "icon", q.Name, 300, 300); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	} else {
 
@@ -201,9 +202,9 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 
 			// This code is part of a function that is likely updating a database and renaming a currency's symbol. The purpose of
 			// this code is to attempt to rename the currency's symbol using the migrate.Rename() function, and if an error
-			// occurs, the error is returned using the e.Context.Error() function.
+			// occurs, the error is returned using the err.
 			if err := migrate.Rename("icon", req.GetSymbol(), req.Currency.GetSymbol()); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 		}
 	}
@@ -230,14 +231,14 @@ func (e *Service) GetCurrencyRule(ctx context.Context, req *pbspot.GetRequestCur
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if the user has the correct permissions to access the data. The `migrate.Rules` function takes
 	// in the user's authorization, the data they are trying to access (in this case "currencies"), and their role (in this
 	// case "RoleSpot"). If the user does not have the correct permissions, the code returns an error with status code 12011.
 	if !migrate.Rules(auth, "currencies", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking if the currency ID of the requested symbol is greater than 0. If it is, it will add the
@@ -275,13 +276,13 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this if statement is to check if the user has the necessary permissions to perform the desired action.
 	// If the user does not have the correct permissions, an error is returned to the user.
 	if !migrate.Rules(auth, "currencies", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is used to add a WHERE clause to a SQL query. If req.GetSearch() returns a non-zero length string, then a
@@ -314,7 +315,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 		// It then attempts to execute it and, if an error is encountered, the function returns the error. Finally, it closes the rows.
 		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at from currencies %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -347,7 +348,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 				&item.Type,
 				&item.CreateAt,
 			); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is used to add an item to the response Fields array. The response.Fields array is a slice of pointers
@@ -358,7 +359,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 		// The purpose of this code is to check for errors when reading data from a database. If an error is encountered, it
 		// will return an error response and the corresponding error message.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -385,13 +386,13 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking whether the user has the correct permissions for writing and editing data. If the user does not
 	// have the necessary permissions, it will return an error message.
 	if !migrate.Rules(auth, "currencies", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking if the row in the database corresponding to the requested symbol has an ID greater than zero.
@@ -405,10 +406,10 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 	// related data in other related tables.
 	if row, _ := e.getCurrency(req.GetSymbol(), false); row.GetId() > 0 {
 		_, _ = e.Context.Db.Exec("delete from wallets where symbol = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from assets where symbol = $1", row.GetSymbol())
+		_, _ = e.Context.Db.Exec("delete from assets where symbol = $1 and type = $2", row.GetSymbol(), pbasset.Type_SPOT)
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 or quote_unit = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from transfers where base_unit = $1 or quote_unit = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 or quote_unit = $1", row.GetSymbol())
+		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and type = $2 or quote_unit = $1 and type $2", row.GetSymbol(), pbasset.Type_SPOT)
 		_, _ = e.Context.Db.Exec("delete from reserves where symbol = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from currencies where symbol = $1", row.GetSymbol())
 	}
@@ -416,7 +417,7 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 	// This code is used to remove a symbol from the "icon" database. It is checking for any errors that may occur while
 	// performing the removal, and if an error is encountered, it will return the response and the error context.
 	if err := migrate.RemoveFiles("icon", req.GetSymbol()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil
@@ -446,13 +447,13 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This if statement is used to check if the given user has the necessary permissions to perform a certain operation. If
 	// the user does not have the permission, an error message is returned.
 	if !migrate.Rules(auth, "chains", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is used to query a database and store the result in the response.Count variable. It is typically used to
@@ -476,7 +477,7 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 		// there is an error, the error is returned. Finally, the rows object is closed.
 		rows, err := e.Context.Db.Query(`select id, name, rpc, block, network, explorer_link, platform, confirmation, time_withdraw, fees, tag, decimals, status from chains order by id desc limit $1 offset $2`, req.GetLimit(), offset)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -493,7 +494,7 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 			// item.Id, item.Name, item.Rpc, etc. The if statement checks for any errors while scanning the row and returns an
 			// error if any occur.
 			if err = rows.Scan(&item.Id, &item.Name, &item.Rpc, &item.Block, &item.Network, &item.ExplorerLink, &item.Platform, &item.Confirmation, &item.TimeWithdraw, &item.Fees, &item.Tag, &item.Decimals, &item.Status); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is adding the item to the response.Fields array. The purpose of this line of code is to append the item
@@ -504,7 +505,7 @@ func (e *Service) GetChainsRule(ctx context.Context, req *pbspot.GetRequestChain
 		// This if statement is used to check for any errors when dealing with the rows of a database. If an error is
 		// encountered, the statement returns the response and an error message that can be used for debugging.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -530,13 +531,13 @@ func (e *Service) GetChainRule(ctx context.Context, req *pbspot.GetRequestChainR
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking to see if the user has certain permissions (rules) to perform an action on a particular set of
 	// data (chains). If the user does not have the required permissions, an error message is returned.
 	if !migrate.Rules(auth, "chains", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking if the chain with the given ID exists and then adding it to the response if it does. The "_" is
@@ -568,7 +569,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking the user's authorization for writing and editing data. The first part of the if statement
@@ -576,27 +577,27 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 	// checks is the user has been explicitly denied the right to make changes to the data. If either of these checks fail,
 	// the code returns an error message indicating that the user does not have the necessary rules to write and edit the data.
 	if !migrate.Rules(auth, "chains", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This statement checks the length of the chain name and returns an error if it is less than 4 characters. This is
 	// likely done to ensure that the chain name is long enough to be a valid name.
 	if len(req.Chain.GetName()) < 4 {
-		return &response, e.Context.Error(status.Error(86611, "chain name must not be less than < 4 characters"))
+		return &response, status.Error(86611, "chain name must not be less than < 4 characters")
 	}
 
 	// This code is used to check if the length of the RPC address in the request is at least 10 characters. If it is not,
 	// then the code will return an error message of 44511, "chain rpc address must be at least < 10 characters". This is
 	// done to ensure that the RPC address is valid and will meet the minimum requirements for use.
 	if len(req.Chain.GetRpc()) < 10 {
-		return &response, e.Context.Error(status.Error(44511, "chain rpc address must be at least < 10 characters"))
+		return &response, status.Error(44511, "chain rpc address must be at least < 10 characters")
 	}
 
 	// This code is checking if the chain server address is available by pinging it with the help.Ping function. If the ping
 	// fails, an error is returned and the response is not sent. This is likely to alert the user that their request failed
 	// because the chain server is unavailable.
 	if ok := help.Ping(req.Chain.GetRpc()); !ok {
-		return &response, e.Context.Error(status.Error(45601, "chain server address not available"))
+		return &response, status.Error(45601, "chain server address not available")
 	}
 
 	// This is a conditional statement that checks if the value of the req.GetId() function is greater than 0. If it is,
@@ -623,7 +624,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 			req.Chain.GetStatus(),
 			req.GetId(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	} else {
@@ -646,7 +647,7 @@ func (e *Service) SetChainRule(ctx context.Context, req *pbspot.SetRequestChainR
 			req.Chain.GetParentSymbol(),
 			req.Chain.GetStatus(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	}
@@ -674,14 +675,14 @@ func (e *Service) DeleteChainRule(ctx context.Context, req *pbspot.DeleteRequest
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking the user's access privileges to determine if they are allowed to perform the requested
 	// operation. It checks to see if the user has the 'currencies' rule and if they have the 'deny-record' rule. If they do
 	// not have the 'currencies' rule, or if they do have the 'deny-record' rule, the code returns an error message.
 	if !migrate.Rules(auth, "currencies", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking if a chain exists with the given ID, and then deleting it from the database if it does exist.
@@ -724,14 +725,14 @@ func (e *Service) GetPairsRule(ctx context.Context, req *pbspot.GetRequestPairsR
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if a user has permissions to perform a certain action. The migrate.Rules() function is used to
 	// check if the user has the necessary authorization to write and edit data, and if they do not, an error is returned
 	// indicating that they do not have the necessary permissions.
 	if !migrate.Rules(auth, "pairs", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking to see if the request includes a search term. If a search term is present, it appends a string
@@ -768,7 +769,7 @@ func (e *Service) GetPairsRule(ctx context.Context, req *pbspot.GetRequestPairsR
 		// is used to close the connection to the database when the query is complete.
 		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, base_unit, quote_unit, price, base_decimal, quote_decimal, status from pairs %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -792,7 +793,7 @@ func (e *Service) GetPairsRule(ctx context.Context, req *pbspot.GetRequestPairsR
 				&item.QuoteDecimal,
 				&item.Status,
 			); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This appends the item to the end of the response.Fields slice. It adds the item to the existing response.Fields
@@ -803,7 +804,7 @@ func (e *Service) GetPairsRule(ctx context.Context, req *pbspot.GetRequestPairsR
 		// The purpose of this code is to check for any errors that occurred while operating on the rows, and to return an
 		// error response if there is an issue. It is a safety measure to help make sure that any errors are caught and handled properly.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -829,13 +830,13 @@ func (e *Service) GetPairRule(ctx context.Context, req *pbspot.GetRequestPairRul
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of the if statement is to check whether the user has the necessary permissions (defined by to
 	// migrate.Rules function) to write and edit data. If the user does not have the necessary permissions, an error message is returned.
 	if !migrate.Rules(auth, "pairs", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This statement is checking if the ID of the pair (obtained with the getPair method) is greater than 0. If it is, then
@@ -867,26 +868,26 @@ func (e *Service) SetPairRule(ctx context.Context, req *pbspot.SetRequestPairRul
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if the user has the appropriate permissions to write and edit data. If the user does not have
 	// the rules for writing and editing data, then the code will return an error message.
 	if !migrate.Rules(auth, "pairs", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code checks to make sure that the base and quote currencies for a given request (req) have been set. If either
 	// of them have not been set, then an error is returned indicating that both must be set.
 	if len(req.Pair.GetBaseUnit()) == 0 && len(req.Pair.GetQuoteUnit()) == 0 {
-		return &response, e.Context.Error(status.Error(55615, "base currency and quote currency must be set"))
+		return &response, status.Error(55615, "base currency and quote currency must be set")
 	}
 
 	// This if statement is used to check if the price of a given pair is set to 0. If it is, the statement will return an
 	// error with the status code 46517 and the message "the price must be set". This is likely in place to ensure that the
 	// user is not attempting to purchase a product at an incorrect price.
 	if req.Pair.GetPrice() == 0 {
-		return &response, e.Context.Error(status.Error(46517, "the price must be set"))
+		return &response, status.Error(46517, "the price must be set")
 	}
 
 	// This is a conditional statement that checks if the value of req.GetId() is greater than 0. If the condition is true,
@@ -914,7 +915,7 @@ func (e *Service) SetPairRule(ctx context.Context, req *pbspot.SetRequestPairRul
 			req.Pair.GetStatus(),
 			req.GetId(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	} else {
@@ -922,7 +923,7 @@ func (e *Service) SetPairRule(ctx context.Context, req *pbspot.SetRequestPairRul
 		// This code is checking if the requested pair (req.Pair) already exists in the list of pairs stored in the database.
 		// If it does exist, an error message is returned with a status code of 50605.
 		if _ = e.Context.Db.QueryRow("select id from pairs where base_unit = $1 and quote_unit = $2 or base_unit = $2 and quote_unit = $1", req.Pair.GetBaseUnit(), req.Pair.GetQuoteUnit()).Scan(&q.Id); q.Id > 0 {
-			return &response, e.Context.Error(status.Error(50605, "the pair you are trying to create is already in the list of pairs"))
+			return &response, status.Error(50605, "the pair you are trying to create is already in the list of pairs")
 		}
 
 		// This code is used to insert a record into a database table called 'pairs' using the values from a request object. It
@@ -937,7 +938,7 @@ func (e *Service) SetPairRule(ctx context.Context, req *pbspot.SetRequestPairRul
 			req.Pair.GetQuoteDecimal(),
 			req.Pair.GetStatus(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	}
@@ -964,13 +965,13 @@ func (e *Service) DeletePairRule(ctx context.Context, req *pbspot.DeleteRequestP
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking to see if the user has the necessary authorization to perform a write or edit operation on the
 	// data. If the user does not have the correct authorization to do so, an error is returned with a status code of 12011.
 	if !migrate.Rules(auth, "pairs", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code snippet is attempting to delete a pair from the database. The first line is checking if the pair exists in
@@ -980,7 +981,7 @@ func (e *Service) DeletePairRule(ctx context.Context, req *pbspot.DeleteRequestP
 		_, _ = e.Context.Db.Exec("delete from pairs where id = $1", row.GetId())
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
 		_, _ = e.Context.Db.Exec("delete from transfers where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
-		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
+		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and quote_unit = $2 and type = $3", row.GetBaseUnit(), row.GetQuoteUnit(), pbasset.Type_SPOT)
 	}
 	response.Success = true
 
@@ -1014,14 +1015,14 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This if statement checks is the user has the correct authorization for writing and editing data for the contracts
 	// query. If the user does not have the correct authorization, the statement returns an error message indicating the
 	// user does not have the correct rules for writing and editing data.
 	if !migrate.Rules(auth, "contracts", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// The purpose of this code is to search for either the address or symbol of a customer using the GetSearch() method.
@@ -1056,7 +1057,7 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 		// the 'rows' object and is then used to construct a response. If an error occurs, it is logged and the response is returned.
 		rows, err := e.Context.Db.Query(fmt.Sprintf("select c.id, c.symbol, c.chain_id, c.address, c.fees, c.decimals, c.protocol, n.platform, n.parent_symbol from contracts c inner join chains n on n.id = c.chain_id %s order by c.id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1081,7 +1082,7 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 				&item.Platform,
 				&item.ParentSymbol,
 			); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code checks if the chain ID is valid and if it is, it sets the item's chain name to the chain's name.
@@ -1097,7 +1098,7 @@ func (e *Service) GetContractsRule(ctx context.Context, req *pbspot.GetRequestCo
 		// The purpose of this code is to check for errors after running a query on a database. If an error is found, it will
 		// return an error message and the response variable.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1123,13 +1124,13 @@ func (e *Service) GetContractRule(ctx context.Context, req *pbspot.GetRequestCon
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking to see if the user has the correct permissions to modify data in the "contracts" table. If the
 	// user does not have the correct permissions (represented by the query.RoleSpot parameter), then an error is returned.
 	if !migrate.Rules(auth, "contracts", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking if the ID of the contract retrieved from the function e.getContractById is greater than 0 and
@@ -1162,7 +1163,7 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking the authorization of a user based on their role. The first expression uses the migrate.Rules()
@@ -1171,20 +1172,20 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 	// query.RoleDefault table. If neither of these conditions are true, the code returns an error message indicating that
 	// the user does not have permission to write and edit data.
 	if !migrate.Rules(auth, "contracts", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This piece of code checks if the length of the "req.Contract.GetSymbol()" is equal to 0. If it is, then it will
 	// return an error indicating that a contract or currency symbol is required. This is to ensure that the request has a
 	// valid contract or currency symbol before it is processed.
 	if len(req.Contract.GetSymbol()) == 0 {
-		return &response, e.Context.Error(status.Error(56616, "contract/currency symbol required"))
+		return &response, status.Error(56616, "contract/currency symbol required")
 	}
 
 	// This code checks to see if the address provided for the contract is valid for the given platform. If it is not valid,
 	// an error is returned.
 	if err := keypair.ValidateCryptoAddress(req.Contract.GetAddress(), req.Contract.GetPlatform()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this code is to get the chain specified in the request, using the getChain method from the e object,
@@ -1197,7 +1198,7 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 	// This code checks to make sure that the fee of the contract is not less than the fee of the network of the parent. If
 	// the fee of the contract is less than the fee of the network, an error message is returned.
 	if req.Contract.GetFees() < chain.GetFees() {
-		return &response, e.Context.Error(status.Errorf(32798, "the fee of the contract must not be less than the fee of the network of the parent %v face value", chain.GetParentSymbol()))
+		return &response, status.Errorf(32798, "the fee of the contract must not be less than the fee of the network of the parent %v face value", chain.GetParentSymbol())
 	}
 
 	// This code is checking to see if the request ID is greater than 0. If the ID is greater than 0, then the code will
@@ -1216,7 +1217,7 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 			req.Contract.GetDecimals(),
 			req.GetId(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	} else {
@@ -1232,7 +1233,7 @@ func (e *Service) SetContractRule(ctx context.Context, req *pbspot.SetRequestCon
 			req.Contract.GetProtocol(),
 			req.Contract.GetDecimals(),
 		); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	}
@@ -1261,13 +1262,13 @@ func (e *Service) DeleteContractRule(ctx context.Context, req *pbspot.DeleteRequ
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code checks the user's authentication (auth) to see if they have the appropriate rules ("contracts" and
 	// "deny-record") to write and edit data. If they do not have the necessary rules, it returns an error message.
 	if !migrate.Rules(auth, "contracts", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is part of a function that deletes a contract from a database. The if statement is used to check whether
@@ -1311,13 +1312,13 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking whether a user has the necessary permissions to write and edit data in the "accounts" table. If
 	// the user does not have the permissions, an error is returned with a status code and message.
 	if !migrate.Rules(auth, "accounts", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This switch statement is used to create an SQL query depending on the transaction type requested. Depending on the
@@ -1367,7 +1368,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 		// rows.Close() function is being used to close the query and free up any resources used by it.
 		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, hash, value, price, fees, chain_id, confirmation, "to", user_id, assignment, type, platform, protocol, status, create_at from transactions %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1402,7 +1403,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 				&item.Status,
 				&item.CreateAt,
 			); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is part of a function that is attempting to retrieve a chain from a database. The code is defining a
@@ -1425,7 +1426,7 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 		}
 
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1459,13 +1460,13 @@ func (e *Service) GetReservesRule(ctx context.Context, req *pbspot.GetRequestRes
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking whether a user has the necessary permissions to write and edit data in the "accounts" table. If
 	// the user does not have the permissions, an error is returned with a status code and message.
 	if !migrate.Rules(auth, "reserves", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking the length of the request's search query. If it is greater than 0, it appends a formatted
@@ -1496,7 +1497,7 @@ func (e *Service) GetReservesRule(ctx context.Context, req *pbspot.GetRequestRes
 		// database connection when the query is finished.
 		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, user_id, value, reverse, address, platform, protocol, lock from reserves %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1527,7 +1528,7 @@ func (e *Service) GetReservesRule(ctx context.Context, req *pbspot.GetRequestRes
 				&item.Protocol,
 				&item.Lock,
 			); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is appending an item to the Fields array in the response object. The purpose of this code is to add an
@@ -1538,7 +1539,7 @@ func (e *Service) GetReservesRule(ctx context.Context, req *pbspot.GetRequestRes
 		// This code is used to check if there is an error with the rows object. If there is an error, the code will return the
 		// response object along with an error.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1566,17 +1567,17 @@ func (e *Service) SetReserveUnlockRule(ctx context.Context, req *pbspot.SetReque
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code checks the user's authentication (auth) to see if they have the appropriate rules ("contracts" and
 	// "deny-record") to write and edit data. If they do not have the necessary rules, it returns an error message.
 	if !migrate.Rules(auth, "reserves", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	if _, err := e.Context.Db.Exec("update reserves set lock = $1 where id = $2;", false, req.GetId()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil
@@ -1608,14 +1609,14 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	if !migrate.Rules(auth, "accounts", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
-	if _ = e.Context.Db.QueryRow("select count(*) as count from assets where user_id = $1", req.GetId()).Scan(&response.Count); response.GetCount() > 0 {
+	if _ = e.Context.Db.QueryRow("select count(*) as count from assets where user_id = $1 and type = $2", req.GetId(), pbasset.Type_SPOT).Scan(&response.Count); response.GetCount() > 0 {
 
 		// This code is setting an offset for a Paginated request. The offset is used to determine the index of the first item
 		// that should be returned. This code is calculating the offset by multiplying the limit (the number of items per page)
@@ -1625,9 +1626,9 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 			offset = req.GetLimit() * (req.GetPage() - 1)
 		}
 
-		rows, err := e.Context.Db.Query("select id, balance, symbol from assets where user_id = $1 order by id desc limit $2 offset $3", req.GetId(), req.GetLimit(), offset)
+		rows, err := e.Context.Db.Query("select id, balance, symbol from assets where type = $1 and user_id = $2 order by id desc limit $3 offset $4", pbasset.Type_SPOT, req.GetId(), req.GetLimit(), offset)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1646,7 +1647,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 			// assign the corresponding id, balance, and symbol to the asset variable. If an error occurs at any point during the
 			// rows.Scan, the code returns an error response and passes the error to the context.
 			if err := rows.Scan(&asset.Id, &asset.Balance, &asset.Symbol); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This statement is used to append a field to the response.Fields array. It is used to add a new element to an array.
@@ -1657,7 +1658,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 		// This code is used to check if there is an error with the rows object. If there is an error, the code will return the
 		// response object along with an error.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1690,14 +1691,14 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this code is to check if the user has the necessary authorization (i.e. migrate.Rules) to perform a
 	// certain action (i.e. writing and editing data) related to a specific resource (i.e. repayments). If the user does not
 	// have the necessary authorization, an error message is returned.
 	if !migrate.Rules(auth, "repayments", query.RoleSpot) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This if statement is used to query a database to check if there are any transactions that meet certain criteria. The
@@ -1721,7 +1722,7 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 		// it is limiting the results to a certain number and specifying an offset.
 		rows, err := e.Context.Db.Query("select id, value, fees, symbol, chain_id, protocol, platform, status, allocation, repayment, create_at from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0 order by id desc limit $7 offset $8", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, pbspot.Status_FILLED, pbspot.Protocol_MAINNET, req.GetLimit(), offset)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1740,7 +1741,7 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 			// item.Id, item.Value, item.Fees, item.Symbol, item.Protocol, item.Platform, item.Status, item.Allocation,
 			// item.Repayment, and item.CreateAt. If there is an error, then the function will return the response and an error message.
 			if err := rows.Scan(&item.Id, &item.Value, &item.Fees, &item.Symbol, &item.ChainId, &item.Protocol, &item.Platform, &item.Status, &item.Allocation, &item.Repayment, &item.CreateAt); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is retrieving a chain from the e (environment) object, based on the chain ID in the item object, and then
@@ -1760,7 +1761,7 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 		// This code is used to check if there is an error with the rows object. If there is an error, the code will return the
 		// response object along with an error.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1788,13 +1789,13 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 	// retrieve the authentication data. If there is an error, it is returned to the caller.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code checks the user's authentication (auth) to see if they have the appropriate rules ("contracts" and
 	// "deny-record") to write and edit data. If they do not have the necessary rules, it returns an error message.
 	if !migrate.Rules(auth, "repayments", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, e.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is used to query a database for information. Specifically, it is querying for the fees and chain_id
@@ -1803,7 +1804,7 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 	// query. To defer row.Close() statement is used to close the query after it is finished, to avoid any memory leaks.
 	row, err := e.Context.Db.Query(`select id, fees, chain_id from transactions where id = $1 and repayment = $2`, req.GetId(), false)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer row.Close()
 
@@ -1820,7 +1821,7 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 		// The purpose of this if statement is to scan each row of the database table and store the values from the row into
 		// the item.Fees and item.ChainId variables. If the scan is unsuccessful, the error is returned in the response.
 		if err := row.Scan(&item.Id, &item.Fees, &item.ChainId); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to get the chain specified in the request, using the getChain method from the e object,
@@ -1832,14 +1833,14 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 
 		// This code checks if the exchange fees are sufficient to cover the deficit. If not, it returns an error.
 		if _ = e.Context.Db.QueryRow("select fees_charges from currencies where symbol = $1", chain.GetParentSymbol()).Scan(&item.Value); item.GetFees() > item.GetValue() {
-			return &response, e.Context.Error(status.Error(521233, "exchange fees are insufficient to cover the deficit"))
+			return &response, status.Error(521233, "exchange fees are insufficient to cover the deficit")
 		}
 
 		// This code is updating the fees_charges and fees_costs of a currency in a database using the Exec() method. The code
 		// is using $1 and $2, which are placeholder variables for the first and second parameters given to the Exec() method.
 		// The first parameter is the symbol of the parent chain and the second parameter is the fees associated with the item. If an error occurs, the code will return an error response.
 		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), item.GetFees()); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is part of a larger program and is used to update a database entry for a given transaction. The first
@@ -1847,12 +1848,12 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 		// given id to true. The second parameter is the id of the transaction to be updated. The if statement is used to check
 		// if the execution of the SQL statement was successful or not. If there is an error, the Error function is called and an appropriate response is returned.
 		if _, err := e.Context.Db.Exec("update transactions set repayment = $3 where id = $1 and repayment = $2;", item.GetId(), false, true); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		response.Success = true
 
 		return &response, nil
 	}
 
-	return &response, e.Context.Error(status.Error(865456, "no such transaction exists"))
+	return &response, status.Error(865456, "no such transaction exists")
 }

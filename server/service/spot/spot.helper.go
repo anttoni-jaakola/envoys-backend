@@ -14,7 +14,7 @@ func (e *Service) helperSymbol(symbol string) error {
 	// This code is checking if a given currency exists and is enabled. If either of these conditions are not met, it
 	// returns an error with status 11580 and a message informing the user that the currency does not exist or is disabled.
 	if _, err := e.getCurrency(symbol, true); err != nil {
-		return e.Context.Error(status.Errorf(11580, "this %v currency does not exist, or this currency is disabled", symbol))
+		return status.Errorf(11580, "this %v currency does not exist, or this currency is disabled", symbol)
 	}
 
 	return nil
@@ -32,7 +32,7 @@ func (e *Service) helperPair(base, quote string) error {
 	// This code is checking to see if a pair (base and quote units) exists in the database and is set to "false" for the
 	// status. If it does exist and is set to false, it returns an error that the pair is temporarily unavailable.
 	if _ = e.Context.Db.QueryRow("select id from pairs where base_unit = $1 and quote_unit = $2 and status = $3", base, quote, false).Scan(&id); id > 0 {
-		return e.Context.Error(status.Errorf(21605, "this pair %v-%v is temporarily unavailable", base, quote))
+		return status.Errorf(21605, "this pair %v-%v is temporarily unavailable", base, quote)
 	}
 
 	return nil
@@ -54,25 +54,25 @@ func (e *Service) helperWithdraw(quantity, reserve, balance, max, min, fees floa
 	// This code is used to check if the claimed amount is greater than the reserve. If it is, it will return an error
 	// message with status code 47784.
 	if quantity > reserve {
-		return e.Context.Error(status.Errorf(47784, "the claimed amount %v is greater than the reserve %v itself", quantity, reserve))
+		return status.Errorf(47784, "the claimed amount %v is greater than the reserve %v itself", quantity, reserve)
 	}
 
 	// This code checks if the requested quantity is more than the available balance. If it is greater than the balance, it
 	// returns an error message with the status code 48584. This prevents users from spending more money than they have.
 	if quantity > balance {
-		return e.Context.Error(status.Errorf(48584, "the claimed amount %v is more than what you have on your balance %v", quantity, balance))
+		return status.Errorf(48584, "the claimed amount %v is more than what you have on your balance %v", quantity, balance)
 	}
 
 	// This code checks if the quantity is less than the proportion and, if it is, it returns an error indicating that the
 	// withdrawal amount must not be less than the minimum amount.
 	if quantity < proportion {
-		return e.Context.Error(status.Errorf(48880, "the withdrawal amount %v must not be less than the minimum amount: %v", quantity, proportion))
+		return status.Errorf(48880, "the withdrawal amount %v must not be less than the minimum amount: %v", quantity, proportion)
 	}
 
 	// This code is used to check if the quantity declared for withdrawal is greater than the maximum allowed. If it is, an
 	// error is returned with an appropriate error message.
 	if quantity > max {
-		return e.Context.Error(status.Errorf(70083, "the amount %v declared for withdrawal should not be more than allowed %v", quantity, max))
+		return status.Errorf(70083, "the amount %v declared for withdrawal should not be more than allowed %v", quantity, max)
 	}
 
 	return nil
@@ -94,7 +94,7 @@ func (e *Service) helperInternalAsset(address string) error {
 	// This code is checking to see if an address exists, and if it does, it will return an error message. The error message
 	// tells the user that they cannot use the address as it is internal, and they should use another address.
 	if exist {
-		return e.Context.Error(status.Errorf(717883, "you cannot use this address %v, this address is internal, please use another address", address))
+		return status.Errorf(717883, "you cannot use this address %v, this address is internal, please use another address", address)
 	}
 
 	return nil

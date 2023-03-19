@@ -9,12 +9,14 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbkyc"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
 	"github.com/cryptogateway/backend-envoys/server/service/account"
 	"github.com/cryptogateway/backend-envoys/server/service/ads"
 	"github.com/cryptogateway/backend-envoys/server/service/auth"
 	"github.com/cryptogateway/backend-envoys/server/service/index"
 	"github.com/cryptogateway/backend-envoys/server/service/kyc"
 	"github.com/cryptogateway/backend-envoys/server/service/spot"
+	"github.com/cryptogateway/backend-envoys/server/service/stock"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -190,12 +192,15 @@ func Master(option *assets.Context) {
 		pbkyc.RegisterApiServer(srv, &kyc.Service{Context: option})
 
 		var (
-			spotService = &spot.Service{Context: option}
+			spotService  = &spot.Service{Context: option}
+			stockService = &stock.Service{Context: option}
 		)
 
 		go spotService.Initialization()
+		go stockService.Initialization()
 
 		pbspot.RegisterApiServer(srv, spotService)
+		pbstock.RegisterApiServer(srv, stockService)
 
 		// Reflection.Register is a method that registers a service with a gRPC server. This method is used to create a service
 		// endpoint to allow clients to communicate with the server. The method sets up a connection between the server and the

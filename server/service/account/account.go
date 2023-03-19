@@ -62,7 +62,7 @@ func (a *Service) setPassword(id int64, oldPassword, newPassword string) error {
 	// used to defer closing the row until the end of the function, ensuring that all queries are properly closed.
 	row, err := a.Context.Db.Query("select id from accounts where id = $1 and password = $2", id, base64.URLEncoding.EncodeToString(hashed[0].Sum(nil)))
 	if err != nil {
-		return a.Context.Error(err)
+		return err
 	}
 	defer row.Close()
 

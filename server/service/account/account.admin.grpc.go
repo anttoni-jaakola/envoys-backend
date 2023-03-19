@@ -29,11 +29,11 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 	)
 
 	// This code is authenticating a user for a specific context. The 'a.Context.Auth(ctx)' function returns the user's
-	// authentication details and the 'a.Context.Error(err)' function will return an error if the authentication fails. The
+	// authentication details and the return an error if the authentication fails. The
 	// purpose of this code is to ensure that the user is authenticated before proceeding with the requested action.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking to see if the user has the necessary permissions to write and edit data. If they do not, an
@@ -41,7 +41,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 	// action. The parameters passed to the function specify the authentication type, the type of data they are trying to
 	// access, and the role they must have in order to perform the action.
 	if !migrate.Rules(auth, "accounts", query.RoleDefault) {
-		return &response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking the length of a request's search query. If the request has a search query, the code appends a
@@ -72,7 +72,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 		// iterator is closed after the query has been completed.
 		rows, err := a.Context.Db.Query(fmt.Sprintf("select id, name, email, status, create_at, rules from accounts %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -89,8 +89,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 
 			// This code is used to retrieve data from a database table and store it in a struct. The Scan function takes the
 			// values from the retrieved row and assigns them to the variables that have been passed in. The err variable is used
-			// to check if any errors occur while retrieving the data. If there is an error, the a.Context.Error() function is
-			// called to return an error response.
+			// to check if any errors occur while retrieving the data. If there is an error, the  return an error response.
 			if err = rows.Scan(
 				&item.Id,
 				&item.Name,
@@ -99,7 +98,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 				&item.CreateAt,
 				&rules,
 			); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// The purpose of this code is to retrieve the secret from the KYC (Know Your Customer) database, based on a given
@@ -110,7 +109,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 			// takes two arguments: the byte slice (rules) and a reference to a Go data structure (item.Rules). If an error occurs
 			// during the operation, an error is returned and handled with the a.Context.Error function.
 			if err := json.Unmarshal(rules, &item.Rules); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// The purpose of this code is to query a database for the number of transactions, orders, and assets associated with
@@ -133,7 +132,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 		// error, it will return the response and an error message. This is useful for handling errors that may occur while
 		// executing a query.
 		if err = rows.Err(); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -164,27 +163,27 @@ func (a *Service) GetAccountRule(ctx context.Context, req *pbaccount.GetRequestU
 	// occurs, then the function "Context.Error" is called to return an appropriate error.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if the user has the necessary permissions to modify the data in the accounts table. If the user
 	// does not have the appropriate rules, the code returns an error message.
 	if !migrate.Rules(auth, "accounts", query.RoleDefault) {
-		return &response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is attempting to query a database for a user's account information based on their ID. The query will return
 	// the user's id, name, email, status, and rules and store them in the variables passed to the Scan() function. If the
 	// query fails, an error is returned.
 	if err := a.Context.Db.QueryRow("select id, name, email, status, rules from accounts where id = $1", req.GetId()).Scan(&user.Id, &user.Name, &user.Email, &user.Status, &rules); err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is part of a function that is attempting to unmarshal a JSON object into a user's Rules field. The purpose
 	// of the if statement is to check if the unmarshaling was successful. If it was not successful, the function will
 	// return an error.
 	if err := json.Unmarshal(rules, &user.Rules); err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This statement is used to append the value of the user variable to the Fields array of the response object. The
@@ -213,13 +212,13 @@ func (a *Service) SetAccountRule(ctx context.Context, req *pbaccount.SetRequestU
 	// variable auth, and if an error is encountered, it returns an error response and the corresponding error.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if a user has the correct permissions to write and edit data. If they do not have the correct
 	// permissions, an error is returned with the message "you do not have rules for writing and editing data".
 	if !migrate.Rules(auth, "accounts", query.RoleDefault) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, a.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is used to convert a given object into a JSON string (serialize), so it can be transferred over a network
@@ -227,7 +226,7 @@ func (a *Service) SetAccountRule(ctx context.Context, req *pbaccount.SetRequestU
 	// (req.User.GetRules()) as an argument. If an error occurs during the serializing process, the error is returned and the function exits.
 	serialize, err := json.Marshal(req.User.GetRules())
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is executing an update query to the "accounts" table in the database. The purpose of this code is to update
@@ -239,7 +238,7 @@ func (a *Service) SetAccountRule(ctx context.Context, req *pbaccount.SetRequestU
 		serialize,
 		req.GetId(),
 	); err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil

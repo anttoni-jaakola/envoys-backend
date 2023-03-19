@@ -6,6 +6,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/cryptogateway/backend-envoys/server/service/account"
 	"github.com/pquerna/otp/totp"
@@ -30,7 +31,7 @@ func (e *Service) GetSymbol(_ context.Context, req *pbspot.GetRequestSymbol) (*p
 	// This piece of code checks if the base unit of the request is valid. If it is not valid, an error is returned with a
 	// status code and a message.
 	if row, err := e.getCurrency(req.GetBaseUnit(), false); err != nil {
-		return &response, e.Context.Error(status.Errorf(11584, "this base currency does not exist, %v", row.GetSymbol()))
+		return &response, status.Errorf(11584, "this base currency does not exist, %v", row.GetSymbol())
 	}
 
 	// The purpose of this code is to check if the requested currency exists and if it does not, then return an error
@@ -38,7 +39,7 @@ func (e *Service) GetSymbol(_ context.Context, req *pbspot.GetRequestSymbol) (*p
 	// the function getCurrency() with the parameters req.GetQuoteUnit() and false. If an error is returned, the error
 	// message is set with the status code 11582 and the currency symbol is included in the message.
 	if row, err := e.getCurrency(req.GetQuoteUnit(), false); err != nil {
-		return &response, e.Context.Error(status.Errorf(11582, "this quote currency does not exist, %v", row.GetSymbol()))
+		return &response, status.Errorf(11582, "this quote currency does not exist, %v", row.GetSymbol())
 	}
 
 	// The purpose of this code is to check if the pair (base_unit and quote_unit) provided by the request exists in the
@@ -46,7 +47,7 @@ func (e *Service) GetSymbol(_ context.Context, req *pbspot.GetRequestSymbol) (*p
 	// variable "exist". It then uses an if statement to check if the query was successful and if the "exist" variable is
 	// false. If either of these conditions are not met, the code returns an error.
 	if err := e.Context.Db.QueryRow("select exists(select id from pairs where base_unit = $1 and quote_unit = $2)::bool", req.GetBaseUnit(), req.GetQuoteUnit()).Scan(&exist); err != nil || !exist {
-		return &response, e.Context.Error(status.Errorf(11585, "this pair %v-%v does not exist", req.GetBaseUnit(), req.GetQuoteUnit()))
+		return &response, status.Errorf(11585, "this pair %v-%v does not exist", req.GetBaseUnit(), req.GetQuoteUnit())
 	}
 
 	// The purpose of response.Success = true is to indicate that a successful response was received. This is typically used
@@ -81,7 +82,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 	// handle it.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this code is to query the database for the amount of pairs with a status of true. The result is then
@@ -109,7 +110,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 		// rows.Close() method is called after the query execution is completed.
 		rows, err := e.Context.Db.Query(`select id, base_unit, quote_unit, price from pairs where status = $3 order by id desc limit $1 offset $2`, req.GetLimit(), offset, true)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -127,7 +128,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 			// the code is to scan the rows and assign the values to the variables, analysis.Id, analysis.BaseUnit,
 			// analysis.QuoteUnit, and analysis.Price. If an error is encountered, the function will return a response and an error.
 			if err := rows.Scan(&analysis.Id, &analysis.BaseUnit, &analysis.QuoteUnit, &analysis.Price); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is used to request 40 candles from a given base and quote unit. The migrate variable is used to store the
@@ -135,7 +136,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 			// occurs, the response is returned and the error is logged.
 			migrate, err := e.GetCandles(context.Background(), &pbspot.GetRequestCandles{BaseUnit: analysis.GetBaseUnit(), QuoteUnit: analysis.GetQuoteUnit(), Limit: 40})
 			if err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This loop iterates through the fields in the migrate object and appends the prices of each field to the Candles
@@ -177,7 +178,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 					Limit:     2,
 				})
 				if err != nil {
-					return &response, e.Context.Error(err)
+					return &response, err
 				}
 
 				// This code segment is used to calculate the buy and sell ratios of a given analysis. The buy ratio is calculated by
@@ -227,7 +228,7 @@ func (e *Service) GetMarkers(_ context.Context, _ *pbspot.GetRequestMarkers) (*p
 	// present, the rows will be closed.
 	rows, err := e.Context.Db.Query("select symbol from currencies where marker = $1", true)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer rows.Close()
 
@@ -242,7 +243,7 @@ func (e *Service) GetMarkers(_ context.Context, _ *pbspot.GetRequestMarkers) (*p
 		// This is an if statement used to check for an error during the process of scanning a row. If an error is encountered,
 		// then the function will return the response with the Error() method applied to the context.
 		if err := rows.Scan(&symbol); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code adds the symbol to the end of the response Fields array. This is likely being done to provide additional data in the response.
@@ -269,7 +270,7 @@ func (e *Service) GetPairs(_ context.Context, req *pbspot.GetRequestPairs) (*pbs
 	// the database and store it in the response variable. The defer rows.Close() statement ensures that the rows are closed once the function is completed.
 	rows, err := e.Context.Db.Query("select id, base_unit, quote_unit, base_decimal, quote_decimal, status from pairs where base_unit = $1 or quote_unit = $1", req.GetSymbol())
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer rows.Close()
 
@@ -287,7 +288,7 @@ func (e *Service) GetPairs(_ context.Context, req *pbspot.GetRequestPairs) (*pbs
 		// This is an if statement which is used to assign the scanned rows from the database to the corresponding variables.
 		// If an error occurs while scanning the rows, the statement will return an error as part of the response.
 		if err := rows.Scan(&pair.Id, &pair.BaseUnit, &pair.QuoteUnit, &pair.BaseDecimal, &pair.QuoteDecimal, &pair.Status); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is checking the request symbol against the pair symbol and then setting the pair symbol to either the base
@@ -339,11 +340,11 @@ func (e *Service) GetPair(_ context.Context, req *pbspot.GetRequestPair) (*pbspo
 	)
 
 	// This code is querying a database for a specific row in the table. The query is looking for a row with the specified
-	// base_unit and quote_unit from the 'parameters' req.GetBaseUnit() and req.GetQuoteUnit(). If an error occurs, the error
-	// is returned via e.Context.Error(err). Finally, the row is closed with the defer keyword so that it is properly released back to the server.
+	// base_unit and quote_unit from the 'parameters' req.GetBaseUnit() and req.GetQuoteUnit(). If an error occurs, the error.
+	// Finally, the row is closed with the defer keyword so that it is properly released back to the server.
 	row, err := e.Context.Db.Query(`select id, base_unit, quote_unit, price, base_decimal, quote_decimal, status from pairs where base_unit = $1 and quote_unit = $2`, req.GetBaseUnit(), req.GetQuoteUnit())
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer row.Close()
 
@@ -362,7 +363,7 @@ func (e *Service) GetPair(_ context.Context, req *pbspot.GetRequestPair) (*pbspo
 		// holds data regarding currency pairs. The "if" statement is a check to make sure that the data was successfully read
 		// and stored into the structure, and if not, it will return an error.
 		if err := row.Scan(&pair.Id, &pair.BaseUnit, &pair.QuoteUnit, &pair.Price, &pair.BaseDecimal, &pair.QuoteDecimal, &pair.Status); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to check the status of a given request, with the base unit and quote unit specified,
@@ -396,7 +397,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// authentication fails, the code returns an error.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this code is to create a Service object that uses the context stored in the variable e. The Service
@@ -416,25 +417,13 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// error message informing the user that their account and assets have been blocked and instructing them to contact
 	// technical support for any questions.
 	if !user.GetStatus() {
-		return &response, e.Context.Error(status.Error(748990, "your account and assets have been blocked, please contact technical support for any questions"))
-	}
-
-	// The purpose of this code is to check for an error when calling the helperSymbol function. If an error is found, the
-	// code returns the response and calls the Error function to handle the error.
-	if err := e.helperSymbol(req.GetBaseUnit()); err != nil {
-		return &response, e.Context.Error(err)
-	}
-
-	// The purpose of this code is to check for an error when calling the helperSymbol function. If an error is found, the
-	// code returns the response and calls the Error function to handle the error.
-	if err := e.helperSymbol(req.GetQuoteUnit()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, status.Error(748990, "your account and assets have been blocked, please contact technical support for any questions")
 	}
 
 	// This code is part of an if statement that is checking to see if an error has been returned from the e.helperPair()
 	// function. If an error has been returned, the code will return the response variable and call the Context.Error() function to log the error.
 	if err := e.helperPair(req.GetBaseUnit(), req.GetQuoteUnit()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This is setting the order quantity and value based on the request quantity and price.
@@ -464,7 +453,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 		// method of the req object.
 		order.Price = req.GetPrice()
 	default:
-		return &response, e.Context.Error(status.Error(82284, "invalid type trade position"))
+		return &response, status.Error(82284, "invalid type trade position")
 	}
 
 	// The purpose of these lines of code is to assign the values of certain variables to the corresponding values from a
@@ -483,13 +472,13 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// and calls the Context.Error() method with the error. The quantity variable is used to store the result of helperOrder(), which is used to complete the order.
 	quantity, err := e.helperOrder(&order)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This is a conditional statement used to set a new order and check for any errors that might occur. If an error is
 	// encountered, the statement will return a response and an Error context to indicate that an error has occurred.
 	if order.Id, err = e.setOrder(&order); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The switch statement is used to evaluate the value of the expression "order.GetAssigning()" and execute the
@@ -501,13 +490,13 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 		// function "setAsset()" to set the base unit and user ID of the order to false. If an error occurs during the process,
 		// the code will return the response and an error message.
 		if err := e.setAsset(order.GetBaseUnit(), order.GetUserId(), false); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is checking the balance of a user and attempting to subtract the specified quantity from it. If the
 		// operation is successful, it will continue with the program. If an error occurs, it will return an error response.
 		if err := e.setBalance(order.GetQuoteUnit(), order.GetUserId(), quantity, pbspot.Balance_MINUS); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of e.trade(&order, pbspot.Side_BID) is to replay a trade initiation with the given order and
@@ -522,13 +511,13 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 		// function "setAsset()" to set the base unit and user ID of the order to false. If an error occurs during the process,
 		// the code will return the response and an error message.
 		if err := e.setAsset(order.GetQuoteUnit(), order.GetUserId(), false); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is checking the balance of a user and attempting to subtract the specified quantity from it. If the
 		// operation is successful, it will continue with the program. If an error occurs, it will return an error response.
 		if err := e.setBalance(order.GetBaseUnit(), order.GetUserId(), quantity, pbspot.Balance_MINUS); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of e.trade(&order, pbspot.Side_ASK) is to replay a trade initiation with the given order and
@@ -571,11 +560,11 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 	// the value of req.GetAssigning(), the maps slice will be appended with the corresponding formatted string.
 	switch req.GetAssigning() {
 	case pbspot.Assigning_BUY:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", pbspot.Assigning_BUY))
+		maps = append(maps, fmt.Sprintf("where assigning = %[1]d and type = %[2]d", pbspot.Assigning_BUY, pbasset.Type_SPOT))
 	case pbspot.Assigning_SELL:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", pbspot.Assigning_SELL))
+		maps = append(maps, fmt.Sprintf("where assigning = %[1]d and type = %[2]d", pbspot.Assigning_SELL, pbasset.Type_SPOT))
 	default:
-		maps = append(maps, fmt.Sprintf("where (assigning = %d or assigning = %d)", pbspot.Assigning_BUY, pbspot.Assigning_SELL))
+		maps = append(maps, fmt.Sprintf("where (assigning = %[1]d and type = %[3]d or assigning = %[2]d and type = %[3]d)", pbspot.Assigning_BUY, pbspot.Assigning_SELL, pbasset.Type_SPOT))
 	}
 
 	// This checks to see if the request (req) has an owner. If it does, the code after this statement will be executed.
@@ -586,7 +575,7 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 		// process. If an error occurs, the response and error is returned.
 		auth, err := e.Context.Auth(ctx)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to append a formatted string to a slice of strings (maps). The string will include the
@@ -643,7 +632,7 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 		// rows returned and to specify where in the result set to start returning rows from. The strings.Join function is used to join the "maps" parameter which is an array of strings.
 		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, assigning, price, value, quantity, base_unit, quote_unit, user_id, create_at, status from orders %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -661,7 +650,7 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 			// This code is scanning the rows returned from a database query and assigning the values to the variables in the item
 			// struct. If an error is encountered during the scanning process, an error is returned.
 			if err = rows.Scan(&item.Id, &item.Assigning, &item.Price, &item.Value, &item.Quantity, &item.BaseUnit, &item.QuoteUnit, &item.UserId, &item.CreateAt, &item.Status); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// The purpose of this statement is to add an item to the existing list of fields in a response object. The
@@ -671,7 +660,7 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 
 		// This code checks for an error in the rows object. If an error is found, the function will return a response and an error message.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -695,7 +684,7 @@ func (e *Service) GetAssets(ctx context.Context, _ *pbspot.GetRequestAssetsManua
 	// will close the rows of information when the function is finished executing.
 	rows, err := e.Context.Db.Query("select id, name, symbol, status from currencies")
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer rows.Close()
 
@@ -714,7 +703,7 @@ func (e *Service) GetAssets(ctx context.Context, _ *pbspot.GetRequestAssetsManua
 		// assign each value to a variable. The "if err" statement is used to check for any errors that may occur while running
 		// the query, and returns an error if one is found.
 		if err := rows.Scan(&asset.Id, &asset.Name, &asset.Symbol, &asset.Status); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this statement is to check if the authentication is successful before proceeding with the code. The
@@ -753,7 +742,7 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 	// there is an error with retrieving the authentication information, then the error is returned.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The switch statement is used to check the value of the req.GetType() expression and then execute the relevant case
@@ -773,22 +762,22 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 		// error is encountered during this process, the code returns a response and an error is logged.
 		entropy, err := e.getEntropy(auth)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The code is attempting to create a new address using a secret, entropy, and platform. If there is an error, the
 		// function will return the response and an error.
 		if response.Address, _, err = cross.New(fmt.Sprintf("%v-&*39~763@)", e.Context.Secrets[1]), entropy, req.GetPlatform()); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is querying a database for an asset with a given symbol and user_id. The row variable is used to store the
 		// result of the query, and err is used to store any errors that may occur. The if err != nil statement checks for any
 		// errors that may have occurred and, if one is found, the error is returned. To defer row.Close() statement closes
 		// the database query at the end of the function, regardless of how the function ends.
-		row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2`, req.GetSymbol(), auth)
+		row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, pbasset.Type_SPOT)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
@@ -804,27 +793,27 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 				// inserted are the address, symbol, platform, protocol, and user_id from the request parameters. The query is then
 				// executed and if there is an error, an error message is returned.
 				if _, err = e.Context.Db.Exec("insert into wallets (address, symbol, platform, protocol, user_id) values ($1, $2, $3, $4, $5)", response.GetAddress(), req.GetSymbol(), req.GetPlatform(), req.GetProtocol(), auth); err != nil {
-					return &response, e.Context.Error(err)
+					return &response, err
 				}
 
 				return &response, nil
 			}
 
-			return &response, e.Context.Error(status.Error(700990, "the asset address has already been generated"))
+			return &response, status.Error(700990, "the asset address has already been generated")
 		}
 
 		// This code snippet is used to execute an SQL query to insert a row of data into the 'assets' table. The first
 		// parameter is the user_id from the auth variable, and the second parameter is the symbol from the req.GetSymbol()
 		// variable. If there is an error during the execution of the query, an error will be returned.
 		if _, err = e.Context.Db.Exec("insert into assets (user_id, symbol) values ($1, $2);", auth, req.GetSymbol()); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is used to insert values into the wallets table in a database. The values being inserted are the address,
 		// symbol, platform, protocol, and user_id, which are passed in as arguments. It checks for any errors that may occur
 		// while inserting the values and returns an error if one is encountered.
 		if _, err = e.Context.Db.Exec("insert into wallets (address, symbol, platform, protocol, user_id) values ($1, $2, $3, $4, $5)", response.GetAddress(), req.GetSymbol(), req.GetPlatform(), req.GetProtocol(), auth); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	case pbspot.Type_FIAT:
@@ -832,7 +821,7 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 		// The purpose of this code is to set the asset for the given symbol, using the provided authentication details. If
 		// there is an error encountered while attempting to set the asset, the response variable is returned and the error is logged.
 		if err := e.setAsset(req.GetSymbol(), auth, true); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	}
@@ -856,14 +845,14 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The code is checking to see if an error occurred while attempting to get a currency. If there is an error, the
 	// function will return the response and the error.
 	row, err := e.getCurrency(req.GetSymbol(), false)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This line of code sets the value of the Balance attribute of the row object to the balance of the account associated
@@ -874,7 +863,7 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 	// for the given user. It is checking the base unit and quote unit against the given symbol and using the price to
 	// convert between the two if necessary. It is then adding them together and using the coalesce function to return 0.00
 	// if there is no data returned. Finally, it is scanning the result into the row.Volume field.
-	_ = e.Context.Db.QueryRow(`select coalesce(sum(case when base_unit = $1 then value when quote_unit = $1 then value * price end), 0.00) as volume from orders where base_unit = $1 and assigning = $2 and status = $4 and user_id = $5 or quote_unit = $1 and assigning = $3 and status = $4 and user_id = $5`, req.GetSymbol(), pbspot.Assigning_SELL, pbspot.Assigning_BUY, pbspot.Status_PENDING, auth).Scan(&row.Volume)
+	_ = e.Context.Db.QueryRow(`select coalesce(sum(case when base_unit = $1 then value when quote_unit = $1 then value * price end), 0.00) as volume from orders where base_unit = $1 and assigning = $2 and status = $4 and type = $5 and user_id = $6 or quote_unit = $1 and assigning = $3 and status = $4 and type = $5 and user_id = $6`, req.GetSymbol(), pbspot.Assigning_SELL, pbspot.Assigning_BUY, pbspot.Status_PENDING, pbasset.Type_SPOT, auth).Scan(&row.Volume)
 
 	// This is a for loop in Go. The purpose of the loop is to iterate over each element in the "row.GetChainsIds()" array.
 	// The loop starts at index 0 and continues until it reaches the last element in the array. On each iteration, the loop
@@ -900,7 +889,7 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 				// requested symbol. If the GetPrice method returns an error, the error is returned in the response and the Context.Error() method handles the error.
 				price, err := e.GetPrice(context.Background(), &pbspot.GetRequestPriceManual{BaseUnit: chain.GetParentSymbol(), QuoteUnit: req.GetSymbol()})
 				if err != nil {
-					return &response, e.Context.Error(err)
+					return &response, err
 				}
 
 				// The purpose of this code is to calculate the fees for withdrawing from a particular chain. The chain.FeesWithdraw
@@ -982,7 +971,7 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 	// in the rows variable. Finally, the rows variable is closed at the end of the code.
 	rows, err := e.Context.Db.Query(fmt.Sprintf("select extract(epoch from time_bucket('%[4]s', ohlc.create_at))::integer buckettime, first(ohlc.price, ohlc.create_at) as open, last(ohlc.price, ohlc.create_at) as close, first(ohlc.price, ohlc.price) as low, last(ohlc.price, ohlc.price) as high, sum(ohlc.quantity) as volume, avg(ohlc.price) as avg_price, ohlc.base_unit, ohlc.quote_unit from trades as ohlc where ohlc.base_unit = '%[1]s' and ohlc.quote_unit = '%[2]s' %[3]s group by buckettime, ohlc.base_unit, ohlc.quote_unit order by buckettime desc %[5]s", req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "), help.Resolution(req.GetResolution()), limit))
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer rows.Close()
 
@@ -1001,7 +990,7 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 		// to the variables item.Time, item.Open, item.Close, item.Low, item.High, item.Volume, item.Price, item.BaseUnit, and
 		// item.QuoteUnit. If an error occurs during the scan, the code will return an error response.
 		if err = rows.Scan(&item.Time, &item.Open, &item.Close, &item.Low, &item.High, &item.Volume, &item.Price, &item.BaseUnit, &item.QuoteUnit); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is likely appending an item to a response.Fields array. It is likely used to add an item to the array and
@@ -1080,7 +1069,7 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 		// an error. This is necessary to ensure that only authorized users are accessing certain resources.
 		auth, err := e.Context.Auth(ctx)
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to create a map which contains a key-value pair of "user_id" and the value of the
@@ -1093,7 +1082,7 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 	// results into the rows variable. If an error occurs, it returns an error response. Finally, it closes the rows variable.
 	rows, err := e.Context.Db.Query(fmt.Sprintf("select id, user_id, base_unit, quote_unit, price, quantity, assigning, fees, create_at from transfers %s order by id desc limit %d", strings.Join(maps, " "), req.GetLimit()))
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer rows.Close()
 
@@ -1111,7 +1100,7 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 		// rows of the database and assign each row's values to the corresponding variables. If an error occurs while scanning
 		// the rows, the function will return an error.
 		if err = rows.Scan(&item.Id, &item.UserId, &item.BaseUnit, &item.QuoteUnit, &item.Price, &item.Quantity, &item.Assigning, &item.Fees, &item.CreateAt); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This statement is appending a new item to the Fields array of the response object. The purpose of this statement is
@@ -1123,7 +1112,7 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 	// and an error object. This is likely part of a larger function that is retrieving data from a database and returning
 	// it in a response. The if statement is making sure that the query was successful and that the response is valid.
 	if err = rows.Err(); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil
@@ -1190,7 +1179,7 @@ func (e *Service) GetTrades(_ context.Context, req *pbspot.GetRequestTrades) (*p
 		// response. The `defer rows.Close()` statement ensures that the rows will be closed when the function returns.
 		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, assigning, price, quantity, base_unit, quote_unit, create_at from trades %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1209,7 +1198,7 @@ func (e *Service) GetTrades(_ context.Context, req *pbspot.GetRequestTrades) (*p
 			// them to the corresponding variables (item.Id, item.Assigning, item.Price, item.Quantity, item.BaseUnit,
 			// item.QuoteUnit, and item.CreateAt). If an error occurs during the scanning process, it will return an error message.
 			if err = rows.Scan(&item.Id, &item.Assigning, &item.Price, &item.Quantity, &item.BaseUnit, &item.QuoteUnit, &item.CreateAt); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This statement adds an item to the response.Fields slice. The response.Fields slice stores a list of items, and
@@ -1220,7 +1209,7 @@ func (e *Service) GetTrades(_ context.Context, req *pbspot.GetRequestTrades) (*p
 		// The purpose of this code is to check for an error when querying a database. If an error is returned, the code will
 		// return a response and an error message.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1307,7 +1296,7 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This line of code is appending a string to the maps slice. The string is formatted with the auth variable. The
@@ -1337,7 +1326,7 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 		// results. To defer rows.Close() statement is used to ensure that the database connection is closed when the query is done.
 		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, symbol, hash, value, price, fees, confirmation, "to", chain_id, user_id, assignment, type, platform, protocol, status, create_at from transactions %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -1373,7 +1362,7 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 				&item.Status,
 				&item.CreateAt,
 			); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is retrieving the chain from the given chain ID and storing it in the item.Chain variable. It then checks
@@ -1394,10 +1383,9 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 			response.Fields = append(response.Fields, &item)
 		}
 
-		// This is a check to make sure that the operation on the rows was successful. If it was not successful, it returns an
-		// error with the `e.Context.Error()` method.
+		// This is a check to make sure that the operation on the rows was successful. If it was not successful, it returns an error.
 		if err = rows.Err(); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1421,7 +1409,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The if statement is used to check if the GetRefresh() function is returning a truthy (true) value. If it is, the code
@@ -1431,7 +1419,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		// This code is checking for an error when setting the secure flag to false. If there is an error, it returns a
 		// response and the error context.
 		if err := e.setSecure(ctx, false); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		return &response, nil
@@ -1456,27 +1444,27 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// the user's status is not valid, the code returns an error message to the user, indicating that their account and
 	// assets have been blocked and that they should contact technical support for any questions.
 	if !user.GetStatus() {
-		return &response, e.Context.Error(status.Error(748990, "your account and assets have been blocked, please contact technical support for any questions"))
+		return &response, status.Error(748990, "your account and assets have been blocked, please contact technical support for any questions")
 	}
 
 	// This code is checking to make sure that the address provided in the request is a valid crypto address for the
 	// specified platform. If the address is not valid, the error is returned to the caller.
 	if err := keypair.ValidateCryptoAddress(req.GetAddress(), req.GetPlatform()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is part of an error handling process. The if statement checks to see if the helperInternalAsset method
 	// returns an error when given the address from the request. If it does return an error, the code will return the
 	// response and log the error using the Context.Error() method.
 	if err := e.helperInternalAsset(req.GetAddress()); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is used to get the chain with the specified ID from the e.getChain() function. If an error occurs, the code
 	// returns an error message indicating the chain array by the specified ID is currently unavailable.
 	chain, err := e.getChain(req.GetId(), true)
 	if err != nil {
-		return &response, e.Context.Error(status.Errorf(11584, "the chain array by id %v is currently unavailable", req.GetId()))
+		return &response, status.Errorf(11584, "the chain array by id %v is currently unavailable", req.GetId())
 	}
 
 	// This code is used to get the currency of a request. It checks if the currency is available in the request and if it
@@ -1484,7 +1472,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// currently unavailable", req.GetSymbol())).
 	currency, err := e.getCurrency(req.GetSymbol(), false)
 	if err != nil {
-		return &response, e.Context.Error(status.Errorf(10029, "the currency requested array by id %v is currently unavailable", req.GetSymbol()))
+		return &response, status.Errorf(10029, "the currency requested array by id %v is currently unavailable", req.GetSymbol())
 	}
 
 	// The purpose of the code above is to retrieve a contract from a blockchain given a symbol and chain ID. It does this
@@ -1496,19 +1484,19 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// returning a response and an error message.
 	secure, err := e.getSecure(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of the code snippet is to ensure that the email code provided is 6 numbers long. If it is not, an error
 	// with the code 16763 will be returned.
 	if len(req.GetEmailCode()) != 6 {
-		return &response, e.Context.Error(status.Error(16763, "the code must be 6 numbers"))
+		return &response, status.Error(16763, "the code must be 6 numbers")
 	}
 
 	// This if statement is used to check if the security code provided by the user matches the security code associated
 	// with the user's email address. If the code is incorrect or empty, an error is returned.
 	if secure != req.GetEmailCode() || secure == "" {
-		return &response, e.Context.Error(status.Errorf(58990, "security code %v is incorrect", req.GetEmailCode()))
+		return &response, status.Errorf(58990, "security code %v is incorrect", req.GetEmailCode())
 	}
 
 	// The purpose of this statement is to check if the user has enabled two-factor authentication. If the user has enabled
@@ -1534,7 +1522,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 			QuoteUnit: req.GetSymbol(),
 		})
 		if err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this line of code is to assign the value returned by the GetPrice() function to the req.Price
@@ -1564,19 +1552,19 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// This code is checking if any errors arise when withdrawing a certain quantity of a certain currency from a certain
 	// platform or protocol. If an error occurs, the code returns an error response.
 	if err := e.helperWithdraw(req.GetQuantity(), e.getReserve(req.GetSymbol(), req.GetPlatform(), contract.GetProtocol()), e.getBalance(req.GetSymbol(), auth), currency.GetMaxWithdraw(), currency.GetMinWithdraw(), fees); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This if statement is checking to see if the address given by the request is the same as the address that it is attempting to send the request to.
 	// If they are the same, the code will return an error indicating that the user cannot send from an address to the same address.
 	if address := e.getAddress(auth, req.GetSymbol(), req.GetPlatform(), contract.GetProtocol()); address == strings.ToLower(req.GetAddress()) {
-		return &response, e.Context.Error(status.Error(758690, "your cannot send from an address to the same address"))
+		return &response, status.Error(758690, "your cannot send from an address to the same address")
 	}
 
 	// This code is checking for an error when attempting to set a balance for a symbol with a given quantity. If there is
 	// an error, the program will debug the error and return the response and an error.
 	if err := e.setBalance(req.GetSymbol(), auth, req.GetQuantity(), pbspot.Balance_MINUS); e.Context.Debug(err) {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This code snippet is used to insert data into the 'transactions' table in a database. The code is using the Exec
@@ -1596,13 +1584,13 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		pbspot.Assignment_WITHDRAWS,
 		currency.GetType(),
 	); err != nil {
-		return &response, e.Context.Error(status.Error(554322, "transaction hash is already in the list, please contact support"))
+		return &response, status.Error(554322, "transaction hash is already in the list, please contact support")
 	}
 
 	// This code checks if an error occurs when the setSecure function is called. If an error occurs, it returns an error
 	// response and logs the error.
 	if err := e.setSecure(ctx, true); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	response.Success = true
 
@@ -1624,7 +1612,7 @@ func (e *Service) CancelWithdraw(ctx context.Context, req *pbspot.CancelRequestW
 	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This query is used to select the specified row from the transactions table based on the given parameters: id, status
@@ -1633,7 +1621,7 @@ func (e *Service) CancelWithdraw(ctx context.Context, req *pbspot.CancelRequestW
 	// which releases any resources associated with the query.
 	row, err := e.Context.Db.Query(`select id, user_id, symbol, value from transactions where id = $1 and status = $2 and user_id = $3 order by id`, req.GetId(), pbspot.Status_PENDING, auth)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer row.Close()
 
@@ -1652,19 +1640,19 @@ func (e *Service) CancelWithdraw(ctx context.Context, req *pbspot.CancelRequestW
 		// item.Value variables. If an error occurs while scanning the rows, the error is returned in the response and the
 		// function returns an error.
 		if err = row.Scan(&item.Id, &item.UserId, &item.Symbol, &item.Value); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This statement is updating the table "transactions" to set the status to "CANCEL" for a specific row identified by
 		// "id" and "user_id". The purpose of this statement is to update the status of the transaction in the database.
 		if _, err := e.Context.Db.Exec("update transactions set status = $3 where id = $1 and user_id = $2;", item.GetId(), item.GetUserId(), pbspot.Status_CANCEL); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is checking for an error when setting a balance for a user's account. If an error occurs, it will log the
 		// error and return an error response.
 		if err := e.setBalance(item.GetSymbol(), item.GetUserId(), item.GetValue(), pbspot.Balance_PLUS); e.Context.Debug(err) {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -1686,16 +1674,16 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
 	auth, err := e.Context.Auth(ctx)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	// This query is used to fetch data from the orders table in the database. The query is parameterized to ensure that
 	// only the desired records are returned. The parameters are the status, id, and user_id. The query also includes an
 	// order by clause to ensure that the data is returned in a specific order. The data is then stored in the row variable
 	// and the defer statement is used to close the row when the query is finished.
-	row, err := e.Context.Db.Query(`select id, value, quantity, price, assigning, base_unit, quote_unit, user_id, create_at from orders where status = $1 and id = $2 and user_id = $3 order by id`, pbspot.Status_PENDING, req.GetId(), auth)
+	row, err := e.Context.Db.Query(`select id, value, quantity, price, assigning, base_unit, quote_unit, user_id, create_at from orders where status = $1 and type = $2 and id = $3 and user_id = $4 order by id`, pbspot.Status_PENDING, pbasset.Type_SPOT, req.GetId(), auth)
 	if err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 	defer row.Close()
 
@@ -1714,14 +1702,14 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 		// This code is used to scan the row of a database table and assign the values to the relevant variables. The if
 		// statement checks for any errors that may occur during the scanning process, and if an error is found, it will return an error response.
 		if err = row.Scan(&item.Id, &item.Value, &item.Quantity, &item.Price, &item.Assigning, &item.BaseUnit, &item.QuoteUnit, &item.UserId, &item.CreateAt); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of the code is to update the status of an order for a particular user in the database. It takes three
 		// parameters: the ID of the order, the user ID, and the new status for the order. If the execution of the SQL query
 		// fails, an error is returned.
-		if _, err := e.Context.Db.Exec("update orders set status = $3 where id = $1 and user_id = $2;", item.GetId(), item.GetUserId(), pbspot.Status_CANCEL); err != nil {
-			return &response, e.Context.Error(err)
+		if _, err := e.Context.Db.Exec("update orders set status = $1 where type = $2 and id = $3 and user_id = $4;", pbspot.Status_CANCEL, pbasset.Type_SPOT, item.GetId(), item.GetUserId()); err != nil {
+			return &response, err
 		}
 
 		// The switch statement is used to compare the value of a variable (in this case, item.Assigning) to a list of possible
@@ -1733,7 +1721,7 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 			// price to calculate the new balance and then updating the balance using the pbspot.Balance_PLUS parameter. If there
 			// is an error setting the balance, an error is returned.
 			if err := e.setBalance(item.GetQuoteUnit(), item.GetUserId(), decimal.New(item.GetValue()).Mul(item.GetPrice()).Float(), pbspot.Balance_PLUS); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			break
@@ -1742,7 +1730,7 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 			// This code is used to set a balance for a user in a particular base unit. The "if err" statement is used to check if
 			// there is an error when setting the balance. If there is an error, the code will return an error message.
 			if err := e.setBalance(item.GetBaseUnit(), item.GetUserId(), item.GetValue(), pbspot.Balance_PLUS); err != nil {
-				return &response, e.Context.Error(err)
+				return &response, err
 			}
 
 			break
@@ -1751,7 +1739,7 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 		// This code is intended to publish an item to an exchange with the routing key "order/cancel". If any errors occur
 		// while attempting to publish the item, the error is returned and the response is returned.
 		if err := e.Context.Publish(&item, "exchange", "order/cancel"); err != nil {
-			return &response, e.Context.Error(err)
+			return &response, err
 		}
 
 	} else {

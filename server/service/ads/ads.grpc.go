@@ -51,7 +51,7 @@ func (s *Service) GetAdvertisements(_ context.Context, req *pbads.GetRequestAdve
 		// order to ensure all resources associated with the operation are properly released.
 		rows, err := s.Context.Db.Query(fmt.Sprintf("select id, title, text, link, type from advertising where type = %d order by %v desc limit %d offset %d", req.GetType(), by, req.GetLimit(), offset))
 		if err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -75,7 +75,7 @@ func (s *Service) GetAdvertisements(_ context.Context, req *pbads.GetRequestAdve
 				&item.Link,
 				&item.Type,
 			); err != nil {
-				return &response, s.Context.Error(err)
+				return &response, err
 			}
 
 			// This code adds an item to the Fields slice in the response struct. The purpose of adding an item is to store or
@@ -87,7 +87,7 @@ func (s *Service) GetAdvertisements(_ context.Context, req *pbads.GetRequestAdve
 		// returns an error response and an error object. This helps to ensure that any errors are handled properly and the
 		// application is able to continue functioning.
 		if err = rows.Err(); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -97,7 +97,7 @@ func (s *Service) GetAdvertisements(_ context.Context, req *pbads.GetRequestAdve
 // GetAdvertising - This function is part of a service used to retrieve information about an advertising item from a database. It takes a
 // context and a request object containing an ID as parameters. It then queries the database for the advertising item
 // with the given ID and scans the results into a struct. This struct is then appended to a response struct which is returned along with a nil error.
-func (s *Service) GetAdvertising(ctx context.Context, req *pbads.GetRequestAdvertising) (*pbads.ResponseAdvertising, error) {
+func (s *Service) GetAdvertising(_ context.Context, req *pbads.GetRequestAdvertising) (*pbads.ResponseAdvertising, error) {
 
 	// The purpose of the following statement is to declare two variables, response and item, which both have the type
 	// pbads.ResponseAdvertising and pbads.Advertising respectively. These variables will be used in the code that follows.

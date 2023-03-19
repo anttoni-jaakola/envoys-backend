@@ -22,17 +22,17 @@ func (a *Service) SetUser(ctx context.Context, req *pbaccount.SetRequestUserManu
 	)
 
 	// This code is authenticating a user in order to access a resource. The 'a.Context.Auth(ctx)' function is used to
-	// authenticate the user, and if there is an error, the 'a.Context.Error(err)' function is called to return an error response.
+	// authenticate the user, and if there is an error, the return an error response.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This if statement is used to check if the length of the request's sample is greater than 0. If it is, it will attempt
 	// to set the sample with the given authentication, and if an error occurs, it will return an error response.
 	if len(req.GetSample()) > 0 {
 		if err := a.setSample(auth, req.GetSample()); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -44,7 +44,7 @@ func (a *Service) SetUser(ctx context.Context, req *pbaccount.SetRequestUserManu
 		// The purpose of this code is to set a new password for an individual using the old password as a verification. If
 		// there is an error in setting the new password, the code will return an error.
 		if err := a.setPassword(auth, req.GetOldPassword(), req.GetNewPassword()); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -52,7 +52,7 @@ func (a *Service) SetUser(ctx context.Context, req *pbaccount.SetRequestUserManu
 	// error is returned, it is returned with the response and an error is sent back through the context.
 	user, err := a.QueryUser(auth)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is likely to be part of a function that is creating a response object. The purpose of this code is to add a
@@ -80,14 +80,14 @@ func (a *Service) GetUser(ctx context.Context, _ *pbaccount.GetRequestUser) (*pb
 	// is returned and the function is exited.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is used to query a user based on an authentication parameter, and return the response to the user. If an
 	// error occurs while querying the user, the code returns an error response to the user.
 	user, err := a.QueryUser(auth)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	//This line of code sets the value of the FactorSecret property of the user object to an empty string. This property is
@@ -119,10 +119,10 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 
 	// This code is authenticating a user who is trying to access a resource. The variable 'auth' will contain the
 	// authentication information for the user, and the variable 'err' will contain any error that occurs during the
-	// authentication process. If an error occurs, the code will return an error response and call a.Context.Error() to log the error.
+	// authentication process. If an error occurs, the code will return an error response.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is used to query the database and check the number of actions associated with a given user. The QueryRow
@@ -144,7 +144,7 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 		// fails, an error is returned and the code exits. The rows.Close() function is used to close the connection to the database.
 		rows, err := a.Context.Db.Query("select id, os, device, ip, browser, create_at from actions where user_id = $1 order by id desc limit $2 offset $3", auth, req.GetLimit(), offset)
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer rows.Close()
 
@@ -163,13 +163,13 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 			// item.Device, item.Ip, browser, and item.CreateAt. If the scan is successful, the function will return &response,
 			// otherwise it will return an error.
 			if err := rows.Scan(&item.Id, &item.Os, &item.Device, &item.Ip, &browser, &item.CreateAt); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is used to unmarshal a JSON object into a struct. The if statement checks for an error when calling
 			// json.Unmarshal and if there is an error it returns the response and an error message.
 			if err := json.Unmarshal(browser, &item.Browser); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// The purpose of this code is to add a new item to the existing list of response fields. The 'append' function takes
@@ -180,7 +180,7 @@ func (a *Service) GetActions(ctx context.Context, req *pbaccount.GetRequestActio
 		// This code is used to check for errors with the rows object. The if statement will check if an error is present in
 		// the rows object, and if there is an error, the code will return the response and an error with the context.
 		if err = rows.Err(); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -205,7 +205,7 @@ func (a *Service) SetFactor(ctx context.Context, req *pbaccount.SetRequestFactor
 	// variable stores any potential errors that might occur during authentication. If an error occurs, the code returns an error response.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code attempts to query the user using the authentication (auth) provided. If there is an error during the
@@ -213,7 +213,7 @@ func (a *Service) SetFactor(ctx context.Context, req *pbaccount.SetRequestFactor
 	// will be called to return the error.
 	user, err := a.QueryUser(auth)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is used to determine which secret value to use. If the user has factor secure enabled, then it will use the
@@ -265,14 +265,14 @@ func (a *Service) GetFactor(ctx context.Context, _ *pbaccount.GetRequestFactor) 
 	// response. It is used to ensure that only authorized users can access the requested resource.
 	auth, err := a.Context.Auth(ctx)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is used to query a user by authentication. The variable "user" is assigned the result of the query, and if
 	// there is an error, the "err" variable will be assigned the error and the function will return a response and the error.
 	user, err := a.QueryUser(auth)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This if statement is checking if the function GetFactorSecure returns a false boolean value. If it does, the code in
@@ -290,7 +290,7 @@ func (a *Service) GetFactor(ctx context.Context, _ *pbaccount.GetRequestFactor) 
 			SecretSize:  15,
 		})
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to set the response.Secret and response.URL variables to the values of the key.Secret()

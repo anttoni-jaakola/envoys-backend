@@ -301,25 +301,6 @@ func (app *Context) Auth(ctx context.Context) (int64, error) {
 	return 0, nil
 }
 
-// This function is used to log an error and return the same error. The function utilizes the context struct's Logger to
-// log the error. It also uses runtime.Caller to provide the file and line number where the error happened. This allows
-// the user to quickly trace the source of the error.
-func (app *Context) Error(err error) error {
-
-	// This code is used to log an error message with the file name and line number of where the error occurred. The
-	// runtime.Caller() function returns information about the calling function, and in this case the caller of the current
-	// function is returned. The variables _, file, and line are assigned the respective values. The ok variable will be
-	// true if the call to runtime.Caller() was successful. If ok is true, the error is logged with the file and line information included.
-	if _, file, line, ok := runtime.Caller(1); ok {
-		app.Logger.WithFields(logrus.Fields{
-			"file": file,
-			"line": line,
-		}).Error(err)
-	}
-
-	return err
-}
-
 // Publish - This function is used to publish data to a specific topic on a given channel.
 // It takes in a data interface, a topic string, and a variable list of channel strings.
 // It uses the json package to marshal the data interface into a string.

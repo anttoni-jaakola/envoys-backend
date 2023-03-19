@@ -38,7 +38,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 	// has the proper authorization to access the resource being requested.
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if ok && meta["authorization"] != nil {
-		return &response, a.Context.Error(status.Error(10004, "permission denied"))
+		return &response, status.Error(10004, "permission denied")
 	}
 
 	// The switch statement is used to check the value of req.GetSignup() and then execute code based on the result. The
@@ -50,19 +50,19 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 		// characters long. If the name is not at least 5 characters long, then it will return an error with status code 19522
 		// and a message saying "the name must be at least 5 characters long".
 		if len(req.GetName()) < 5 {
-			return &response, a.Context.Error(status.Error(19522, "the name must be at least 5 characters long"))
+			return &response, status.Error(19522, "the name must be at least 5 characters long")
 		}
 
 		// This if statement checks is the password provided is at least 8 characters long. If it is not, an error is returned
 		// indicating that the password must be at least 8 characters long. This is an important security measure to ensure
 		// that passwords are sufficiently complex.
 		if len(req.GetPassword()) < 8 {
-			return &response, a.Context.Error(status.Error(14563, "the password must be at least 8 characters long"))
+			return &response, status.Error(14563, "the password must be at least 8 characters long")
 		}
 
 		// This code is checking if the email address provided in the request is valid. If it is not valid, an error is returned.
 		if _, err := mail.ParseAddress(req.GetEmail()); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is querying a database for an account with a specified email address. The row variable is used to store
@@ -70,7 +70,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 		// querying the database. Finally, the defer statement is used to ensure that the row is closed after the query is finished.
 		row, err := a.Context.Db.Query("select id from accounts where email = $1", req.GetEmail())
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
@@ -88,18 +88,18 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 			// generate a seed phrase for the wallet. The code checks for any errors and will return an error if one occurs.
 			entropy, err := bip39.NewEntropy(128)
 			if err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is used to check if a user has already been registered with the same email address. If the user has
 			// already been registered, an error is returned. Otherwise, the user is registered by inserting the name, email,
 			// password and entropy into the accounts table.
 			if _, err := a.Context.Db.Exec("insert into accounts (name, email, password, entropy) values ($1, $2, $3, $4)", req.GetName(), req.GetEmail(), base64.URLEncoding.EncodeToString(hashed.Sum(nil)), entropy); err != nil {
-				return &response, a.Context.Error(status.Error(15316, "a user with this address has already been registered before"))
+				return &response, status.Error(15316, "a user with this address has already been registered before")
 			}
 
 		} else {
-			return &response, a.Context.Error(status.Error(64401, "a user with this email address is already registered"))
+			return &response, status.Error(64401, "a user with this email address is already registered")
 		}
 
 		break
@@ -109,14 +109,14 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 		// is returned and the process is stopped.
 		code, err := a.setCode(req.GetEmail())
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is checking for errors when executing an update query on the "accounts" table in a database. The query is
 		// updating the "email_code" field with a given code for a specified email address, where the status is false. If an
 		// error occurs, the code returns an error response.
 		if _, err = a.Context.Db.Exec("update accounts set email_code = $3 where email = $1 and status = $2;", req.GetEmail(), false, code); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		break
@@ -126,7 +126,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 		// returns an error message stating that the code must be 6 numbers. This is likely a part of a larger program that
 		// checks the validity of a code with 6 numbers.
 		if len(req.GetEmailCode()) != 6 {
-			return &response, a.Context.Error(status.Error(14773, "the code must be 6 numbers"))
+			return &response, status.Error(14773, "the code must be 6 numbers")
 		}
 
 		// This code is trying to get the id of an account from a database where the email, email code, and status all match
@@ -134,7 +134,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 		// If an error occurs, it will return a response and an error. Finally, the row is closed when the function exits.
 		row, err := a.Context.Db.Query("select id from accounts where email = $1 and email_code = $2 and status = $3", req.GetEmail(), req.GetEmailCode(), false)
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
@@ -146,7 +146,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 			//updating the status of an account associated with the email provided in the request.
 			// The `if` statement is checking for an error during the execution of the SQL query. If an error occurs, it is returned in the response, and the function is exited using the `a.Context.Error` method.
 			if _, err := a.Context.Db.Exec("update accounts set status = $2 where email = $1;", req.GetEmail(), true); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 		} else {
@@ -155,7 +155,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 
 		break
 	default:
-		return &response, a.Context.Error(status.Error(60001, "invalid input parameter"))
+		return &response, status.Error(60001, "invalid input parameter")
 	}
 
 	return &response, nil
@@ -180,7 +180,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 	// permissions to access a resource.
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if ok && meta["authorization"] != nil {
-		return &response, a.Context.Error(status.Error(10004, "permission denied"))
+		return &response, status.Error(10004, "permission denied")
 	}
 
 	// The purpose of the code above is to create a hash of the password and secret combination using the SHA256 hash
@@ -200,7 +200,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 		// connection after the query has been executed.
 		row, err := a.Context.Db.Query("select id from accounts where email = $1 and password = $2", req.GetEmail(), base64.URLEncoding.EncodeToString(hashed.Sum(nil)))
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
@@ -209,7 +209,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 		// was entered incorrectly". This is useful in cases where the user has entered incorrect credentials and the
 		// application needs to inform them of that fact.
 		if !row.Next() {
-			return &response, a.Context.Error(status.Error(48512, "the email address or password was entered incorrectly"))
+			return &response, status.Error(48512, "the email address or password was entered incorrectly")
 		}
 
 		break
@@ -219,7 +219,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 		// and if an error is returned, the error is handled and the response is returned.
 		code, err := a.setCode(req.GetEmail())
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is part of a function that is updating an account in a database. The code is specifically updating the
@@ -227,7 +227,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 		// The code is also using $3 to set the email_code field to the value of code. This could be used to verify a user's
 		// email address or to reset a user's password.
 		if _, err = a.Context.Db.Exec("update accounts set email_code = $3 where email = $1 and password = $2;", req.GetEmail(), base64.URLEncoding.EncodeToString(hashed.Sum(nil)), code); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		break
@@ -237,7 +237,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 		// an error code 14773 and the message "the email code must be 6 numbers". This is likely used to ensure that the email
 		// code entered is the correct length.
 		if len(req.GetEmailCode()) != 6 {
-			return &response, a.Context.Error(status.Error(14773, "the email code must be 6 numbers"))
+			return &response, status.Error(14773, "the email code must be 6 numbers")
 		}
 
 		// This code is querying an account table in a database. It is attempting to find an account with the given email,
@@ -245,7 +245,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 		// an error message. The defer statement will close the row when the function returns.
 		row, err := a.Context.Db.Query("select id, factor_secret, factor_secure from accounts where email = $1 and email_code = $2 and password = $3", req.GetEmail(), req.GetEmailCode(), base64.URLEncoding.EncodeToString(hashed.Sum(nil)))
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
@@ -271,7 +271,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 			// This if statement is used to scan the row data and assign it to the params.id, params.secret, and params.secure
 			// variables. If an error occurs, it will return the response and the Context.Error to handle the error.
 			if err := row.Scan(&params.id, &params.secret, &params.secure); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// The purpose of this code snippet is to check if a two-factor authentication (2FA) code is valid. If the code is
@@ -287,7 +287,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 			// error is found, the response is returned with the error.
 			token, err := a.ReplayToken(params.id)
 			if err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is checking if there is any incoming context in the metadata. If there is, the code is setting the
@@ -303,7 +303,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 				// lowercase and the agent version. If an error is encountered, the error is returned with the response.
 				browser, err := json.Marshal([]string{strings.ToLower(agent.Name), agent.Version})
 				if err != nil {
-					return &response, a.Context.Error(err)
+					return &response, err
 				}
 
 				// This code is attempting to obtain the IP address of a peer from a given context. The first "if" statement checks
@@ -323,7 +323,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 				// strings.ToLower() function ensures that the OS is stored in lowercase. The code also checks for any errors that
 				// may occur during the insertion and returns an error response if necessary.
 				if _, err = a.Context.Db.Exec("insert into actions (user_id, os, device, browser, ip) values ($1, $2, $3, $4, $5)", params.id, strings.ToLower(agent.OS), agent.Device, browser, params.ip); err != nil {
-					return &response, a.Context.Error(err)
+					return &response, err
 				}
 			}
 
@@ -332,7 +332,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 			// the matching "email" column value as the value provided in the "req" parameter. If any errors occur while executing
 			// the database update query, the function will return an error response.
 			if _, err = a.Context.Db.Exec("update accounts set email_code = $2 where email = $1;", req.GetEmail(), ""); err != nil {
-				return &response, a.Context.Error(err)
+				return &response, err
 			}
 
 			// This code is used to send a login email to a user. The parameters passed in are the user's ID and the type of email
@@ -349,7 +349,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 
 		break
 	default:
-		return &response, a.Context.Error(status.Error(60001, "invalid input parameter"))
+		return &response, status.Error(60001, "invalid input parameter")
 	}
 
 	return &response, nil
@@ -375,7 +375,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 	// the user has permission to access the requested resource. If the key is not present, the code allows the user to continue.
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if ok && meta["authorization"] != nil {
-		return &response, a.Context.Error(status.Error(10004, "permission denied"))
+		return &response, status.Error(10004, "permission denied")
 	}
 
 	// The switch statement in this example is used to check the value of the req.GetReset_() expression, which is a method
@@ -389,14 +389,14 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 		// with the defer keyword which ensures that it is closed at the end of the function even if an error occurred.
 		row, err := a.Context.Db.Query("select id from accounts where email = $1", req.GetEmail())
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
 		// The code snippet is used to check if a row with a given email exists in a database. If there is no row, then an
 		// error is returned indicating that "there is no user with this email".
 		if !row.Next() {
-			return &response, a.Context.Error(status.Error(48512, "there is no user with this email"))
+			return &response, status.Error(48512, "there is no user with this email")
 		}
 
 		break
@@ -406,14 +406,14 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 		// If an error is found, it is returned with the response and the context error is triggered.
 		code, err := a.setCode(req.GetEmail())
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		// This code is used to update a row in the accounts table of a database. Specifically, it sets the email_code field to
 		// the value of the variable 'code' for the account with the email address given in the variable 'req'.
 		// If the operation is unsuccessful, the code returns an error to the caller.
 		if _, err = a.Context.Db.Exec("update accounts set email_code = $2 where email = $1;", req.GetEmail(), code); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		break
@@ -422,7 +422,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 		// This code checks to make sure that the email code provided is 6 numbers long. If it is not 6 numbers long, it will
 		// return an error message indicating that the code must be 6 numbers.
 		if len(req.GetEmailCode()) != 6 {
-			return &response, a.Context.Error(status.Error(14773, "the email code must be 6 numbers"))
+			return &response, status.Error(14773, "the email code must be 6 numbers")
 		}
 
 		// This code is used to query the database for entries that have a specific email and email code. The row variable
@@ -430,7 +430,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 		// Otherwise, the deferred row.Close() function is called to close the row once it's no longer needed.
 		row, err := a.Context.Db.Query("select id from accounts where email = $1 and email_code = $2", req.GetEmail(), req.GetEmailCode())
 		if err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 		defer row.Close()
 
@@ -446,7 +446,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 		// This code checks the length of the email code to make sure it is 6 characters long. If the length is not 6
 		// characters, it will return an error.
 		if len(req.GetEmailCode()) != 6 {
-			return &response, a.Context.Error(status.Error(14773, "the code must be 6 numbers"))
+			return &response, status.Error(14773, "the code must be 6 numbers")
 		}
 
 		// The purpose of the code is to generate a new 15 character password with false indicating that the password should
@@ -463,7 +463,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 		// request (req). The query is using the email address, email code, and hashed password to update the record. If the
 		// query fails, an error is returned.
 		if err := a.Context.Db.QueryRow("update accounts set password = $3, email_code = $4 where email = $1 and email_code = $2 returning id;", req.GetEmail(), req.GetEmailCode(), base64.URLEncoding.EncodeToString(hashed.Sum(nil)), "").Scan(&q.Id); err != nil {
-			return &response, a.Context.Error(err)
+			return &response, err
 		}
 
 		// The purpose of this code is to email a user's Id with a new password. The variable "password" is the new
@@ -473,7 +473,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 
 		break
 	default:
-		return &response, a.Context.Error(status.Error(60001, "invalid input parameter"))
+		return &response, status.Error(60001, "invalid input parameter")
 	}
 
 	return &response, nil
@@ -495,7 +495,7 @@ func (a *Service) SetLogout(ctx context.Context, req *pbauth.Request) (*pbauth.R
 	// field is not equal to 1 or is nil, an error is returned with the status code 10004 and the message "permission denied".
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if !ok && len(meta["authorization"]) != 1 && meta["authorization"] == nil {
-		return &response, a.Context.Error(status.Error(10004, "permission denied"))
+		return &response, status.Error(10004, "permission denied")
 	}
 
 	// The purpose of this code is to delete a key-value pair from a Redis database using the background context. The key is
@@ -506,7 +506,7 @@ func (a *Service) SetLogout(ctx context.Context, req *pbauth.Request) (*pbauth.R
 	// get the email address from a request. The "" is used as the new value for the email_code field. If there is an error
 	// during the execution of the update query, it will return an error and the response to the caller.
 	if _, err := a.Context.Db.Exec("update accounts set email_code = $2 where email = $1;", req.GetEmail(), ""); err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil
@@ -532,7 +532,7 @@ func (a *Service) GetRefresh(ctx context.Context, req *pbauth.Request) (*pbauth.
 	// either of these conditions are not met, an error is returned.
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if !ok && len(meta["authorization"]) != 1 && meta["authorization"] == nil {
-		return &response, a.Context.Error(status.Error(10411, "missing metadata"))
+		return &response, status.Error(10411, "missing metadata")
 	}
 
 	// This code is retrieving a session from a RedisClient using the Get() function. It is passing in the
@@ -540,21 +540,21 @@ func (a *Service) GetRefresh(ctx context.Context, req *pbauth.Request) (*pbauth.
 	// retrieving the session, the code returns the response and an error.
 	session, err := a.Context.RedisClient.Get(context.Background(), req.GetRefresh()).Bytes()
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is attempting to unmarshal a session object from a msgpack-encoded byte array, and assign it to the
 	// variable serialize. If an error occurs while attempting to unmarshal the byte array, it will return an error response.
 	err = msgpack.Unmarshal(session, &serialize)
 	if err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is checking if the authorization token provided in the meta field matches the serialized access token. If
 	// the two tokens do not match, an error is returned.
 	token := strings.Split(meta["authorization"][0], "Bearer ")[1]
 	if serialize.AccessToken != token {
-		return &response, a.Context.Error(status.Error(31754, "session not found"))
+		return &response, status.Error(31754, "session not found")
 	}
 
 	// The purpose of this code is to generate a replay token associated with the given subject. If an error is encountered
@@ -590,7 +590,7 @@ func (a *Service) GetSecure(ctx context.Context, req *pbauth.Request) (*pbauth.R
 	// authentication process, where a user must provide the correct credentials in order to access a particular resource.
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if ok && meta["authorization"] != nil {
-		return &response, a.Context.Error(status.Error(10004, "permission denied"))
+		return &response, status.Error(10004, "permission denied")
 	}
 
 	// The purpose of this code is to hash the password and context secret using the sha256 algorithm. The hashed value is
@@ -603,7 +603,7 @@ func (a *Service) GetSecure(ctx context.Context, req *pbauth.Request) (*pbauth.R
 	// looking for a row with an email and password that matches the given parameters. The purpose of the code is to fetch
 	// the factor_secure value from the database for the given account.
 	if err := a.Context.Db.QueryRow("select factor_secure from accounts where email = $1 and password = $2", req.GetEmail(), base64.URLEncoding.EncodeToString(hashed.Sum(nil))).Scan(&response.FactorSecure); err != nil {
-		return &response, a.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil

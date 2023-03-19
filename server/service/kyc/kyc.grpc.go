@@ -28,14 +28,14 @@ func (s *Service) SetCanceled(ctx context.Context, req *pbkyc.SetRequestCanceled
 	// response. It is used to ensure that only authorized users can access the requested resource.
 	auth, err := s.Context.Auth(ctx)
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is updating the KYC (Know Your Customer) table in a database. The code is updating the secret, type, and
 	// process fields of the KYC table, where the user_id field matches the one given in the parameters. The purpose of
 	// this code is to update the KYC table with new values for the given user_id.
 	if _, err := s.Context.Db.Exec(`update kyc set secret = $2, type = $3, process = $4 where user_id = $1`, auth, "", 0, false); err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 	response.Success = true
 
@@ -61,7 +61,7 @@ func (s *Service) GetStatus(_ context.Context, req *pbkyc.GetRequestStatus) (*pb
 	// is finished executing.
 	row, err := s.Context.Db.Query(`select process, secure, type from kyc where user_id = $1`, req.GetId())
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 	defer row.Close()
 
@@ -75,7 +75,7 @@ func (s *Service) GetStatus(_ context.Context, req *pbkyc.GetRequestStatus) (*pb
 		// response.Process and response.Secure and response.Type. If the scan is successful, it will return the response and continue. If the
 		// scan fails, it will return the response and an error.
 		if err = row.Scan(&response.Process, &response.Secure, &response.Type); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -122,7 +122,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 	// response. It is used to ensure that only authorized users can access the requested resource.
 	auth, err := s.Context.Auth(ctx)
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this code is to create a Service object that uses the context stored in the variable e. The Service
@@ -135,7 +135,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 	// query fails, an error is returned.
 	user, err := migrate.QueryUser(auth)
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is creating applicants in a KYC (Know Your Customer) process. The purpose is to create an applicant in the
@@ -150,7 +150,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		"business_activity_id": "02445235095c674b820a9d948e3b27824bc4",
 	})
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// This code is querying a database for a user_id that matches a given auth value. The row variable will contain the
@@ -159,7 +159,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 	// is finished executing.
 	row, err := s.Context.Db.Query(`select user_id from kyc where user_id = $1`, auth)
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 	defer row.Close()
 
@@ -173,7 +173,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		// process fields of the KYC table, where the user_id field matches the one given in the parameters. The purpose of
 		// this code is to update the KYC table with new values for the given user_id.
 		if _, err := s.Context.Db.Exec(`update kyc set secret = $2, type = $3, process = $4 where user_id = $1`, auth, applicants.GetApplicantId(), req.GetType(), true); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 
 	} else {
@@ -183,7 +183,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		// statement is to check for errors that may occur during the insertion of data. If an error is encountered, the
 		// function will return an error response.
 		if _, err = s.Context.Db.Exec("insert into kyc (user_id, secret, type, process) values ($1, $2, $3, $4)", auth, applicants.GetApplicantId(), req.GetType(), true); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 	}
 
@@ -196,7 +196,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		"redirect_url":          s.Context.Kyc.RedirectUrl,
 	}, req.GetType())
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of these lines of code is to store the form information in the response object. The formId, formUrl, and
@@ -233,7 +233,7 @@ func (s *Service) SetCallback(_ context.Context, req *pbkyc.SetRequestCallback) 
 		if req.GetVerified() && req.GetStatus() == kycaid.StatusCompleted {
 
 			if err := s.Context.Db.QueryRow(`update kyc set secure = $2, process = $3 where secret = $1 returning user_id`, req.GetApplicantId(), true, false).Scan(&response.Id); err != nil {
-				return &response, s.Context.Error(err)
+				return &response, err
 			}
 
 			response.Type = "completed"
@@ -245,7 +245,7 @@ func (s *Service) SetCallback(_ context.Context, req *pbkyc.SetRequestCallback) 
 		if !req.GetVerifications().Profile.GetVerified() || !req.GetVerifications().Document.GetVerified() {
 
 			if err := s.Context.Db.QueryRow(`update kyc set secure = $2, process = $3 where secret = $1 returning user_id`, req.GetApplicantId(), false, false).Scan(&response.Id); err != nil {
-				return &response, s.Context.Error(err)
+				return &response, err
 			}
 
 			response.Type = "error"
@@ -273,7 +273,7 @@ func (s *Service) SetCallback(_ context.Context, req *pbkyc.SetRequestCallback) 
 	// publishing the response, the function will return the response and an error. The a.Context.Debug function is used to
 	// print out any errors encountered.
 	if err := s.Context.Publish(&response, "exchange", "account/kyc-verify"); s.Context.Debug(err) {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil
@@ -294,7 +294,7 @@ func (s *Service) GetApplicant(_ context.Context, req *pbkyc.GetRequestApplicant
 	// occurred during the process. If an error did occur, it will return an error response.
 	response, err := s.Context.KycProvider.GetApplicantsById(req.GetId())
 	if err != nil {
-		return response, s.Context.Error(err)
+		return response, err
 	}
 
 	return response, nil

@@ -28,13 +28,13 @@ func (s *Service) SetAdvertisingRule(ctx context.Context, req *pbads.SetRequestA
 	// error it will be returned with the s.Context.Error() function. If the authentication check is successful, the request will continue.
 	auth, err := s.Context.Auth(ctx)
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// This code checks if a user has the appropriate permissions to write and edit data. If the user does not have the
 	// correct rules, then an error is returned.
 	if !migrate.Rules(auth, "advertising", query.RoleDefault) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, s.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// The purpose of this if statement is to check the type of Advertising object within the req object. If the type of
@@ -46,7 +46,7 @@ func (s *Service) SetAdvertisingRule(ctx context.Context, req *pbads.SetRequestA
 		// at least 10 characters, text must be at least 20 characters". This is likely to ensure that the advertising request
 		// is valid and meets certain requirements.
 		if len(req.Advertising.GetTitle()) < 10 && len(req.Advertising.GetTitle()) < 20 {
-			return &response, s.Context.Error(status.Error(15431, "title must be at least 10 characters, text must be at least 20 characters"))
+			return &response, status.Error(15431, "title must be at least 10 characters, text must be at least 20 characters")
 		}
 	}
 
@@ -65,7 +65,7 @@ func (s *Service) SetAdvertisingRule(ctx context.Context, req *pbads.SetRequestA
 			req.Advertising.GetType(),
 			req.GetId(),
 		); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 
 	} else {
@@ -80,7 +80,7 @@ func (s *Service) SetAdvertisingRule(ctx context.Context, req *pbads.SetRequestA
 			req.Advertising.GetLink(),
 			req.Advertising.GetType(),
 		).Scan(&req.Id); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 
 	}
@@ -93,7 +93,7 @@ func (s *Service) SetAdvertisingRule(ctx context.Context, req *pbads.SetRequestA
 		// response. To migrate.Image() function is likely used to resize an image according to the given parameters (640 and
 		// 340). The fmt.Sprintf() function is used to format the ID number as a string.
 		if err := migrate.Image(req.GetImage(), "ads", fmt.Sprintf("%d", req.GetId()), 640, 340); err != nil {
-			return &response, s.Context.Error(err)
+			return &response, err
 		}
 	}
 	response.Success = true
@@ -121,27 +121,27 @@ func (s *Service) DeleteAdvertisingRule(ctx context.Context, req *pbads.DeleteRe
 	// if an error occurred. If so, it returns an empty response and the error.
 	auth, err := s.Context.Auth(ctx)
 	if err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// This if statement is checking the user's authorization to write and edit data. If the user does not have the
 	// necessary rules, the statement will return an error message indicating they do not have the appropriate permissions.
 	if !migrate.Rules(auth, "advertising", query.RoleDefault) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
-		return &response, s.Context.Error(status.Error(12011, "you do not have rules for writing and editing data"))
+		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking for an error when deleting an entry from the advertising table in a database. It is using the
 	// Exec() method to attempt to delete the entry with the ID specified in the req parameter. If there is an error, it
 	// will return &response and an error message.
 	if _, err = s.Context.Db.Exec("delete from advertising where id = $1", req.GetId()); err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 
 	// The purpose of this code is to remove files associated with an ID number that is being passed as a parameter to the function. The if statement is
 	// used to check if an error occurs while attempting to remove the files, and if there is an error, it will be returned
 	// as part of the response, along with a context error.
 	if err := migrate.RemoveFiles("ads", fmt.Sprintf("%d", req.GetId())); err != nil {
-		return &response, s.Context.Error(err)
+		return &response, err
 	}
 	response.Success = true
 

@@ -642,33 +642,19 @@ message Order {
 // blockchain network, data update via socket gateway, allocation, assignment, type, platform, protocol, status, chain,
 // and parent.
 message Transaction {
-    // Transaction internal ID.
     int64 id = 1;
-    // Chain/Blockchain internal ID.
     int64 chain_id = 2;
-    // Account user internal ID.
     int64 user_id = 3;
-    // Currency symbol.
     string symbol = 4;
-    // Blockchain hash ID.
     string hash = 5;
-    // Transaction creation time.
     string create_at = 6;
-    // Recipient's address.
     string to = 7;
-    // Address from whom the transfer was made.
     string from = 8;
-    // Number of funds.
     double value = 9;
-    // Blockchain network fee for transferring funds.
     double fees = 10;
-    // Freeze currency conversion price.
     double price = 11;
-    // Blockchain network confirmations.
     int64 confirmation = 12;
-    // Number of blocks in the blockchain network.
     int64 block = 13;
-    // Data update via socket gateway [true - update, false - create].
     bool hook = 14;
     Allocation allocation = 15;
     Assignment assignment = 16;

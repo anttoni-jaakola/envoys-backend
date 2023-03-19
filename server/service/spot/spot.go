@@ -8,6 +8,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +16,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-)
-
-const (
-	ExchangeType = 0
 )
 
 // Service - The purpose of the Service struct is to store data related to a service, such as the Context, run and wait maps, and
@@ -32,8 +29,7 @@ type Service struct {
 	block     map[int64]int64
 }
 
-// Initialization - The purpose of this code is to start up multiple goroutines to run functions related to a service. In this case, the
-// functions that are started are replayPriceScale(), replayMarket(), replayChainStatus(), replayDeposit(), and replayWithdraw().
+// Initialization - The code initializes a Service object and runs six concurrent functions: price(), market(), chain(), deposit(), withdraw(), and reward().
 func (e *Service) Initialization() {
 	go e.price()
 	go e.market()
@@ -222,7 +218,7 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 	// The purpose of this code is to query the database for a specific asset with a given symbol and userId. The query is
 	// then stored in a row variable and an error is checked for. If there is an error, it will be returned. Finally, the
 	// row is closed when the code is finished.
-	row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2`, symbol, userId)
+	row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, pbasset.Type_SPOT)
 	if err != nil {
 		return err
 	}
@@ -255,7 +251,7 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 // and returns a boolean indicating whether the asset exists. The function executes a SQL query to the database to
 // check if the asset exists, and then returns the boolean result.
 func (e *Service) getAsset(symbol string, userId int64) (exist bool) {
-	_ = e.Context.Db.QueryRow("select exists(select balance as balance from assets where symbol = $1 and user_id = $2)::bool", symbol, userId).Scan(&exist)
+	_ = e.Context.Db.QueryRow("select exists(select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3)::bool", symbol, userId, pbasset.Type_SPOT).Scan(&exist)
 	return exist
 }
 
@@ -270,7 +266,7 @@ func (e *Service) setBalance(symbol string, userId int64, quantity float64, cros
 		// The code above is an if statement that is used to update the balance of an asset with a given symbol and user_id in
 		// a database. The statement executes an update query, passing in the values of symbol, quantity, and userId as
 		// parameters to the query. If the query fails to execute, the if statement will return an error.
-		if _, err := e.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3;", symbol, quantity, userId); err != nil {
+		if _, err := e.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, pbasset.Type_SPOT); err != nil {
 			return err
 		}
 		break
@@ -279,7 +275,7 @@ func (e *Service) setBalance(symbol string, userId int64, quantity float64, cros
 		// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 		// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 		// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-		if _, err := e.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3;", symbol, quantity, userId); err != nil {
+		if _, err := e.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, pbasset.Type_SPOT); err != nil {
 			return err
 		}
 		break
@@ -429,7 +425,7 @@ func (e *Service) getAddress(userId int64, symbol string, platform pbspot.Platfo
 	// This statement is used to query a database to get an address associated with a user, platform, protocol, and symbol.
 	// The purpose of using `coalesce` is to return a blank string if the address is null. The purpose of using `QueryRow`
 	// is to limit the query to a single row. The purpose of using `Scan` is to store the result of the query into the `address` variable.
-	_ = e.Context.Db.QueryRow("select coalesce(w.address, '') from assets a inner join wallets w on w.platform = $3 and w.protocol = $4 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $1 and a.user_id = $2", symbol, userId, platform, protocol).Scan(&address)
+	_ = e.Context.Db.QueryRow("select coalesce(w.address, '') from assets a inner join wallets w on w.platform = $1 and w.protocol = $2 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $3 and a.user_id = $4 and a.type = $5", platform, protocol, symbol, userId, pbasset.Type_SPOT).Scan(&address)
 	return address
 }
 
@@ -488,7 +484,7 @@ func (e *Service) getVolume(base, quote string, assign pbspot.Assigning) (volume
 
 	//The purpose of the code is to query a database for the sum of values in the orders table where the base_unit,
 	//quote_unit, assigning, and status all match the given parameters. The value is then scanned into the variable volume.
-	_ = e.Context.Db.QueryRow("select coalesce(sum(value), 0.00) from orders where base_unit = $1 and quote_unit = $2 and assigning = $3 and status = $4", base, quote, assign, pbspot.Status_PENDING).Scan(&volume)
+	_ = e.Context.Db.QueryRow("select coalesce(sum(value), 0.00) from orders where base_unit = $1 and quote_unit = $2 and assigning = $3 and status = $4 and type = $5", base, quote, assign, pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&volume)
 	return volume
 }
 
@@ -504,7 +500,7 @@ func (e *Service) getOrder(id int64) *pbspot.Order {
 	// This code is used to query a database for a single row of data matching the specified criteria (in this case, the "id
 	// = $1" condition) and then assign the returned values to the specified variables (in this case, the fields of the
 	// "order" struct). This allows the program to retrieve data from the database and store it in a convenient and organized format.
-	_ = e.Context.Db.QueryRow("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1", id).Scan(&order.Id, &order.Value, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
+	_ = e.Context.Db.QueryRow("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1 and type = $2", id, pbasset.Type_SPOT).Scan(&order.Id, &order.Value, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
 
@@ -514,7 +510,7 @@ func (e *Service) getBalance(symbol string, userId int64) (balance float64) {
 
 	// This line of code is used to retrieve the balance from the assets table in a database. It takes in two parameters
 	// (symbol and userId) and uses them to query the database. The result is then stored in the variable balance.
-	_ = e.Context.Db.QueryRow("select balance as balance from assets where symbol = $1 and user_id = $2", symbol, userId).Scan(&balance)
+	_ = e.Context.Db.QueryRow("select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3", symbol, userId, pbasset.Type_SPOT).Scan(&balance)
 	return balance
 }
 
@@ -617,7 +613,7 @@ func (e *Service) getCurrency(symbol string, status bool) (*pbspot.Currency, err
 	// json.Unmarshal() function. The function takes the json object (chains) and a reference to the response.ChainsIds
 	// object. If there is an error, it will be returned with the error context.
 	if err := json.Unmarshal(chains, &response.ChainsIds); err != nil {
-		return &response, e.Context.Error(err)
+		return &response, err
 	}
 
 	return &response, nil
@@ -762,12 +758,12 @@ func (e *Service) getMarket(base, quote string, assigning pbspot.Assigning, pric
 
 		// The purpose of this code is to query the database for the minimum price of a particular order that has a specific
 		// assigning, base unit, quote unit, price, and status. The result is then stored in the variable 'price'.
-		_ = e.Context.Db.QueryRow("select min(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5", pbspot.Assigning_SELL, base, quote, price, pbspot.Status_PENDING).Scan(&price)
+		_ = e.Context.Db.QueryRow("select min(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5 and type = $6", pbspot.Assigning_SELL, base, quote, price, pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&price)
 	case pbspot.Assigning_SELL:
 
 		// The purpose of this code is to query a database for the maximum price from orders that meet certain criteria
 		// (assigning, base unit, quote unit, price and status) and scan the result into the variable "price".
-		_ = e.Context.Db.QueryRow("select max(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5", pbspot.Assigning_BUY, base, quote, price, pbspot.Status_PENDING).Scan(&price)
+		_ = e.Context.Db.QueryRow("select max(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5 and type = $6", pbspot.Assigning_BUY, base, quote, price, pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&price)
 	}
 
 	return price
