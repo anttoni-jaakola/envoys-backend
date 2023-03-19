@@ -14,6 +14,7 @@ create table if not exists public.orders
     user_id    integer,
     type       integer                  default 0                  not null,
     trading    integer                  default 0                  not null,
+    broker_id  integer                  default 0                  not null,
     status     integer                  default 2                  not null,
     create_at  timestamp with time zone default CURRENT_TIMESTAMP
 );

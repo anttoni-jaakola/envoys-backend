@@ -93,7 +93,9 @@ message Asset {
 message GetRequestAssets {
   bool fiat = 1;
 }
-message GetRequestAsset {}
+message GetRequestAsset {
+  string symbol = 1;
+}
 message SetRequestAsset {
   string symbol = 1;
 }

@@ -502,6 +502,8 @@ func (s *Service) GetAgents(ctx context.Context, req *pbstock.GetRequestAgents) 
 // given id, broker_id, and type, and then updates the status in the database accordingly.
 func (s *Service) SetBlocked(ctx context.Context, req *pbstock.SetRequestAgentBlocked) (*pbstock.ResponseBlocked, error) {
 
+	// The purpose of this code is to declare two variables, response and status, of type pbstock.ResponseBlocked and
+	// pbstock.Status, respectively. These variables can then be used to store values of that type.
 	var (
 		response pbstock.ResponseBlocked
 		status   pbstock.Status
@@ -529,6 +531,8 @@ func (s *Service) SetBlocked(ctx context.Context, req *pbstock.SetRequestAgentBl
 		return &response, err
 	}
 
+	// This code is used to update the status of an agent when given a request. Depending on the initial status, the code
+	// will either block the agent or give them access.
 	switch status {
 	case pbstock.Status_BLOCKED:
 		_, _ = s.Context.Db.Exec("update agents set status = $2 where id = $1", req.GetId(), pbstock.Status_ACCESS)
@@ -539,8 +543,14 @@ func (s *Service) SetBlocked(ctx context.Context, req *pbstock.SetRequestAgentBl
 	return &response, nil
 }
 
+// GetAssets - The purpose of this code is to query a database for assets such as stocks and currencies, and store the retrieved data
+// in a ResponseAsset object. The code also checks for the presence of an authentication token in the context, and
+// queries the database for a user's balance on a certain asset. The code is used to retrieve data from a database and
+// store it in a ResponseAsset object.
 func (s *Service) GetAssets(ctx context.Context, req *pbstock.GetRequestAssets) (*pbstock.ResponseAsset, error) {
 
+	// The purpose of the code is to declare a variable called "response" of type "pbstock.ResponseAsset". This variable
+	// will be used to store the response data of a request to the pbstock service.
 	var (
 		response pbstock.ResponseAsset
 	)
@@ -552,24 +562,40 @@ func (s *Service) GetAssets(ctx context.Context, req *pbstock.GetRequestAssets) 
 		return &response, err
 	}
 
+	// The "if req.GetFiat()" statement is a conditional statement that checks if the GetFiat() method returns a true value.
+	// If the method returns true, the code within the statement block will be executed. This statement is used to determine
+	// what code should be executed depending on the result of the GetFiat() method.
 	if req.GetFiat() {
 
-		row, err := s.Context.Db.Query(`select id, name, symbol from currencies where type = $1`, pbspot.Type_FIAT)
+		// This code is querying a database table for all the currencies of type "FIAT" (e.g. US Dollar). The purpose of the
+		// code is to retrieve the ID, name, and symbol of each currency so they can be used in further processing. The row
+		// variable is used to store the query results, err is used to store any errors that may occur during the query, and
+		// defer row.Close() is used to ensure that the query results are properly closed.
+		row, err := s.Context.Db.Query(`select id, name, symbol, status from currencies where type = $1`, pbspot.Type_FIAT)
 		if err != nil {
 			return &response, err
 		}
 		defer row.Close()
 
+		// The purpose of the statement "for row.Next()" is to loop through each row of a database query result set and perform
+		// some action on it. It is used to iterate through a result set of a query in order to process each row. It will
+		// execute the code block each time it iterates over a row in the result set.
 		for row.Next() {
 
+			// The variable "item" is being declared as a pbstock.Asset type. This is a way of telling the compiler that the
+			// variable "item" is going to hold a value of type pbstock.Asset.
 			var (
 				item pbstock.Asset
 			)
 
-			if err := row.Scan(&item.Id, &item.Name, &item.Symbol); err != nil {
+			// This code is used to scan the row and assign the values of the columns to the item struct.  The if statement checks
+			// whether the row scan was successful.  If it was not, the response and an error are returned.
+			if err := row.Scan(&item.Id, &item.Name, &item.Symbol, &item.Status); err != nil {
 				return &response, err
 			}
 
+			// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
+			// store the retrieved balance in the item.Balance variable.
 			_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, pbasset.Type_STOCK).Scan(&item.Balance)
 
 			response.Fields = append(response.Fields, &item)
@@ -577,35 +603,77 @@ func (s *Service) GetAssets(ctx context.Context, req *pbstock.GetRequestAssets) 
 
 	} else {
 
+		// This code is used to query the stocks table in a database. The row variable is used to store the results of the
+		// query, while the err variable is used to store any errors that occur while running the query. The defer statement is
+		// used to ensure that the row object is closed when the function exits, regardless of whether an error occurs or not.
 		row, err := s.Context.Db.Query(`select id, name, symbol, tag, zone, price, status from stocks`)
 		if err != nil {
 			return &response, err
 		}
 		defer row.Close()
 
+		// The purpose of the statement "for row.Next()" is to loop through each row of a database query result set and perform
+		// some action on it. It is used to iterate through a result set of a query in order to process each row. It will
+		// execute the code block each time it iterates over a row in the result set.
 		for row.Next() {
 
+			// The variable "item" is being declared as a pbstock.Asset type. This is a way of telling the compiler that the
+			// variable "item" is going to hold a value of type pbstock.Asset.
 			var (
 				item pbstock.Asset
 			)
 
+			// This code is used to scan a row of data from a database and collect the values into variables. The err variable is
+			// used to check if there was any error while scanning the row. If there is an error, the function returns an error
+			// response and the error.
 			if err := row.Scan(&item.Id, &item.Name, &item.Symbol, &item.Tag, &item.Zone, &item.Price, &item.Status); err != nil {
 				return &response, err
 			}
 
+			// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
+			// store the retrieved balance in the item.Balance variable.
 			_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, pbasset.Type_STOCK).Scan(&item.Balance)
 
 			response.Fields = append(response.Fields, &item)
 		}
-
 	}
 
 	return &response, nil
 }
 
 func (s *Service) GetAsset(ctx context.Context, req *pbstock.GetRequestAsset) (*pbstock.ResponseAsset, error) {
-	//TODO implement me
-	panic("implement me")
+
+	// The purpose of the code is to declare a variable called "response" of type "pbstock.ResponseAsset". This variable
+	// will be used to store the response data of a request to the pbstock service.
+	var (
+		response pbstock.ResponseAsset
+		item     pbstock.Asset
+	)
+
+	// This code is checking to make sure a valid authentication token is present in the context. If it is not, it returns
+	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
+	auth, err := s.Context.Auth(ctx)
+	if err != nil {
+		return &response, err
+	}
+
+	row, err := s.Context.Db.Query(`select id from stocks where symbol = $1`, req.GetSymbol())
+	if err != nil {
+		return &response, err
+	}
+	defer row.Close()
+
+	if row.Next() {
+
+		// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
+		// store the retrieved balance in the item.Balance variable.
+		_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, pbasset.Type_STOCK).Scan(&item.Balance)
+
+	} else {
+
+	}
+
+	return &response, nil
 }
 
 func (s *Service) SetAsset(ctx context.Context, req *pbstock.SetRequestAsset) (*pbstock.ResponseAsset, error) {
