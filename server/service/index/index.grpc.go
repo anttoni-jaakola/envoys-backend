@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"strings"
@@ -51,13 +53,13 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 
 	// The purpose of the code is to query the database for the number of transactions with a status of FILLED and PENDING
 	// and store the results in the variables "transaction.Filled" and "transaction.Pending".
-	_ = i.Context.Db.QueryRow("select count(*) from transactions where status = $1", pbspot.Status_FILLED).Scan(&transaction.Filled)
-	_ = i.Context.Db.QueryRow("select count(*) from transactions where status = $1", pbspot.Status_PENDING).Scan(&transaction.Pending)
+	_ = i.Context.Db.QueryRow("select count(*) from transactions where status = $1", proto.Status_FILLED).Scan(&transaction.Filled)
+	_ = i.Context.Db.QueryRow("select count(*) from transactions where status = $1", proto.Status_PENDING).Scan(&transaction.Pending)
 
 	// The purpose of the two queries is to count the number of orders with a specific assigning and status. The assigning
 	// and status are passed in as parameters. The result of the query is stored in the order.Sell and order.Buy variables.
-	_ = i.Context.Db.QueryRow("select count(*) from orders where assigning = $1 and status = $2", pbspot.Assigning_SELL, pbspot.Status_PENDING).Scan(&order.Sell)
-	_ = i.Context.Db.QueryRow("select count(*) from orders where assigning = $1 and status = $2", pbspot.Assigning_BUY, pbspot.Status_PENDING).Scan(&order.Buy)
+	_ = i.Context.Db.QueryRow("select count(*) from orders where assigning = $1 and status = $2", proto.Assigning_SELL, proto.Status_PENDING).Scan(&order.Sell)
+	_ = i.Context.Db.QueryRow("select count(*) from orders where assigning = $1 and status = $2", proto.Assigning_BUY, proto.Status_PENDING).Scan(&order.Buy)
 
 	// The purpose of this code is to assign values to the fields of the statistic struct. The accounts, pairs, chains,
 	// currencies, transactions, and orders fields are assigned the memory address of the variables account, pair, chain, currency, transaction, and order, respectively.

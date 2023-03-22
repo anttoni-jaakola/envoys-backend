@@ -9,7 +9,8 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
 	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"strings"
@@ -142,10 +143,10 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 		// so, it updates the associated tables with the new symbol.
 		if req.GetSymbol() != req.Currency.GetSymbol() {
 			_, _ = e.Context.Db.Exec("update wallets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update assets set symbol = $2 where symbol = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), pbasset.Type_SPOT)
+			_, _ = e.Context.Db.Exec("update assets set symbol = $2 where symbol = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), proto.Type_SPOT)
 			_, _ = e.Context.Db.Exec("update trades set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
 			_, _ = e.Context.Db.Exec("update transfers set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update orders set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 and type = $3 or quote_unit = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), pbasset.Type_SPOT)
+			_, _ = e.Context.Db.Exec("update orders set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 and type = $3 or quote_unit = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), proto.Type_SPOT)
 			_, _ = e.Context.Db.Exec("update reserves set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
 			_, _ = e.Context.Db.Exec("update currencies set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
 		}
@@ -406,10 +407,10 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 	// related data in other related tables.
 	if row, _ := e.getCurrency(req.GetSymbol(), false); row.GetId() > 0 {
 		_, _ = e.Context.Db.Exec("delete from wallets where symbol = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from assets where symbol = $1 and type = $2", row.GetSymbol(), pbasset.Type_SPOT)
+		_, _ = e.Context.Db.Exec("delete from assets where symbol = $1 and type = $2", row.GetSymbol(), proto.Type_SPOT)
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 or quote_unit = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from transfers where base_unit = $1 or quote_unit = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and type = $2 or quote_unit = $1 and type $2", row.GetSymbol(), pbasset.Type_SPOT)
+		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and type = $2 or quote_unit = $1 and type $2", row.GetSymbol(), proto.Type_SPOT)
 		_, _ = e.Context.Db.Exec("delete from reserves where symbol = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from currencies where symbol = $1", row.GetSymbol())
 	}
@@ -981,7 +982,7 @@ func (e *Service) DeletePairRule(ctx context.Context, req *pbspot.DeleteRequestP
 		_, _ = e.Context.Db.Exec("delete from pairs where id = $1", row.GetId())
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
 		_, _ = e.Context.Db.Exec("delete from transfers where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
-		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and quote_unit = $2 and type = $3", row.GetBaseUnit(), row.GetQuoteUnit(), pbasset.Type_SPOT)
+		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and quote_unit = $2 and type = $3", row.GetBaseUnit(), row.GetQuoteUnit(), proto.Type_SPOT)
 	}
 	response.Success = true
 
@@ -1325,12 +1326,12 @@ func (e *Service) GetTransactionsRule(ctx context.Context, req *pbspot.GetReques
 	// request, it will append different strings to the "maps" array, which can then be used in an SQL query. In the default
 	// case, it will append a string with both transaction types.
 	switch req.GetAssignment() {
-	case pbspot.Assignment_DEPOSIT:
-		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_DEPOSIT))
-	case pbspot.Assignment_WITHDRAWS:
-		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_WITHDRAWS))
+	case proto.Assignment_DEPOSIT:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", proto.Assignment_DEPOSIT))
+	case proto.Assignment_WITHDRAWS:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", proto.Assignment_WITHDRAWS))
 	default:
-		maps = append(maps, fmt.Sprintf("where (assignment = %d or assignment = %d)", pbspot.Assignment_WITHDRAWS, pbspot.Assignment_DEPOSIT))
+		maps = append(maps, fmt.Sprintf("where (assignment = %d or assignment = %d)", proto.Assignment_WITHDRAWS, proto.Assignment_DEPOSIT))
 	}
 
 	// This code checks if the request (req) contains a search term (GetSearch()) that is longer than 0. If it does, it
@@ -1616,7 +1617,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
-	if _ = e.Context.Db.QueryRow("select count(*) as count from assets where user_id = $1 and type = $2", req.GetId(), pbasset.Type_SPOT).Scan(&response.Count); response.GetCount() > 0 {
+	if _ = e.Context.Db.QueryRow("select count(*) as count from assets where user_id = $1 and type = $2", req.GetId(), proto.Type_SPOT).Scan(&response.Count); response.GetCount() > 0 {
 
 		// This code is setting an offset for a Paginated request. The offset is used to determine the index of the first item
 		// that should be returned. This code is calculating the offset by multiplying the limit (the number of items per page)
@@ -1626,7 +1627,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 			offset = req.GetLimit() * (req.GetPage() - 1)
 		}
 
-		rows, err := e.Context.Db.Query("select id, balance, symbol from assets where type = $1 and user_id = $2 order by id desc limit $3 offset $4", pbasset.Type_SPOT, req.GetId(), req.GetLimit(), offset)
+		rows, err := e.Context.Db.Query("select id, balance, symbol from assets where type = $1 and user_id = $2 order by id desc limit $3 offset $4", proto.Type_SPOT, req.GetId(), req.GetLimit(), offset)
 		if err != nil {
 			return &response, err
 		}
@@ -1705,7 +1706,7 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 	// criteria are that the allocation must be either INTERNAL or EXTERNAL, the status must be either RESERVE or FILLED,
 	// and the protocol must be MAINNET or greater. Additionally, the fees must be greater than 0. If the query returns a
 	// count of transactions that meet these criteria, the statement will return true.
-	if _ = e.Context.Db.QueryRow("select count(*) as count from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, pbspot.Status_FILLED, pbspot.Protocol_MAINNET).Scan(&response.Count); response.GetCount() > 0 {
+	if _ = e.Context.Db.QueryRow("select count(*) as count from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0", pbspot.Allocation_INTERNAL, proto.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, proto.Status_FILLED, pbspot.Protocol_MAINNET).Scan(&response.Count); response.GetCount() > 0 {
 
 		// This code is setting an offset for a Paginated request. The offset is used to determine the index of the first item
 		// that should be returned. This code is calculating the offset by multiplying the limit (the number of items per page)
@@ -1720,7 +1721,7 @@ func (e *Service) GetRepaymentsRule(ctx context.Context, req *pbspot.GetRequestR
 		// status is either 'reserve' or 'filled', and the protocol is either 'mainnet' or 'testnet'. It is also limiting the
 		// results to records with a fee greater than 0, and ordering the results by the ID field in descending order. Finally,
 		// it is limiting the results to a certain number and specifying an offset.
-		rows, err := e.Context.Db.Query("select id, value, fees, symbol, chain_id, protocol, platform, status, allocation, repayment, create_at from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0 order by id desc limit $7 offset $8", pbspot.Allocation_INTERNAL, pbspot.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, pbspot.Status_FILLED, pbspot.Protocol_MAINNET, req.GetLimit(), offset)
+		rows, err := e.Context.Db.Query("select id, value, fees, symbol, chain_id, protocol, platform, status, allocation, repayment, create_at from transactions where (allocation = $1 and status = $2 and protocol = $3 or allocation = $4 and status = $5 and protocol > $6) and fees > 0 order by id desc limit $7 offset $8", pbspot.Allocation_INTERNAL, proto.Status_RESERVE, pbspot.Protocol_MAINNET, pbspot.Allocation_EXTERNAL, proto.Status_FILLED, pbspot.Protocol_MAINNET, req.GetLimit(), offset)
 		if err != nil {
 			return &response, err
 		}

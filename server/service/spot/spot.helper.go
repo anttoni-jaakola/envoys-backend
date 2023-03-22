@@ -2,6 +2,8 @@ package spot
 
 import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"strconv"
@@ -116,7 +118,7 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 	// This switch statement is used to check the value of the GetAssigning() method on the order object. Depending on the
 	// value of GetAssigning(), different code blocks may be executed.
 	switch order.GetAssigning() {
-	case pbspot.Assigning_BUY:
+	case proto.Assigning_BUY:
 
 		// The purpose of this code is to calculate the total cost of an order, given the quantity and price of a product. The
 		// code uses the decimal library to get the quantity and price of the order, and then multiplies them together to
@@ -146,7 +148,7 @@ func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) 
 
 		return quantity, nil
 
-	case pbspot.Assigning_SELL:
+	case proto.Assigning_SELL:
 
 		// This statement retrieves the quantity of an order from the order object and assigns it to the variable "quantity".
 		quantity := order.GetQuantity()

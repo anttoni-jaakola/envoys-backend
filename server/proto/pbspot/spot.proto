@@ -5,6 +5,7 @@ package pbspot;
 option go_package = "server/proto/pbspot";
 
 import "google/api/annotations.proto";
+import "server/proto/basic.proto";
 
 service Api {
     // Set asset address.
@@ -396,17 +397,6 @@ enum Protocol {
     ARC223 = 32;
 }
 
-// Enums are used to assign symbolic names to constant values. The purpose of the above enum is to assign symbolic names
-// to constants that have a specific meaning in the context of a financial trading system. BUY and SELL are used to
-// denote the type of order for a financial transaction, MARKET_PRICE is used to denote the default market price for a
-// particular security, and DEFAULT is used to denote the default values in the system.
-enum Assigning {
-    BUY = 0;
-    SELL = 1;
-    MARKET_PRICE = 2;
-    DEFAULT = 3;
-}
-
 // Enums are used to define a set of named constants. In this example, the enum Allocation defines three named constants:
 // External, Internal, and Fees. These constants can be used to assign a numerical value to the constants, which makes
 // them easier to work with in code.
@@ -416,58 +406,12 @@ enum Allocation {
     REWARD = 2;
 }
 
-// The enum Side is used to define the different sides of a trade. ASK is the side of the trade where a trader is looking
-// to sell an asset, and BID is the side of the trade where a trader is looking to buy an asset. By assigning numerical
-// values to each side, it makes it easier to keep track of the different sides of a trade, side "bid" - "buy" and "ask" - "sell".
-enum Side {
-    ASK = 0;
-    BID = 1;
-}
-
-// The enum Trading is a way to assign a numerical value to each type of trade. In this case, MARKET is assigned the
-// value 0, and LIMIT is assigned the value 1. This is useful when creating a trading system, as it allows trades to be
-// easily identified and categorized.
-enum Trading {
-    MARKET = 0;
-    LIMIT = 1;
-}
-
-// Enums are used to define a set of named constants. In this example, the enum Assignment is used to assign numerical values
-// to two named constants: DEPOSIT and WITHDRAWS. This can be used as an identifier for a type of transaction, such as a
-// deposit or a withdrawal.
-enum Assignment {
-    DEPOSIT = 0;
-    WITHDRAWS = 1;
-}
-
 // Enums are used in programming to create a set of named constants. In this example, the enum Type is used to
 // categorize financial types, specifically Crypto and Fiat. The = 0 and = 1 are used to assign numerical values to the
 // constants for easier comparison.
 enum Type {
     CRYPTO = 0;
     FIAT = 1;
-}
-
-// Enums are used in programming to create a set of constants. In this example, the enum Status is used to assign a
-// numerical value to a set of constants related to an order status. CANCEL is assigned a value of 0, FILLED is assigned
-// a value of 1, and so on. This allows the programmer to quickly reference the numerical value associated with each
-// status without having to remember the exact value.
-enum Status {
-    CANCEL = 0;
-    FILLED = 1;
-    PENDING = 2;
-    RESERVE = 3;
-    PROCESSING = 4;
-    FAILED = 5;
-    LOCK = 6;
-}
-
-// Enums are used to declare a set of named constants. In this case, the enum Summary is declaring two constants, BASE
-// and QUOTE, with the values 0 and 1 respectively. These constants can then be used to refer to specific values in a
-// program. For example, an if-else statement could use the constants to check if a condition is true or false.
-enum Summary {
-    BASE = 0;
-    QUOTE = 1;
 }
 
 // The enum Platform is used to assign numerical values to different types of platforms. This allows for easier
@@ -480,14 +424,6 @@ enum Platform {
     TRON = 2;
     VISA = 3;
     MASTERCARD = 4;
-}
-
-// Enums are used to define a set of named constants. The enum Balance above sets the constants MINUS and PLUS to the
-// values 0 and 1 respectively. This can be used to indicate a balance between two values (e.g., a bank account balance
-// between a credit and debit).
-enum Balance {
-    MINUS = 0;
-    PLUS = 1;
 }
 
 // This is a message contract used by a programming language such as Protocol Buffers. It is used to define a data
@@ -607,7 +543,7 @@ message Trade {
     double price = 5;
     double quantity = 6;
     double fees = 7;
-    Assigning assigning = 8;
+    basic.Assigning assigning = 8;
 }
 
 // Order header message structure.
@@ -630,9 +566,9 @@ message Order {
     double quantity = 8;
     int32 count = 9;
     Header header = 10;
-    Assigning assigning = 11;
-    Trading trading = 12;
-    Status status = 13;
+    basic.Assigning assigning = 11;
+    basic.Trading trading = 12;
+    basic.Status status = 13;
 }
 
 // This message provides a structure for a transaction on a blockchain network. It defines the transaction's internal ID,
@@ -657,12 +593,12 @@ message Transaction {
     int64 block = 13;
     bool hook = 14;
     Allocation allocation = 15;
-    Assignment assignment = 16;
-    Type type = 17;
-    Platform platform = 18;
-    Protocol protocol = 19;
-    Status status = 20;
-    Chain chain = 21;
+    Type type = 16;
+    Platform platform = 17;
+    Protocol protocol = 18;
+    Chain chain = 19;
+    basic.Assignment assignment = 20;
+    basic.Status status = 21;
     int64 parent = 22;
 }
 
@@ -687,7 +623,7 @@ message Transfer {
     double price = 6;
     double quantity = 7;
     double fees = 8;
-    Assigning assigning = 9;
+    basic.Assigning assigning = 9;
 }
 
 // Price structure.
@@ -846,8 +782,8 @@ message SetRequestOrder {
     double quantity = 2;
     string base_unit = 3;
     string quote_unit = 4;
-    Trading trading = 5;
-    Assigning assigning = 6;
+    basic.Trading trading = 5;
+    basic.Assigning assigning = 6;
 }
 message GetRequestOrders {
     bool owner = 1;
@@ -856,8 +792,8 @@ message GetRequestOrders {
     int64 page = 4;
     string base_unit = 5;
     string quote_unit = 6;
-    Assigning assigning = 7;
-    Status status = 8;
+    basic.Assigning assigning = 7;
+    basic.Status status = 8;
 }
 message CancelRequestOrder {
     int64 id = 1;
@@ -888,7 +824,7 @@ message GetRequestTransfers {
     bool owner = 1;
     int64 limit = 2;
     int64 order_id = 3;
-    Assigning assigning = 4;
+    basic.Assigning assigning = 4;
 }
 message ResponseTransfer {
     repeated Transfer fields = 1;
@@ -900,7 +836,7 @@ message GetRequestTrades {
     int64 page = 2;
     string base_unit = 3;
     string quote_unit = 4;
-    Assigning assigning = 11;
+    basic.Assigning assigning = 11;
 }
 message ResponseTrades {
     repeated Trade fields = 1;
@@ -914,7 +850,7 @@ message GetRequestTransactionsManual {
     int64 page = 3;
     string symbol = 4;
     string search = 5;
-    Assignment assignment = 6;
+    basic.Assignment assignment = 6;
 }
 message ResponseTransaction {
     repeated Transaction fields = 1;
@@ -979,12 +915,12 @@ message Repayment {
     Protocol protocol = 9;
     Platform platform = 10;
     Allocation allocation = 11;
-    Status status = 12;
+    basic.Status status = 12;
 }
 message GetRequestRepaymentsRule {
     int64 limit = 1;
     int64 page = 2;
-    Status status = 3;
+    basic.Status status = 3;
 }
 message SetRequestRepaymentRule {
     string id = 1;

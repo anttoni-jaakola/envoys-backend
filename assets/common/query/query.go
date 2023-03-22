@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
+	"github.com/cryptogateway/backend-envoys/server/proto"
 	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/disintegration/imaging"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/status"
@@ -250,15 +250,15 @@ func (m *Migrate) SendMail(userId int64, name string, params ...interface{}) {
 
 		// This code is part of a switch statement which checks the value of the 4th parameter in the 'params' array and then
 		// executes different code depending on the value. In this case, the code checks whether the 4th parameter is of type
-		// 'pbspot.Assigning' and, if it is, then checks whether the value is 'pbspot.Assigning_BUY' or
-		// 'pbspot.Assigning_SELL'. Depending on the result, the code either sets the 'Symbol' property of the 'response'
+		// 'proto.Assigning' and, if it is, then checks whether the value is 'proto.Assigning_BUY' or
+		// 'proto.Assigning_SELL'. Depending on the result, the code either sets the 'Symbol' property of the 'response'
 		// object to the uppercase version of the 3rd parameter in the 'params' array, or the uppercase version of the 2nd
 		// parameter in the 'params' array. This code is used to ensure that the 'Symbol' property of the 'response' object is
 		// set correctly depending on the value of the 4th parameter in the 'params' array.
-		switch params[4].(pbspot.Assigning) {
-		case pbspot.Assigning_BUY:
+		switch params[4].(proto.Assigning) {
+		case proto.Assigning_BUY:
 			response.Symbol = strings.ToUpper(params[3].(string))
-		case pbspot.Assigning_SELL:
+		case proto.Assigning_SELL:
 			response.Symbol = strings.ToUpper(params[2].(string))
 		}
 

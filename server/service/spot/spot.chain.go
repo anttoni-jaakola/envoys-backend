@@ -7,6 +7,8 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -85,7 +87,7 @@ func (e *Service) ethereum(chain *pbspot.Chain) {
 					item.ChainId = chain.GetId()
 					item.Platform = chain.GetPlatform()
 					item.Type = pbspot.Type_CRYPTO
-					item.Assignment = pbspot.Assignment_DEPOSIT
+					item.Assignment = proto.Assignment_DEPOSIT
 					item.Value = value
 					item.Hash = tx.Hash
 					item.Block = chain.GetBlock()
@@ -171,7 +173,7 @@ func (e *Service) ethereum(chain *pbspot.Chain) {
 									item.ChainId = chain.GetId()
 									item.Platform = chain.GetPlatform()
 									item.Type = pbspot.Type_CRYPTO
-									item.Assignment = pbspot.Assignment_DEPOSIT
+									item.Assignment = proto.Assignment_DEPOSIT
 									item.Value = value
 									item.Hash = tx.Hash
 									item.Block = chain.GetBlock()
@@ -294,7 +296,7 @@ func (e *Service) tron(chain *pbspot.Chain) {
 					item.ChainId = chain.GetId()
 					item.Platform = chain.GetPlatform()
 					item.Type = pbspot.Type_CRYPTO
-					item.Assignment = pbspot.Assignment_DEPOSIT
+					item.Assignment = proto.Assignment_DEPOSIT
 					item.Value = decimal.New(value).Floating(6)
 					item.Hash = tx.Hash
 					item.Block = chain.GetBlock()
@@ -385,7 +387,7 @@ func (e *Service) tron(chain *pbspot.Chain) {
 									item.ChainId = chain.GetId()
 									item.Platform = chain.GetPlatform()
 									item.Type = pbspot.Type_CRYPTO
-									item.Assignment = pbspot.Assignment_DEPOSIT
+									item.Assignment = proto.Assignment_DEPOSIT
 									item.Value = value
 									item.Hash = tx.Hash
 									item.Block = chain.GetBlock()
@@ -624,7 +626,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			// This statement is used to add the reserve amount for a user to their account. The parameters passed to the
 			// setReserve function are the userId, owner, chain symbol, amount, platform, protocol, and balance type. The
 			// statement then checks for any errors that occurred while setting the reserve, and if there was an error, the statement will return.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), pbspot.Protocol_MAINNET, proto.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 
@@ -633,7 +635,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			// This code is a part of a function that is attempting to set a reserve for a user on a given platform and chain. The
 			// purpose of the if statement is to check if an error occurs when the reserve is being set. If an error occurs, the
 			// function will return and stop executing. The e.Context.Debug(err) is used to log the error, so that it can be investigated later.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), value, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), value, chain.GetPlatform(), pbspot.Protocol_MAINNET, proto.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 		}
@@ -645,13 +647,13 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 
 		// This code is checking to see if a reserve is set for a given userId, owner, chain symbol, fees, platform, and
 		// balance. If the reserve is set, it will continue the code, but if there is an error, it will debug the error and then return.
-		if err := e.setReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Protocol_MAINNET, pbspot.Balance_MINUS); e.Context.Debug(err) {
+		if err := e.setReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Protocol_MAINNET, proto.Balance_MINUS); e.Context.Debug(err) {
 			return
 		}
 
 		// Update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
 		// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
-		if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, pbspot.Balance_MINUS); e.Context.Debug(err) {
+		if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, proto.Balance_MINUS); e.Context.Debug(err) {
 			return
 		}
 
@@ -661,7 +663,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 
 			// This code is used to set a reverse transaction for the given user, owner, symbol, fees, platform and balance type.
 			// If there is an error in setting the reverse transaction, the error is logged and the code returns.
-			if err := e.setReverse(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), pbspot.Balance_MINUS); e.Context.Debug(err) {
+			if err := e.setReverse(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), proto.Balance_MINUS); e.Context.Debug(err) {
 				return
 			}
 
@@ -683,7 +685,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 	// This code is executing an SQL statement to update the transactions table. It is setting the repayment, fees, hash, and status
 	// of a transaction with a specific ID. The e.Context.Debug(err) line is used to check for any errors that may have
 	// occurred during the update and, if any errors are found, the function will return.
-	if _, err := e.Context.Db.Exec("update transactions set repayment = $5, fees = $4, hash = $3, status = $2 where id = $1;", txId, pbspot.Status_FILLED, hash, fees, repayment); e.Context.Debug(err) {
+	if _, err := e.Context.Db.Exec("update transactions set repayment = $5, fees = $4, hash = $3, status = $2 where id = $1;", txId, proto.Status_FILLED, hash, fees, repayment); e.Context.Debug(err) {
 		return
 	}
 

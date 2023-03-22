@@ -8,7 +8,8 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -218,7 +219,7 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 	// The purpose of this code is to query the database for a specific asset with a given symbol and userId. The query is
 	// then stored in a row variable and an error is checked for. If there is an error, it will be returned. Finally, the
 	// row is closed when the code is finished.
-	row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, pbasset.Type_SPOT)
+	row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, proto.Type_SPOT)
 	if err != nil {
 		return err
 	}
@@ -251,31 +252,31 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 // and returns a boolean indicating whether the asset exists. The function executes a SQL query to the database to
 // check if the asset exists, and then returns the boolean result.
 func (e *Service) getAsset(symbol string, userId int64) (exist bool) {
-	_ = e.Context.Db.QueryRow("select exists(select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3)::bool", symbol, userId, pbasset.Type_SPOT).Scan(&exist)
+	_ = e.Context.Db.QueryRow("select exists(select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3)::bool", symbol, userId, proto.Type_SPOT).Scan(&exist)
 	return exist
 }
 
 // setBalance - This function is used to update the balance of a user in a database. Depending on the cross parameter, either the
 // balance is increased (pbspot.Balance_PLUS) or decreased (pbspot.Balance_MINUS) by a given quantity. The balance is
 // updated in the assets table of the database, using a query. Finally, an error is returned if an error occurred during the update.
-func (e *Service) setBalance(symbol string, userId int64, quantity float64, cross pbspot.Balance) error {
+func (e *Service) setBalance(symbol string, userId int64, quantity float64, cross proto.Balance) error {
 
 	switch cross {
-	case pbspot.Balance_PLUS:
+	case proto.Balance_PLUS:
 
 		// The code above is an if statement that is used to update the balance of an asset with a given symbol and user_id in
 		// a database. The statement executes an update query, passing in the values of symbol, quantity, and userId as
 		// parameters to the query. If the query fails to execute, the if statement will return an error.
-		if _, err := e.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, pbasset.Type_SPOT); err != nil {
+		if _, err := e.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_SPOT); err != nil {
 			return err
 		}
 		break
-	case pbspot.Balance_MINUS:
+	case proto.Balance_MINUS:
 
 		// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 		// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 		// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-		if _, err := e.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, pbasset.Type_SPOT); err != nil {
+		if _, err := e.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_SPOT); err != nil {
 			return err
 		}
 		break
@@ -353,7 +354,7 @@ func (e *Service) setTransaction(transaction *pbspot.Transaction) (*pbspot.Trans
 			// This code is used to update a transaction in a database. It sets the assignment to DEPOSIT and the status to
 			// PENDING by using the hash of the transaction as an identifier. The if statement is used to check for any errors
 			// that may occur while executing the query. If an error occurs, the transaction is returned without any changes.
-			if _, err := e.Context.Db.Exec("update transactions set assignment = $1, status = $2 where hash = $3;", pbspot.Assignment_DEPOSIT, pbspot.Status_PENDING, transaction.GetHash()); err != nil {
+			if _, err := e.Context.Db.Exec("update transactions set assignment = $1, status = $2 where hash = $3;", proto.Assignment_DEPOSIT, proto.Status_PENDING, transaction.GetHash()); err != nil {
 				return transaction, nil
 			}
 
@@ -425,7 +426,7 @@ func (e *Service) getAddress(userId int64, symbol string, platform pbspot.Platfo
 	// This statement is used to query a database to get an address associated with a user, platform, protocol, and symbol.
 	// The purpose of using `coalesce` is to return a blank string if the address is null. The purpose of using `QueryRow`
 	// is to limit the query to a single row. The purpose of using `Scan` is to store the result of the query into the `address` variable.
-	_ = e.Context.Db.QueryRow("select coalesce(w.address, '') from assets a inner join wallets w on w.platform = $1 and w.protocol = $2 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $3 and a.user_id = $4 and a.type = $5", platform, protocol, symbol, userId, pbasset.Type_SPOT).Scan(&address)
+	_ = e.Context.Db.QueryRow("select coalesce(w.address, '') from assets a inner join wallets w on w.platform = $1 and w.protocol = $2 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $3 and a.user_id = $4 and a.type = $5", platform, protocol, symbol, userId, proto.Type_SPOT).Scan(&address)
 	return address
 }
 
@@ -449,7 +450,7 @@ func (e *Service) getEntropy(userId int64) (entropy []byte, err error) {
 // cross-trade or not. The function takes in the assigning (buy or sell), the quantity, the price, and a boolean value to
 // check if it is a cross-trade. If it is a cross-trade, the function will divide the quantity by the price. Otherwise,
 // it will multiply the quantity by the price. The function then returns the calculated quantity.
-func (e *Service) getQuantity(assigning pbspot.Assigning, quantity, price float64, cross bool) float64 {
+func (e *Service) getQuantity(assigning proto.Assigning, quantity, price float64, cross bool) float64 {
 
 	if cross {
 
@@ -457,7 +458,7 @@ func (e *Service) getQuantity(assigning pbspot.Assigning, quantity, price float6
 		// checks the assigning value to make sure it is set to "BUY", and then uses the decimal.New() method to divide the
 		// quantity by the price and convert it to a float.
 		switch assigning {
-		case pbspot.Assigning_BUY:
+		case proto.Assigning_BUY:
 			quantity = decimal.New(quantity).Div(price).Float()
 		}
 
@@ -466,10 +467,10 @@ func (e *Service) getQuantity(assigning pbspot.Assigning, quantity, price float6
 	} else {
 
 		// This switch statement is used to determine the quantity of a purchase. In this case, if the assigning variable is
-		// set to pbspot.Assigning_BUY, then the quantity will be multiplied by the price to determine the total cost of the
+		// set to proto.Assigning_BUY, then the quantity will be multiplied by the price to determine the total cost of the
 		// purchase.
 		switch assigning {
-		case pbspot.Assigning_BUY:
+		case proto.Assigning_BUY:
 			quantity = decimal.New(quantity).Mul(price).Float()
 		}
 
@@ -480,11 +481,11 @@ func (e *Service) getQuantity(assigning pbspot.Assigning, quantity, price float6
 // getVolume - This function is used to get the total volume of pending orders for a given base and quote currency and assign. The
 // function uses a database query to get the sum of the values from the orders table with the given parameters and then
 // stores the result in the variable 'volume'. The function then returns the volume variable.
-func (e *Service) getVolume(base, quote string, assign pbspot.Assigning) (volume float64) {
+func (e *Service) getVolume(base, quote string, assign proto.Assigning) (volume float64) {
 
 	//The purpose of the code is to query a database for the sum of values in the orders table where the base_unit,
 	//quote_unit, assigning, and status all match the given parameters. The value is then scanned into the variable volume.
-	_ = e.Context.Db.QueryRow("select coalesce(sum(value), 0.00) from orders where base_unit = $1 and quote_unit = $2 and assigning = $3 and status = $4 and type = $5", base, quote, assign, pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&volume)
+	_ = e.Context.Db.QueryRow("select coalesce(sum(value), 0.00) from orders where base_unit = $1 and quote_unit = $2 and assigning = $3 and status = $4 and type = $5", base, quote, assign, proto.Status_PENDING, proto.Type_SPOT).Scan(&volume)
 	return volume
 }
 
@@ -500,7 +501,7 @@ func (e *Service) getOrder(id int64) *pbspot.Order {
 	// This code is used to query a database for a single row of data matching the specified criteria (in this case, the "id
 	// = $1" condition) and then assign the returned values to the specified variables (in this case, the fields of the
 	// "order" struct). This allows the program to retrieve data from the database and store it in a convenient and organized format.
-	_ = e.Context.Db.QueryRow("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1 and type = $2", id, pbasset.Type_SPOT).Scan(&order.Id, &order.Value, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
+	_ = e.Context.Db.QueryRow("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1 and type = $2", id, proto.Type_SPOT).Scan(&order.Id, &order.Value, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
 
@@ -510,7 +511,7 @@ func (e *Service) getBalance(symbol string, userId int64) (balance float64) {
 
 	// This line of code is used to retrieve the balance from the assets table in a database. It takes in two parameters
 	// (symbol and userId) and uses them to query the database. The result is then stored in the variable balance.
-	_ = e.Context.Db.QueryRow("select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3", symbol, userId, pbasset.Type_SPOT).Scan(&balance)
+	_ = e.Context.Db.QueryRow("select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3", symbol, userId, proto.Type_SPOT).Scan(&balance)
 	return balance
 }
 
@@ -737,7 +738,7 @@ func (e *Service) getPair(id int64, status bool) (*pbspot.Pair, error) {
 // assigning (buy/sell), and current price as parameters. It then gets the current price from the getPrice() function
 // and, depending on the assigning, queries the database for either the minimum or maximum price that is greater than or
 // less than the current price and is in the pending status. Finally, it returns the market price.
-func (e *Service) getMarket(base, quote string, assigning pbspot.Assigning, price float64) float64 {
+func (e *Service) getMarket(base, quote string, assigning proto.Assigning, price float64) float64 {
 
 	var (
 		ok bool
@@ -754,16 +755,16 @@ func (e *Service) getMarket(base, quote string, assigning pbspot.Assigning, pric
 	// value of the expression. The switch statement assigns the expression to a variable called assigning, which is then
 	// used to make the determination of which statement to execute.
 	switch assigning {
-	case pbspot.Assigning_BUY:
+	case proto.Assigning_BUY:
 
 		// The purpose of this code is to query the database for the minimum price of a particular order that has a specific
 		// assigning, base unit, quote unit, price, and status. The result is then stored in the variable 'price'.
-		_ = e.Context.Db.QueryRow("select min(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5 and type = $6", pbspot.Assigning_SELL, base, quote, price, pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&price)
-	case pbspot.Assigning_SELL:
+		_ = e.Context.Db.QueryRow("select min(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5 and type = $6", proto.Assigning_SELL, base, quote, price, proto.Status_PENDING, proto.Type_SPOT).Scan(&price)
+	case proto.Assigning_SELL:
 
 		// The purpose of this code is to query a database for the maximum price from orders that meet certain criteria
 		// (assigning, base unit, quote unit, price and status) and scan the result into the variable "price".
-		_ = e.Context.Db.QueryRow("select max(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5 and type = $6", pbspot.Assigning_BUY, base, quote, price, pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&price)
+		_ = e.Context.Db.QueryRow("select max(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5 and type = $6", proto.Assigning_BUY, base, quote, price, proto.Status_PENDING, proto.Type_SPOT).Scan(&price)
 	}
 
 	return price
@@ -822,7 +823,7 @@ func (e *Service) getReserve(symbol string, platform pbspot.Platform, protocol p
 // setReserve - This function is used to set a reserve for a user in a database. It takes the userId, address, symbol, value,
 // platform, protocol, and cross as parameters. It first checks if the reserve already exists in the database. If it
 // does, it updates it depending on the value of "cross." If the reserve does not exist, it inserts a new row into the database.
-func (e *Service) setReserve(userId int64, address, symbol string, value float64, platform pbspot.Platform, protocol pbspot.Protocol, cross pbspot.Balance) error {
+func (e *Service) setReserve(userId int64, address, symbol string, value float64, platform pbspot.Platform, protocol pbspot.Protocol, cross proto.Balance) error {
 
 	// This code is querying a database for a specific set of information. The code is using placeholders ($1, $2, etc.) to
 	// make the query more secure by preventing SQL injection. The row variable is the result of the query, and the defer
@@ -839,7 +840,7 @@ func (e *Service) setReserve(userId int64, address, symbol string, value float64
 	if row.Next() {
 
 		switch cross {
-		case pbspot.Balance_PLUS:
+		case proto.Balance_PLUS:
 
 			// This code is updating a database table called "reserves" with values provided by the user. The code first checks to
 			// see if the update is successful, and if it fails, it returns an error.
@@ -847,7 +848,7 @@ func (e *Service) setReserve(userId int64, address, symbol string, value float64
 				return err
 			}
 			break
-		case pbspot.Balance_MINUS:
+		case proto.Balance_MINUS:
 
 			// This code is updating a database table called "reserves" with values provided by the user. The code first checks to
 			// see if the update is successful, and if it fails, it returns an error.
@@ -920,7 +921,7 @@ func (e *Service) getStatus(base, quote string) bool {
 // setReverse - The purpose of this code is to query a database for a specific set of information, insert data into a database table,
 // and update the value of an existing record in the database. The code uses SQL queries to perform these operations and
 // also checks for errors that may occur in the process.
-func (e *Service) setReverse(userId int64, address, symbol string, value float64, platform pbspot.Platform, cross pbspot.Balance) error {
+func (e *Service) setReverse(userId int64, address, symbol string, value float64, platform pbspot.Platform, cross proto.Balance) error {
 
 	// This code is querying a database for a specific set of information. The code is using placeholders ($1, $2, etc.) to
 	// make the query more secure by preventing SQL injection. The row variable is the result of the query, and the defer
@@ -937,7 +938,7 @@ func (e *Service) setReverse(userId int64, address, symbol string, value float64
 	if row.Next() {
 
 		switch cross {
-		case pbspot.Balance_PLUS:
+		case proto.Balance_PLUS:
 
 			// This code is updating a database entry with the given parameters. The specific entry is the 'reverse' field of the
 			// 'reserves' table, and the update is an increase by the amount of 'value'. The other parameters (userId, symbol,
@@ -947,7 +948,7 @@ func (e *Service) setReverse(userId int64, address, symbol string, value float64
 				return err
 			}
 			break
-		case pbspot.Balance_MINUS:
+		case proto.Balance_MINUS:
 
 			// This code is updating a database entry with the given parameters. The specific entry is the 'reverse' field of the
 			// 'reserves' table, and the update is an increase by the amount of 'value'. The other parameters (userId, symbol,

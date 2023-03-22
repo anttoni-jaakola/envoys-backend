@@ -8,7 +8,8 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"time"
@@ -154,7 +155,7 @@ func (e *Service) market() {
 				// This code is part of a loop that is looping over a list of currency pairs. The purpose of this code is to insert
 				// the information from each pair (assigning, base_unit, quote_unit, price, quantity, market) into a table called
 				// trades. The code is checking for any errors and if there is an error, it is continuing the loop.
-				if _, err := e.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, pbspot.Assigning_MARKET_PRICE, pair.GetBaseUnit(), pair.GetQuoteUnit(), pair.GetPrice(), 0, true); e.Context.Debug(err) {
+				if _, err := e.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, proto.Assigning_MARKET_PRICE, pair.GetBaseUnit(), pair.GetQuoteUnit(), pair.GetPrice(), 0, true); e.Context.Debug(err) {
 					continue
 				}
 
@@ -246,7 +247,7 @@ func (e *Service) chain() {
 // the database for orders with the same base unit, quote unit and user ID, and with a status of "PENDING". It then
 // iterates through the results and checks if the order's price is higher than the item's price for a BID position and
 // lower for an ASK position. If this is the case, it calls the replayTradeProcess() function. Finally, it logs any matches or failed matches.
-func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
+func (e *Service) trade(order *pbspot.Order, side proto.Side) {
 
 	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
 	// error and returning.
@@ -258,7 +259,7 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 	// parameters given to query for a specific set of data from the "orders" table. It is using the $1, $2, $3, $4, $5 and
 	// $6 to represent the given parameters. The query is also ordering the results by the "id" column. It is checking for
 	// errors and deferring the closing of the rows.
-	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, side, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), pbspot.Status_PENDING, pbasset.Type_SPOT)
+	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, side, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), proto.Status_PENDING, proto.Type_SPOT)
 	if e.Context.Debug(err) {
 		return
 	}
@@ -284,7 +285,7 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 		// This code is used to query a database for a specific row. The query is looking for an entry with a specific ID and
 		// status. The two parameters (order.GetId() and pbspot.Status_PENDING) are used to filter the query results. The row
 		// variable will store the results of the query, and the err variable will store any errors that occur.
-		row, err := e.Context.Db.Query("select value from orders where id = $1 and status = $2 and type = $3", order.GetId(), pbspot.Status_PENDING, pbasset.Type_SPOT)
+		row, err := e.Context.Db.Query("select value from orders where id = $1 and status = $2 and type = $3", order.GetId(), proto.Status_PENDING, proto.Type_SPOT)
 		if err != nil {
 			return
 		}
@@ -305,7 +306,7 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 		// for the user. If the side is invalid, an error is returned.
 		switch side {
 
-		case pbspot.Side_BID: // Buy at BID price.
+		case proto.Side_BID: // Buy at BID price.
 
 			// This code checks whether the price of an order is greater than or equal to the price of an item. If it is, it will
 			// log a message and call the replayTradeProcess function. If it is not, it will log another message.
@@ -323,7 +324,7 @@ func (e *Service) trade(order *pbspot.Order, side pbspot.Side) {
 
 			break
 
-		case pbspot.Side_ASK: // Sell at ASK price.
+		case proto.Side_ASK: // Sell at ASK price.
 
 			// This code is checking if the price of an order is lower than or equal to the price of an item. If it is, it will
 			// log an informational message and call the replayTradeProcess() method. If not, it will log a different
@@ -396,7 +397,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
 			// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
 			// stored in the "value" variable and the function will continue. If the query fails, the function will return.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 and type = $4 returning value;", params[i].GetId(), params[instance].GetValue(), pbspot.Status_PENDING, pbasset.Type_SPOT).Scan(&value); err != nil {
+			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 and type = $4 returning value;", params[i].GetId(), params[instance].GetValue(), proto.Status_PENDING, proto.Type_SPOT).Scan(&value); err != nil {
 				return
 			}
 
@@ -405,7 +406,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 				// This code is performing an update on the orders table in a database. It is setting the status of the order with the
 				// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
 				// occur during the process. If an error is found, the code will return without proceeding.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1 and type = $3;", params[i].GetId(), pbspot.Status_FILLED, pbasset.Type_SPOT); err != nil {
+				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1 and type = $3;", params[i].GetId(), proto.Status_FILLED, proto.Type_SPOT); err != nil {
 					return
 				}
 
@@ -414,7 +415,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 		}
 
 		switch params[1].GetAssigning() {
-		case pbspot.Assigning_BUY:
+		case proto.Assigning_BUY:
 
 			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
 			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
@@ -424,7 +425,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
 			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
 			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
 				return
 			}
 			params[0].Header = &pbspot.Header{Fees: fees, Maker: false, Turn: false, Equal: equal}
@@ -437,13 +438,13 @@ func (e *Service) process(params ...*pbspot.Order) {
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
 			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
 			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
 				return
 			}
 			params[1].Header = &pbspot.Header{Fees: fees, Maker: true, Turn: true, Equal: equal}
 
 			break
-		case pbspot.Assigning_SELL:
+		case proto.Assigning_SELL:
 
 			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
 			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
@@ -453,7 +454,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
 			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
 			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
 				return
 			}
 			params[0].Header = &pbspot.Header{Fees: fees, Maker: false, Turn: true, Equal: equal}
@@ -466,7 +467,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
 			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
 			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
 				return
 			}
 			params[1].Header = &pbspot.Header{Fees: fees, Maker: true, Turn: false, Equal: equal}
@@ -607,7 +608,7 @@ func (e *Service) withdraw() {
 			// query the database, passing in the parameters as variables. The query will return rows, which are stored in the
 			// rows variable. The error from the query is stored in the err variable, and an error is printed out if err is not
 			// nil. The rows returned by the query are then closed when the function is finished executing.
-			rows, err := e.Context.Db.Query(`select id, symbol, "to", chain_id, fees, value, price, platform, protocol, allocation from transactions where status = $1 and assignment = $2 and type = $3`, pbspot.Status_PENDING, pbspot.Assignment_WITHDRAWS, pbspot.Type_CRYPTO)
+			rows, err := e.Context.Db.Query(`select id, symbol, "to", chain_id, fees, value, price, platform, protocol, allocation from transactions where status = $1 and assignment = $2 and type = $3`, proto.Status_PENDING, proto.Assignment_WITHDRAWS, pbspot.Type_CRYPTO)
 			if e.Context.Debug(err) {
 				return
 			}
@@ -652,7 +653,7 @@ func (e *Service) withdraw() {
 						// This code is updating the status of a transaction in a database based on the item ID. The if statement is used
 						// to check for any errors that occur during the update process. If an error is found, the loop will continue
 						// without executing any further code.
-						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), pbspot.Status_PROCESSING); e.Context.Debug(err) {
+						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), proto.Status_PROCESSING); e.Context.Debug(err) {
 							return
 						}
 
@@ -680,7 +681,7 @@ func (e *Service) withdraw() {
 
 						// This code is updating the status of a specific transaction in the database. The if statement is used to check
 						// for any errors that may occur when executing the update command and continue the loop if an error is found.
-						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), pbspot.Status_PROCESSING); e.Context.Debug(err) {
+						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), proto.Status_PROCESSING); e.Context.Debug(err) {
 							return
 						}
 
@@ -745,7 +746,7 @@ func (e *Service) reward() {
 			// This code is used to query the database to retrieve data from the transactions table. The query is filtered by the
 			// allocation and status parameters, which are passed in as arguments to the query. The rows object is then used to
 			// iterate over the retrieved data. The defer statement is used to ensure that the rows object is closed when the function ends.
-			rows, err := e.Context.Db.Query(`select id, symbol, chain_id, fees, value, platform, protocol from transactions where allocation = $1 and status = $2`, pbspot.Allocation_REWARD, pbspot.Status_PENDING)
+			rows, err := e.Context.Db.Query(`select id, symbol, chain_id, fees, value, platform, protocol from transactions where allocation = $1 and status = $2`, pbspot.Allocation_REWARD, proto.Status_PENDING)
 			if e.Context.Debug(err) {
 				return
 			}
@@ -806,7 +807,7 @@ func (e *Service) reward() {
 							To:         reserve.GetTo(),
 							Allocation: pbspot.Allocation_INTERNAL,
 							Protocol:   pbspot.Protocol_MAINNET,
-							Assignment: pbspot.Assignment_WITHDRAWS,
+							Assignment: proto.Assignment_WITHDRAWS,
 						})
 						if e.Context.Debug(err) {
 							return
@@ -815,7 +816,7 @@ func (e *Service) reward() {
 						// This code is part of a loop, and it is used to update the status of a transaction in a database. The first two
 						// arguments in the Exec() function are the ID and status of the transaction. The third argument is a function that
 						// will debug any error that may occur during execution. If an error occurs, the code will skip the current iteration of the loop and continue on to the next one.
-						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), pbspot.Status_LOCK); e.Context.Debug(err) {
+						if _, err := e.Context.Db.Exec("update transactions set status = $2 where id = $1;", item.GetId(), proto.Status_LOCK); e.Context.Debug(err) {
 							return
 						}
 					}
@@ -836,7 +837,7 @@ func (e *Service) confirmation() {
 	// information from the database based on the parameters of the query. The query is selecting the fields' id, hash,
 	// symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, and create_at where the status
 	// is equal to pbspot.Status_PENDING and the assignment is equal to pbspot.TxType_DEPOSIT. The code also checks for an error and closes the rows when finished.
-	rows, err := e.Context.Db.Query(`select id, hash, symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, allocation, parent, create_at from transactions where status = $1 and assignment = $2`, pbspot.Status_PENDING, pbspot.Assignment_DEPOSIT)
+	rows, err := e.Context.Db.Query(`select id, hash, symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, allocation, parent, create_at from transactions where status = $1 and assignment = $2`, proto.Status_PENDING, proto.Assignment_DEPOSIT)
 	if e.Context.Debug(err) {
 		return
 	}
@@ -922,12 +923,12 @@ func (e *Service) confirmation() {
 					// This code is updating the balance of an asset with a given symbol and user ID. The purpose is to update the
 					// balance with a given value (item.GetValue()) for the user and symbol combination. The code is using the Exec
 					// function on the database object and passing in the appropriate values. If there is an error, the code continues.
-					if _, err := e.Context.Db.Exec("update assets set balance = balance + $1 where symbol = $2 and user_id = $3 and type = $4;", item.GetValue(), item.GetSymbol(), item.GetUserId(), pbasset.Type_SPOT); e.Context.Debug(err) {
+					if _, err := e.Context.Db.Exec("update assets set balance = balance + $1 where symbol = $2 and user_id = $3 and type = $4;", item.GetValue(), item.GetSymbol(), item.GetUserId(), proto.Type_SPOT); e.Context.Debug(err) {
 						return
 					}
 
 					item.Hook = true
-					item.Status = pbspot.Status_FILLED
+					item.Status = proto.Status_FILLED
 
 					// This code is from a function that is publishing a message to an exchange with a certain routing key.  The purpose
 					// of this code is to attempt to publish the message to the exchange.  If an error is encountered, the context debug
@@ -941,23 +942,23 @@ func (e *Service) confirmation() {
 					// This code is updating the records in the transactions table in the database. The values being changed are the
 					// allocation and status, and the specific record being updated is determined by the ID which is passed in as the
 					// third parameter (parent). If the operation is successful, it will return the transaction, otherwise it will return nil.
-					if _, err := e.Context.Db.Exec("update transactions set allocation = $1, status = $2 where id = $3;", pbspot.Allocation_EXTERNAL, pbspot.Status_PENDING, item.GetParent()); e.Context.Debug(err) {
+					if _, err := e.Context.Db.Exec("update transactions set allocation = $1, status = $2 where id = $3;", pbspot.Allocation_EXTERNAL, proto.Status_PENDING, item.GetParent()); e.Context.Debug(err) {
 						return
 					}
 
 					// This code is setting up a reverse balance change in a database, and is checking for errors while doing so. The if
 					// statement is checking to see if the setReverse() function returns an error, and if it does, it prints the error
 					// to the debug log and returns. If the setReverse() function does not return an error, the code continues to execute.
-					if err := e.setReverse(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), pbspot.Balance_PLUS); e.Context.Debug(err) {
+					if err := e.setReverse(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), proto.Balance_PLUS); e.Context.Debug(err) {
 						return
 					}
 
-					item.Status = pbspot.Status_RESERVE
+					item.Status = proto.Status_RESERVE
 				}
 
 				// The purpose of this code is to set a reserve for a specified user, symbol, value, platform, and protocol. If an
 				// error occurs, the code will continue to execute. The e.Context.Debug(err) line logs the error for debugging purposes.
-				if err := e.setReserve(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), pbspot.Balance_PLUS); e.Context.Debug(err) {
+				if err := e.setReserve(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), proto.Balance_PLUS); e.Context.Debug(err) {
 					return
 				}
 
@@ -981,10 +982,10 @@ func (e *Service) confirmation() {
 		} else {
 
 			// The item.Hook = true statement is used to indicate that an item has been hooked, meaning that it has been linked or
-			// attached to something else. The item.Status = pbspot.Status_FAILED statement is used to set the status of the item
+			// attached to something else. The item.Status = proto.Status_FAILED statement is used to set the status of the item
 			// to "Failed", which indicates that the item has not been successful in performing its intended task.
 			item.Hook = true
-			item.Status = pbspot.Status_FAILED
+			item.Status = proto.Status_FAILED
 
 			// This statement is an example of an if statement that is used to update a database record with a specific status.
 			// The if statement checks for an error, and if one is found, the loop will continue. The purpose of this statement is

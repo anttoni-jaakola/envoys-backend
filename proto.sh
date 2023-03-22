@@ -22,20 +22,20 @@ if [ "$findedGOPATH" == "false" ]; then
     PATH="$PATH:$GOPATH/bin"
 fi
 
-for d in server/proto/* ; do
+for d in $(find server/proto -name '*.proto') ; do
 
     [ -L "${d%/}" ] && continue
-    googleapis="$grpc_path/third_party/googleapis"
-    echo $googleapis
-    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"/*.proto
-    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:./static/swagger "$d"/*.proto
 
+    googleapis="$grpc_path/third_party/googleapis"
+    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"
+    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:./static/swagger "$d"
     echo "$d - BUILD SUCCESS!"
 done
 
-for d in static/swagger/server/proto/* ; do
+for d in $(find static/swagger/server/proto -name '*.json') ; do
     [ -L "${d%/}" ] && continue
-    cp -r "$d"/* static/swagger
+    cp -r "$d" static/swagger
 done
 
 rm -r static/swagger/server
+rm -r github.com

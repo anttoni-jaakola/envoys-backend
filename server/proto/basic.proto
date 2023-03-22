@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package basic;
+
+option go_package = "github.com/cryptogateway/backend-envoys/server/proto";
+
+// An enum is a type that stores named constants. In this example, the enum Type has two constants, SPOT and STOCK. These
+// constants can be used to represent different types. For example, they could be used to differentiate between
+// different types of financial instruments, such as spot trades and stock trades.
+enum Type {
+  SPOT = 0;
+  STOCK = 1;
+}
+
+// Enums are used to assign symbolic names to constant values. The purpose of the above enum is to assign symbolic names
+// to constants that have a specific meaning in the context of a financial trading system. BUY and SELL are used to
+// denote the type of order for a financial transaction, MARKET_PRICE is used to denote the default market price for a
+// particular security, and DEFAULT is used to denote the default values in the system.
+enum Assigning {
+  BUY = 0;
+  SELL = 1;
+  MARKET_PRICE = 2;
+  DEFAULT = 3;
+}
+
+// The enum Side is used to define the different sides of a trade. ASK is the side of the trade where a trader is looking
+// to sell an asset, and BID is the side of the trade where a trader is looking to buy an asset. By assigning numerical
+// values to each side, it makes it easier to keep track of the different sides of a trade, side "bid" - "buy" and "ask" - "sell".
+enum Side {
+  ASK = 0;
+  BID = 1;
+}
+
+// The enum Trading is a way to assign a numerical value to each type of trade. In this case, MARKET is assigned the
+// value 0, and LIMIT is assigned the value 1. This is useful when creating a trading system, as it allows trades to be
+// easily identified and categorized.
+enum Trading {
+  MARKET = 0;
+  LIMIT = 1;
+}
+
+// Enums are used to define a set of named constants. The enum Balance above sets the constants MINUS and PLUS to the
+// values 0 and 1 respectively. This can be used to indicate a balance between two values (e.g., a bank account balance
+// between a credit and debit).
+enum Balance {
+  MINUS = 0;
+  PLUS = 1;
+}
+
+// Enums are used to declare a set of named constants. In this case, the enum Summary is declaring two constants, BASE
+// and QUOTE, with the values 0 and 1 respectively. These constants can then be used to refer to specific values in a
+// program. For example, an if-else statement could use the constants to check if a condition is true or false.
+enum Summary {
+  BASE = 0;
+  QUOTE = 1;
+}
+
+// Enums are used to define a set of named constants. In this example, the enum Assignment is used to assign numerical values
+// to two named constants: DEPOSIT and WITHDRAWS. This can be used as an identifier for a type of transaction, such as a
+// deposit or a withdrawal.
+enum Assignment {
+  DEPOSIT = 0;
+  WITHDRAWS = 1;
+}
+
+// Enums are used in programming languages to define a set of named constants. In this case, the enum is used to define a
+// set of constants related to a status of a certain task or process. The constants can represent such statuses as
+// CANCEL, FILLED, PENDING, RESERVE, PROCESSING, FAILED, LOCK, ACCESS, REJECTED, and BLOCKED. This allows the programmer
+// to easily refer to one of the constants instead of writing out the entire status name.
+enum Status {
+  CANCEL = 0;
+  FILLED = 1;
+  PENDING = 2;
+  RESERVE = 3;
+  PROCESSING = 4;
+  FAILED = 5;
+  LOCK = 6;
+  ACCESS = 7;
+  REJECTED = 8;
+  BLOCKED = 9;
+}

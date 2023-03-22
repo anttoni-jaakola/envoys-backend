@@ -6,7 +6,8 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbasset"
+	"github.com/cryptogateway/backend-envoys/server/proto"
+
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/cryptogateway/backend-envoys/server/service/account"
 	"github.com/pquerna/otp/totp"
@@ -153,16 +154,16 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 				// The purpose of the above code is to declare a variable called assigning which is of type pbspot.Assigning. This
 				// variable can then be used to store an instance of the pbspot.Assigning class.
 				var (
-					assigning pbspot.Assigning
+					assigning proto.Assigning
 				)
 
 				// The above code is using a switch statement to assign a value to the variable "assigning". Depending on the value
 				// of "i", the variable "assigning" will be assigned either the value of "pbspot.Assigning_BUY" or "pbspot.Assigning_SELL".
 				switch i {
 				case 0:
-					assigning = pbspot.Assigning_BUY
+					assigning = proto.Assigning_BUY
 				case 1:
-					assigning = pbspot.Assigning_SELL
+					assigning = proto.Assigning_SELL
 				}
 
 				// This code is getting orders from a service with a given set of parameters. It is using the
@@ -173,7 +174,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 					BaseUnit:  analysis.GetBaseUnit(),
 					QuoteUnit: analysis.GetQuoteUnit(),
 					Assigning: assigning,
-					Status:    pbspot.Status_FILLED,
+					Status:    proto.Status_FILLED,
 					UserId:    auth,
 					Limit:     2,
 				})
@@ -435,7 +436,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// type, different actions can be taken. For example, if the trade type is "buy", the code may execute a certain set of
 	// instructions to purchase the item, and if the trade type is "sell", the code may execute a different set of instructions to sell the item.
 	switch req.GetTrading() {
-	case pbspot.Trading_MARKET:
+	case proto.Trading_MARKET:
 
 		// The purpose of this code is to set the price of the order (order.Price) to the market price of the requested base
 		// and quote units, assigning, and price, which is retrieved from the "e.getMarket" function.
@@ -443,11 +444,11 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 
 		// This if statement is checking to see if the request is to buy something. If it is, it is calculating the quantity
 		// and value of the order by dividing the quantity by the price.
-		if req.GetAssigning() == pbspot.Assigning_BUY {
+		if req.GetAssigning() == proto.Assigning_BUY {
 			order.Quantity, order.Value = decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float(), decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float()
 		}
 
-	case pbspot.Trading_LIMIT:
+	case proto.Trading_LIMIT:
 
 		// The purpose of this code is to set the value of the order.Price variable to the value returned by the GetPrice()
 		// method of the req object.
@@ -464,7 +465,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	order.BaseUnit = req.GetBaseUnit()
 	order.QuoteUnit = req.GetQuoteUnit()
 	order.Assigning = req.GetAssigning()
-	order.Status = pbspot.Status_PENDING
+	order.Status = proto.Status_PENDING
 	order.Trading = req.GetTrading()
 	order.CreateAt = time.Now().UTC().Format(time.RFC3339)
 
@@ -484,7 +485,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// The switch statement is used to evaluate the value of the expression "order.GetAssigning()" and execute the
 	// corresponding case statement. It is a type of conditional statement that allows a program to make decisions based on different conditions.
 	switch order.GetAssigning() {
-	case pbspot.Assigning_BUY:
+	case proto.Assigning_BUY:
 
 		// This code snippet is likely a part of a function that processes an order. The purpose of the code is to use the
 		// function "setAsset()" to set the base unit and user ID of the order to false. If an error occurs during the process,
@@ -495,17 +496,17 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 
 		// This code is checking the balance of a user and attempting to subtract the specified quantity from it. If the
 		// operation is successful, it will continue with the program. If an error occurs, it will return an error response.
-		if err := e.setBalance(order.GetQuoteUnit(), order.GetUserId(), quantity, pbspot.Balance_MINUS); err != nil {
+		if err := e.setBalance(order.GetQuoteUnit(), order.GetUserId(), quantity, proto.Balance_MINUS); err != nil {
 			return &response, err
 		}
 
 		// The purpose of e.trade(&order, pbspot.Side_BID) is to replay a trade initiation with the given order and
 		// side (BID). This is typically used when the trade is being initiated manually by an operator or trader. It allows
 		// the trade to be replayed with the same parameters for accuracy and consistency.
-		e.trade(&order, pbspot.Side_BID)
+		e.trade(&order, proto.Side_BID)
 
 		break
-	case pbspot.Assigning_SELL:
+	case proto.Assigning_SELL:
 
 		// This code snippet is likely a part of a function that processes an order. The purpose of the code is to use the
 		// function "setAsset()" to set the base unit and user ID of the order to false. If an error occurs during the process,
@@ -516,14 +517,14 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 
 		// This code is checking the balance of a user and attempting to subtract the specified quantity from it. If the
 		// operation is successful, it will continue with the program. If an error occurs, it will return an error response.
-		if err := e.setBalance(order.GetBaseUnit(), order.GetUserId(), quantity, pbspot.Balance_MINUS); err != nil {
+		if err := e.setBalance(order.GetBaseUnit(), order.GetUserId(), quantity, proto.Balance_MINUS); err != nil {
 			return &response, err
 		}
 
 		// The purpose of e.trade(&order, pbspot.Side_ASK) is to replay a trade initiation with the given order and
 		// side (ASK). This is typically used when the trade is being initiated manually by an operator or trader. It allows
 		// the trade to be replayed with the same parameters for accuracy and consistency.
-		e.trade(&order, pbspot.Side_ASK)
+		e.trade(&order, proto.Side_ASK)
 
 		break
 	default:
@@ -559,12 +560,12 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 	// The purpose of this switch statement is to generate a SQL query with the correct assignment clause. Depending on
 	// the value of req.GetAssigning(), the maps slice will be appended with the corresponding formatted string.
 	switch req.GetAssigning() {
-	case pbspot.Assigning_BUY:
-		maps = append(maps, fmt.Sprintf("where assigning = %[1]d and type = %[2]d", pbspot.Assigning_BUY, pbasset.Type_SPOT))
-	case pbspot.Assigning_SELL:
-		maps = append(maps, fmt.Sprintf("where assigning = %[1]d and type = %[2]d", pbspot.Assigning_SELL, pbasset.Type_SPOT))
+	case proto.Assigning_BUY:
+		maps = append(maps, fmt.Sprintf("where assigning = %[1]d and type = %[2]d", proto.Assigning_BUY, proto.Type_SPOT))
+	case proto.Assigning_SELL:
+		maps = append(maps, fmt.Sprintf("where assigning = %[1]d and type = %[2]d", proto.Assigning_SELL, proto.Type_SPOT))
 	default:
-		maps = append(maps, fmt.Sprintf("where (assigning = %[1]d and type = %[3]d or assigning = %[2]d and type = %[3]d)", pbspot.Assigning_BUY, pbspot.Assigning_SELL, pbasset.Type_SPOT))
+		maps = append(maps, fmt.Sprintf("where (assigning = %[1]d and type = %[3]d or assigning = %[2]d and type = %[3]d)", proto.Assigning_BUY, proto.Assigning_SELL, proto.Type_SPOT))
 	}
 
 	// This checks to see if the request (req) has an owner. If it does, the code after this statement will be executed.
@@ -596,12 +597,12 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 	// (req.GetStatus()). Depending on the value of the status, a string is added to the maps slice using the fmt.Sprintf()
 	// function. This string contains a condition that will be used in the query string.
 	switch req.GetStatus() {
-	case pbspot.Status_FILLED:
-		maps = append(maps, fmt.Sprintf("and status = %d", pbspot.Status_FILLED))
-	case pbspot.Status_PENDING:
-		maps = append(maps, fmt.Sprintf("and status = %d", pbspot.Status_PENDING))
-	case pbspot.Status_CANCEL:
-		maps = append(maps, fmt.Sprintf("and status = %d", pbspot.Status_CANCEL))
+	case proto.Status_FILLED:
+		maps = append(maps, fmt.Sprintf("and status = %d", proto.Status_FILLED))
+	case proto.Status_PENDING:
+		maps = append(maps, fmt.Sprintf("and status = %d", proto.Status_PENDING))
+	case proto.Status_CANCEL:
+		maps = append(maps, fmt.Sprintf("and status = %d", proto.Status_CANCEL))
 	}
 
 	// This code checks if the length of the base unit and the quote unit in the request are greater than 0. If they are, it
@@ -775,7 +776,7 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 		// result of the query, and err is used to store any errors that may occur. The if err != nil statement checks for any
 		// errors that may have occurred and, if one is found, the error is returned. To defer row.Close() statement closes
 		// the database query at the end of the function, regardless of how the function ends.
-		row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, pbasset.Type_SPOT)
+		row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, proto.Type_SPOT)
 		if err != nil {
 			return &response, err
 		}
@@ -863,7 +864,7 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 	// for the given user. It is checking the base unit and quote unit against the given symbol and using the price to
 	// convert between the two if necessary. It is then adding them together and using the coalesce function to return 0.00
 	// if there is no data returned. Finally, it is scanning the result into the row.Volume field.
-	_ = e.Context.Db.QueryRow(`select coalesce(sum(case when base_unit = $1 then value when quote_unit = $1 then value * price end), 0.00) as volume from orders where base_unit = $1 and assigning = $2 and status = $4 and type = $5 and user_id = $6 or quote_unit = $1 and assigning = $3 and status = $4 and type = $5 and user_id = $6`, req.GetSymbol(), pbspot.Assigning_SELL, pbspot.Assigning_BUY, pbspot.Status_PENDING, pbasset.Type_SPOT, auth).Scan(&row.Volume)
+	_ = e.Context.Db.QueryRow(`select coalesce(sum(case when base_unit = $1 then value when quote_unit = $1 then value * price end), 0.00) as volume from orders where base_unit = $1 and assigning = $2 and status = $4 and type = $5 and user_id = $6 or quote_unit = $1 and assigning = $3 and status = $4 and type = $5 and user_id = $6`, req.GetSymbol(), proto.Assigning_SELL, proto.Assigning_BUY, proto.Status_PENDING, proto.Type_SPOT, auth).Scan(&row.Volume)
 
 	// This is a for loop in Go. The purpose of the loop is to iterate over each element in the "row.GetChainsIds()" array.
 	// The loop starts at index 0 and continues until it reaches the last element in the array. On each iteration, the loop
@@ -1048,12 +1049,12 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 	// pbspot.Assigning_BUY". If the value of req.GetAssigning() is not specified, then the query generated will be "where
 	// (assigning = pbspot.Assigning_BUY or assigning = pbspot.Assigning_SELL)".
 	switch req.GetAssigning() {
-	case pbspot.Assigning_BUY:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", pbspot.Assigning_BUY))
-	case pbspot.Assigning_SELL:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", pbspot.Assigning_SELL))
+	case proto.Assigning_BUY:
+		maps = append(maps, fmt.Sprintf("where assigning = %d", proto.Assigning_BUY))
+	case proto.Assigning_SELL:
+		maps = append(maps, fmt.Sprintf("where assigning = %d", proto.Assigning_SELL))
 	default:
-		maps = append(maps, fmt.Sprintf("where (assigning = %d or assigning = %d)", pbspot.Assigning_BUY, pbspot.Assigning_SELL))
+		maps = append(maps, fmt.Sprintf("where (assigning = %d or assigning = %d)", proto.Assigning_BUY, proto.Assigning_SELL))
 	}
 
 	// This line of code is adding a string to a slice of strings (maps) which contains a formatted variable
@@ -1143,12 +1144,12 @@ func (e *Service) GetTrades(_ context.Context, req *pbspot.GetRequestTrades) (*p
 	// which can be either BUY or SELL. Depending on what value is returned, the corresponding string is appended to the
 	// array. If neither BUY nor SELL is returned, then a string that includes both BUY and SELL is appended.
 	switch req.GetAssigning() {
-	case pbspot.Assigning_BUY:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", pbspot.Assigning_BUY))
-	case pbspot.Assigning_SELL:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", pbspot.Assigning_SELL))
+	case proto.Assigning_BUY:
+		maps = append(maps, fmt.Sprintf("where assigning = %d", proto.Assigning_BUY))
+	case proto.Assigning_SELL:
+		maps = append(maps, fmt.Sprintf("where assigning = %d", proto.Assigning_SELL))
 	default:
-		maps = append(maps, fmt.Sprintf("where (assigning = %d or assigning = %d)", pbspot.Assigning_BUY, pbspot.Assigning_SELL))
+		maps = append(maps, fmt.Sprintf("where (assigning = %d or assigning = %d)", proto.Assigning_BUY, proto.Assigning_SELL))
 	}
 
 	// The purpose of this code is to append a string to the maps variable. The string contains a formatted version of the
@@ -1272,12 +1273,12 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 	// the query string will include the condition where assignment = pbspot.Assignment_WITHDRAWS. If the transaction type is
 	// neither deposit nor withdraws, the query string will include the condition where (assignment = pbspot.Assignment_WITHDRAWS or assignment = pbspot.Assignment_DEPOSIT).
 	switch req.GetAssignment() {
-	case pbspot.Assignment_DEPOSIT:
-		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_DEPOSIT))
-	case pbspot.Assignment_WITHDRAWS:
-		maps = append(maps, fmt.Sprintf("where assignment = %d", pbspot.Assignment_WITHDRAWS))
+	case proto.Assignment_DEPOSIT:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", proto.Assignment_DEPOSIT))
+	case proto.Assignment_WITHDRAWS:
+		maps = append(maps, fmt.Sprintf("where assignment = %d", proto.Assignment_WITHDRAWS))
 	default:
-		maps = append(maps, fmt.Sprintf("where (assignment = %d or assignment = %d)", pbspot.Assignment_WITHDRAWS, pbspot.Assignment_DEPOSIT))
+		maps = append(maps, fmt.Sprintf("where (assignment = %d or assignment = %d)", proto.Assignment_WITHDRAWS, proto.Assignment_DEPOSIT))
 	}
 
 	// This code is checking the length of the request's symbol and, if greater than zero, appending a string to the maps
@@ -1290,7 +1291,7 @@ func (e *Service) GetTransactions(ctx context.Context, req *pbspot.GetRequestTra
 	// This line of code is appending a string to the maps variable. The string is formatted using the fmt.Sprintf()
 	// function, and is used to set the status of the variable to a specific value (in this case, pbspot.Status_RESERVE).
 	// This is likely being used to filter out specific values from a list or array of values.
-	maps = append(maps, fmt.Sprintf("and status != %d", pbspot.Status_RESERVE))
+	maps = append(maps, fmt.Sprintf("and status != %d", proto.Status_RESERVE))
 
 	// This code is checking to make sure a valid authentication token is present in the context. If it is not, it returns
 	// an error. This is necessary to ensure that only authorized users are accessing certain resources.
@@ -1563,7 +1564,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 
 	// This code is checking for an error when attempting to set a balance for a symbol with a given quantity. If there is
 	// an error, the program will debug the error and return the response and an error.
-	if err := e.setBalance(req.GetSymbol(), auth, req.GetQuantity(), pbspot.Balance_MINUS); e.Context.Debug(err) {
+	if err := e.setBalance(req.GetSymbol(), auth, req.GetQuantity(), proto.Balance_MINUS); e.Context.Debug(err) {
 		return &response, err
 	}
 
@@ -1581,7 +1582,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 		contract.GetProtocol(),
 		chain.GetFees(),
 		auth,
-		pbspot.Assignment_WITHDRAWS,
+		proto.Assignment_WITHDRAWS,
 		currency.GetType(),
 	); err != nil {
 		return &response, status.Error(554322, "transaction hash is already in the list, please contact support")
@@ -1619,7 +1620,7 @@ func (e *Service) CancelWithdraw(ctx context.Context, req *pbspot.CancelRequestW
 	// and user_id. The purpose of this query is to retrieve the specified row from the database for further processing,
 	// such as updating the status of the transaction or displaying the information to the user. The row is then closed,
 	// which releases any resources associated with the query.
-	row, err := e.Context.Db.Query(`select id, user_id, symbol, value from transactions where id = $1 and status = $2 and user_id = $3 order by id`, req.GetId(), pbspot.Status_PENDING, auth)
+	row, err := e.Context.Db.Query(`select id, user_id, symbol, value from transactions where id = $1 and status = $2 and user_id = $3 order by id`, req.GetId(), proto.Status_PENDING, auth)
 	if err != nil {
 		return &response, err
 	}
@@ -1645,13 +1646,13 @@ func (e *Service) CancelWithdraw(ctx context.Context, req *pbspot.CancelRequestW
 
 		// This statement is updating the table "transactions" to set the status to "CANCEL" for a specific row identified by
 		// "id" and "user_id". The purpose of this statement is to update the status of the transaction in the database.
-		if _, err := e.Context.Db.Exec("update transactions set status = $3 where id = $1 and user_id = $2;", item.GetId(), item.GetUserId(), pbspot.Status_CANCEL); err != nil {
+		if _, err := e.Context.Db.Exec("update transactions set status = $3 where id = $1 and user_id = $2;", item.GetId(), item.GetUserId(), proto.Status_CANCEL); err != nil {
 			return &response, err
 		}
 
 		// This code is checking for an error when setting a balance for a user's account. If an error occurs, it will log the
 		// error and return an error response.
-		if err := e.setBalance(item.GetSymbol(), item.GetUserId(), item.GetValue(), pbspot.Balance_PLUS); e.Context.Debug(err) {
+		if err := e.setBalance(item.GetSymbol(), item.GetUserId(), item.GetValue(), proto.Balance_PLUS); e.Context.Debug(err) {
 			return &response, err
 		}
 	}
@@ -1681,7 +1682,7 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 	// only the desired records are returned. The parameters are the status, id, and user_id. The query also includes an
 	// order by clause to ensure that the data is returned in a specific order. The data is then stored in the row variable
 	// and the defer statement is used to close the row when the query is finished.
-	row, err := e.Context.Db.Query(`select id, value, quantity, price, assigning, base_unit, quote_unit, user_id, create_at from orders where status = $1 and type = $2 and id = $3 and user_id = $4 order by id`, pbspot.Status_PENDING, pbasset.Type_SPOT, req.GetId(), auth)
+	row, err := e.Context.Db.Query(`select id, value, quantity, price, assigning, base_unit, quote_unit, user_id, create_at from orders where status = $1 and type = $2 and id = $3 and user_id = $4 order by id`, proto.Status_PENDING, proto.Type_SPOT, req.GetId(), auth)
 	if err != nil {
 		return &response, err
 	}
@@ -1708,28 +1709,28 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 		// The purpose of the code is to update the status of an order for a particular user in the database. It takes three
 		// parameters: the ID of the order, the user ID, and the new status for the order. If the execution of the SQL query
 		// fails, an error is returned.
-		if _, err := e.Context.Db.Exec("update orders set status = $1 where type = $2 and id = $3 and user_id = $4;", pbspot.Status_CANCEL, pbasset.Type_SPOT, item.GetId(), item.GetUserId()); err != nil {
+		if _, err := e.Context.Db.Exec("update orders set status = $1 where type = $2 and id = $3 and user_id = $4;", proto.Status_CANCEL, proto.Type_SPOT, item.GetId(), item.GetUserId()); err != nil {
 			return &response, err
 		}
 
 		// The switch statement is used to compare the value of a variable (in this case, item.Assigning) to a list of possible
 		// values. If the value matches one of the values in the list, a specific action will be executed.
 		switch item.Assigning {
-		case pbspot.Assigning_BUY:
+		case proto.Assigning_BUY:
 
 			// This code is setting the balance of a user for a given item. It is using the item's quote unit, user id, value and
-			// price to calculate the new balance and then updating the balance using the pbspot.Balance_PLUS parameter. If there
+			// price to calculate the new balance and then updating the balance using the proto.Balance_PLUS parameter. If there
 			// is an error setting the balance, an error is returned.
-			if err := e.setBalance(item.GetQuoteUnit(), item.GetUserId(), decimal.New(item.GetValue()).Mul(item.GetPrice()).Float(), pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(item.GetQuoteUnit(), item.GetUserId(), decimal.New(item.GetValue()).Mul(item.GetPrice()).Float(), proto.Balance_PLUS); err != nil {
 				return &response, err
 			}
 
 			break
-		case pbspot.Assigning_SELL:
+		case proto.Assigning_SELL:
 
 			// This code is used to set a balance for a user in a particular base unit. The "if err" statement is used to check if
 			// there is an error when setting the balance. If there is an error, the code will return an error message.
-			if err := e.setBalance(item.GetBaseUnit(), item.GetUserId(), item.GetValue(), pbspot.Balance_PLUS); err != nil {
+			if err := e.setBalance(item.GetBaseUnit(), item.GetUserId(), item.GetValue(), proto.Balance_PLUS); err != nil {
 				return &response, err
 			}
 

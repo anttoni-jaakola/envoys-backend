@@ -17,6 +17,7 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/mileusna/useragent v1.0.2
 	github.com/pkg/errors v0.9.1
+	github.com/pquerna/otp v1.4.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shengdoushi/base58 v1.0.0
 	github.com/sirupsen/logrus v1.8.1
@@ -31,10 +32,15 @@ require (
 )
 
 require (
+	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
-	github.com/pquerna/otp v1.4.0 // indirect
+	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
+	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 
 require (
