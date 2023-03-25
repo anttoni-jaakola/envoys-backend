@@ -19,3 +19,7 @@ alter table public.stocks
 alter table public.stocks
     add constraint stocks_symbol_key
         unique (symbol);
+
+insert into public.stocks (id, symbol, tag, zone, price, status, name, base_decimal, quote_decimal)
+values  (1, 'goog', 0, 'usd', 106.07001790, true, 'Alphabet Inc Class C', 8, 8),
+        (2, 'ibm', 0, 'usd', 125.32997456, true, 'International Business Machines Corporation', 8, 8);
