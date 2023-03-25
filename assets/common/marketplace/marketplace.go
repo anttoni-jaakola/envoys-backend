@@ -19,7 +19,6 @@ import (
 // https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH
 // https://poloniex.com/public?command=returnTradeHistory&currencyPair=USDT_ETH&limit=1
 // https://api.kuna.io/v3/tickers?symbols=btcuah
-// https://ftx.com/api/markets/BTC_USD/trades
 // https://api.huobi.pro/market/detail/merged?symbol=ethusdt
 const (
 	ApiExchangePoloniex = "https://poloniex.com/public?command=returnTradeHistory&currencyPair=%v_%v&limit=1"
@@ -27,7 +26,6 @@ const (
 	ApiExchangeBitfinex = "https://api-pub.bitfinex.com/v2/trades/t%v%v/hist?limit=1"
 	ApiExchangeBinance  = "https://api3.binance.com/api/v3/ticker/price?symbol=%v%v"
 	ApiExchangeKuna     = "https://api.kuna.io/v3/tickers?symbols=%v%v"
-	ApiExchangeFtx      = "https://ftx.com/api/markets/%v_%v/trades"
 	ApiExchangeHuobi    = "https://api.huobi.pro/market/detail/merged?symbol=%v%v"
 )
 
@@ -62,7 +60,6 @@ func (p *Marketplace) Unit(base, quote string) float64 {
 	p.scale = append(p.scale, p.getKucoin(base, quote))
 	p.scale = append(p.scale, p.getPoloniex(base, quote))
 	p.scale = append(p.scale, p.getKuna(base, quote))
-	p.scale = append(p.scale, p.getFtx(base, quote))
 	p.scale = append(p.scale, p.getHuobi(base, quote))
 
 	var (
@@ -190,58 +187,6 @@ func (p *Marketplace) getHuobi(base, quote string) float64 {
 	// This code checks if the given result contains a "tick" key, which is a map of strings to interfaces. It then checks
 	// if it contains a "close" key. If it does, it returns the price as a float64.
 	if price, ok := result["tick"].(map[string]interface{})["close"]; ok {
-		return price.(float64)
-	}
-
-	return 0
-}
-
-// getFtx - This function is used to get the current price of an asset on the Ftx Exchange. It takes in two strings as parameters,
-// the base and quote currency of the asset, and returns a float64 representing the price. If an error occurs while
-// making the request, the function will attempt to make a reverse request and use the inverse price. If the inverse
-// price is not found, the function will return 0.
-func (p *Marketplace) getFtx(base, quote string) float64 {
-
-	// The purpose of the variable 'result' is to create a map of type string to interface. This means that it can store any
-	// type of value (string, integer, boolean, etc.) as the value for each key. This type of data structure is often used
-	// to store key-value pairs in a program.
-	var (
-		result map[string]interface{}
-	)
-
-	// This code is creating an HTTP request to an API endpoint. The request is constructed using the fmt.Sprintf()
-	// function, which takes a string format and a variable set of parameters and returns a formatted string. The string
-	// format is ApiExchangeFtx, and the parameters are the base and quote values. The request is then created using the
-	// p.request() function, which takes the formatted string and returns a request object. Finally, an error object is also
-	// returned in case there is an error creating the request.
-	request, err := p.request(fmt.Sprintf(ApiExchangeFtx, base, quote))
-	if err != nil {
-
-		// The purpose of this code is to check if the length of the variable "p" is zero (0). If the length of the variable is
-		// zero, the code returns 0.
-		if p.len() {
-			return 0
-		}
-
-		// This code is used to determine the inverse price of a given quote and base. The code first uses the getFtx()
-		// function to retrieve the price of the quote and base. If the price is greater than 0, then the inverse price is
-		// calculated by dividing 1 by the price, and then rounding the result to 8 decimal places. The result is then returned as a float.
-		if price := p.getFtx(quote, base); price > 0 {
-			return decimal.New(decimal.New(1).Div(price).Float()).Round(8).Float()
-		}
-
-		return 0
-	}
-
-	// The purpose of this code is to attempt to unmarshal a JSON object stored in the variable 'request' into a variable
-	// 'result'. If the unmarshal fails, the code will return 0.
-	if err = json.Unmarshal(request, &result); err != nil {
-		return 0
-	}
-
-	// This code is attempting to access the price of an item stored in a map with a complex key structure. It first checks
-	// if the key exists using the "ok" variable, and if it does, it returns the price as a float64.
-	if price, ok := result["result"].([]interface{})[0].(map[string]interface{})["price"]; ok {
 		return price.(float64)
 	}
 

@@ -9,7 +9,6 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
 	"github.com/cryptogateway/backend-envoys/server/proto"
-
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"time"

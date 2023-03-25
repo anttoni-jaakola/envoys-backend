@@ -6,12 +6,124 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto"
+	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/svarlamov/goyhfin"
+	"strings"
 
 	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
 	"github.com/davecgh/go-spew/spew"
 	"google.golang.org/grpc/status"
 	"time"
 )
+
+func (s *Service) price() {
+
+	// The code above creates a new ticker that will run once a minute and then loop through each range of the ticker.C
+	// channel. This is useful for running a certain task or operation on a regular interval of time.
+	ticker := time.NewTicker(time.Minute * 1)
+	for range ticker.C {
+
+		func() {
+
+			// This code queries a database for pairs with a status of true and orders them by their ID. It uses the
+			// e.Context.Db.Query() function to execute a query and assigns the output of the query to the rows variable. If there
+			// is an error, it calls the e.Context.Debug() function to debug the error, and if successful, it will defer the
+			// rows.Close() function to close the rows after the function call.
+			rows, err := s.Context.Db.Query(`select id, price, symbol, zone from stocks where status = $1 order by id`, true)
+			if s.Context.Debug(err) {
+				return
+			}
+			defer rows.Close()
+
+			// The for loop with the rows.Next() statement is used to loop through a result set of an SQL query. The rows.Next()
+			// statement advances the current row pointer to the next row and returns true if it was successful. This loop is used
+			// to iterate through each row in the result set and perform an action on it.
+			for rows.Next() {
+
+				// This code creates two variables, pair and price, of the types pbspot.Pair and float64 respectively. This allows
+				// the program to store and use data of these two types.
+				var (
+					pair  pbspot.Pair
+					price float64
+				)
+
+				// This code is used to scan the rows of data from a database and assign the values to variables. The if statement is
+				// used to check for any errors that may occur when scanning the rows. If an error is found, the code will skip to
+				// the next row. The e.Context.Debug() function is used to provide more information about what caused the error,
+				// which can help with debugging.
+				if err := rows.Scan(&pair.Id, &pair.Price, &pair.BaseUnit, &pair.QuoteUnit); s.Context.Debug(err) {
+					return
+				}
+
+				// The purpose of this code is to retrieve two candles from a given pair of base and quote units. The GetCandles()
+				// function is used to retrieve the candles and the returned value is stored in the migrate variable. If an error is
+				// encountered, the code will skip the iteration and continue to the next one.
+				migrate, err := s.GetCandles(context.Background(), &pbstock.GetRequestCandles{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2})
+				if s.Context.Debug(err) {
+					return
+				}
+
+				// This code is used to get the ticker data from the Yahoo Finance API. The parameters passed to the GetTickerData
+				// function are the base unit (in uppercase), the time period, the interval and a boolean indicating if the data
+				// should be adjusted for splits. If an error is encountered, it is displayed using the Context.Debug method. If an
+				// error is encountered, the function will return.
+				resp, err := goyhfin.GetTickerData(strings.ToUpper(pair.GetBaseUnit()), goyhfin.OneMinute, goyhfin.OneMinute, false)
+				if s.Context.Debug(err) {
+					return
+				}
+
+				// This is a conditional statement that checks the length of the list "resp.Quotes" and only executes the code within
+				// the if statement if the length is greater than 0.
+				if len(resp.Quotes) > 0 {
+
+					// The purpose of this code is to get the closing price of a stock from the response object. The response object is
+					// assumed to contain a "Quotes" array with the information about the stock quote. The code retrieves the closing
+					// price of the stock from the first element of the array.
+					price = resp.Quotes[0].Close
+
+					// This code is calculating the price of an item. The purpose of the if statement is to check if there are any
+					// "migrate.Fields" present. If there are, then the price is calculated by taking the average of the price, the
+					// pair's price, and the price of the first field in to migrate.Fields array. If there are no migrate.Fields, then
+					// the price is calculated by taking the average of the price and the pair's price.
+					if len(migrate.Fields) > 0 {
+						price = (price + pair.GetPrice() + migrate.Fields[0].GetPrice()) / 3
+					} else {
+						price = (price + pair.GetPrice()) / 2
+					}
+
+					// This piece of code is calculating the price of a pair of something.  The if statement is checking if the price of
+					// the pair is more than 100. If it is, then the price is reduced by 1/8 of the difference between the initial price
+					// and the new price.
+					if (price - pair.GetPrice()) > 100 {
+						price -= (price - pair.GetPrice()) - (price-pair.GetPrice())/8
+					}
+
+				}
+
+				// This is an if statement that checks whether the variable price is equal to 0. If it is, the code inside the curly
+				// braces will be executed. Otherwise, it will be skipped.
+				if price == 0 {
+
+					// This code is used to calculate the price of an item. It checks if the migrate.Fields array has any elements in
+					// it. If it does, it takes the first element, gets its price, adds that to the price of the pair, and divides the
+					// sum by 2. If the array is empty, it just returns the price of the pair.
+					if len(migrate.Fields) > 0 {
+						price = (migrate.Fields[0].GetPrice() + pair.GetPrice()) / 2
+					} else {
+						price = pair.GetPrice()
+					}
+
+				}
+
+				// This code is attempting to update a row in the database table "pairs" with the given values. The if statement is
+				// checking to see if there is an error and if there is, the code will continue without changing the values.
+				if _, err := s.Context.Db.Exec("update stocks set price = $3 where symbol = $1 and zone = $2;", pair.GetBaseUnit(), pair.GetQuoteUnit(), price); s.Context.Debug(err) {
+					return
+				}
+			}
+		}()
+	}
+}
 
 // market - This function is used to replay market prices. The function is executed on a specific time interval and retrieves data
 // from the database. It then inserts the data into the trades table, and publishes the data to exchange topics. This

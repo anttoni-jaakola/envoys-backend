@@ -3,6 +3,7 @@ package stock
 import (
 	"context"
 	"fmt"
+	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto"
 
@@ -1350,6 +1351,13 @@ func (s *Service) GetPairs(_ context.Context, _ *pbstock.GetRequestPairs) (*pbst
 		}
 		item.Symbol = fmt.Sprintf("%v/%v", item.BaseUnit, &item.QuoteUnit)
 
+		// The purpose of this code snippet is to check if the exchange (e) has the ratio of the given pair (pair). If so, the
+		// ratio is assigned to the pair. The if statement checks is the ratio is returned by the getRatio() function, and if
+		// it is, the ok variable will be true, and the ratio will be assigned to the pair.
+		if ratio, ok := s.getRatio(item.GetBaseUnit(), item.GetQuoteUnit()); ok {
+			item.Ratio = ratio
+		}
+
 		// This code is appending an item to the Fields array in the response object. The purpose of this code is to add an
 		// item to the Fields array.
 		response.Fields = append(response.Fields, &item)
@@ -1419,7 +1427,15 @@ func (s *Service) SetOrder(ctx context.Context, req *pbstock.SetRequestOrder) (*
 	switch req.GetTrading() {
 	case proto.Trading_MARKET:
 
-		return &response, status.Error(55444, "coming soon")
+		// The purpose of this code is to set the price of the order (order.Price) to the market price of the requested base
+		// and quote units, assigning, and price, which is retrieved from the "e.getMarket" function.
+		order.Price = s.getMarket(req.GetBaseUnit(), req.GetQuoteUnit(), req.GetAssigning(), req.GetPrice())
+
+		// This if statement is checking to see if the request is to buy something. If it is, it is calculating the quantity
+		// and value of the order by dividing the quantity by the price.
+		if req.GetAssigning() == proto.Assigning_BUY {
+			order.Quantity, order.Value = decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float(), decimal.New(req.GetQuantity()).Div(order.GetPrice()).Float()
+		}
 
 	case proto.Trading_LIMIT:
 

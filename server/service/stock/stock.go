@@ -7,7 +7,6 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto"
-
 	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
 	"google.golang.org/grpc/status"
 )
@@ -20,6 +19,7 @@ type Service struct {
 
 func (s *Service) Initialization() {
 	go s.market()
+	go s.price()
 }
 
 // getAgent - This function is used to get an Agent based on the userId provided. It uses a SQL query to search for an Agent with
@@ -239,4 +239,79 @@ func (s *Service) getOrder(id int64) *pbstock.Order {
 	// "order" struct). This allows the program to retrieve data from the database and store it in a convenient and organized format.
 	_ = s.Context.Db.QueryRow("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1 and type = $2", id, proto.Type_STOCK).Scan(&order.Id, &order.Value, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
+}
+
+// getMarket - This function is used to get the market price for a given base and quote currency. It takes in the base, quote,
+// assigning (buy/sell), and current price as parameters. It then gets the current price from the getPrice() function
+// and, depending on the assigning, queries the database for either the minimum or maximum price that is greater than or
+// less than the current price and is in the pending status. Finally, it returns the market price.
+func (s *Service) getMarket(base, quote string, assigning proto.Assigning, price float64) float64 {
+
+	var (
+		ok bool
+	)
+
+	// This code is checking for the existence of a price by attempting to get it from e.getPrice(), which takes in two
+	// parameters, base and quote. If the price exists (indicated by the ok return value), then it will be returned. If the
+	// price does not exist (indicated by the !ok return value), then it will not be returned.
+	if price, ok = s.getPrice(base, quote); !ok {
+		return price
+	}
+
+	// The switch statement is used to evaluate an expression and determine which statement should be executed based on the
+	// value of the expression. The switch statement assigns the expression to a variable called assigning, which is then
+	// used to make the determination of which statement to execute.
+	switch assigning {
+	case proto.Assigning_BUY:
+
+		// The purpose of this code is to query the database for the minimum price of a particular order that has a specific
+		// assigning, base unit, quote unit, price, and status. The result is then stored in the variable 'price'.
+		_ = s.Context.Db.QueryRow("select min(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5 and type = $6", proto.Assigning_SELL, base, quote, price, proto.Status_PENDING, proto.Type_STOCK).Scan(&price)
+	case proto.Assigning_SELL:
+
+		// The purpose of this code is to query a database for the maximum price from orders that meet certain criteria
+		// (assigning, base unit, quote unit, price and status) and scan the result into the variable "price".
+		_ = s.Context.Db.QueryRow("select max(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5 and type = $6", proto.Assigning_BUY, base, quote, price, proto.Status_PENDING, proto.Type_STOCK).Scan(&price)
+	}
+
+	return price
+}
+
+// getPrice - This function is used to query a database for the price of a currency pair given the base and quote units. It takes
+// two parameters, base and quote, which are strings and returns a float value and a boolean. The function uses the
+// QueryRow() method to execute the query, and the Scan() method to store the returned value in the price variable. If an
+// error occurs, the ok boolean is returned as false, otherwise it is returned as true.
+func (s *Service) getPrice(base, quote string) (price float64, ok bool) {
+
+	// This code is used to query and retrieve a price from a database. The "if err" statement is used to check for any
+	// errors that may occur during the query and retrieve process. If an error is encountered, the code will return the price and ok.
+	if err := s.Context.Db.QueryRow("select price from stocks where symbol = $1 and zone = $2", base, quote).Scan(&price); err != nil {
+		return price, ok
+	}
+
+	return price, true
+}
+
+// getRatio - This function is used to calculate the ratio of a given base and quote. It takes in two strings, base and quote, as
+// parameters and returns a float64 representing the ratio and a boolean to indicate whether the ratio was successfully
+// calculated. It uses the GetCandles function to retrieve the last 2 candles and then calculates the ratio by taking the
+// difference between the first and second close prices and dividing it by the second close price.
+func (s *Service) getRatio(base, quote string) (ratio float64, ok bool) {
+
+	// This code is part of a function that is attempting to get the ratio of two different currencies. The code is
+	// attempting to get two candles from the e (which is an exchange) with the given base and quote units. If an error is
+	// encountered, the function will return the ratio and ok.
+	migrate, err := s.GetCandles(context.Background(), &pbstock.GetRequestCandles{BaseUnit: base, QuoteUnit: quote, Limit: 2})
+	if err != nil {
+		return ratio, ok
+	}
+
+	// This code is checking if there are two elements in to migrate.Fields array, and if so, it is calculating the ratio
+	// of the closing prices of the two elements. The ratio is calculated by subtracting the close of the first element from
+	// the close of the second element, then dividing that number by the close of the second element, and then multiplying it by 100.
+	if len(migrate.Fields) == 2 {
+		ratio = ((migrate.Fields[0].Close - migrate.Fields[1].Close) / migrate.Fields[1].Close) * 100
+	}
+
+	return ratio, true
 }
