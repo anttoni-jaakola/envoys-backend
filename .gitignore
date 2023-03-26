@@ -2,7 +2,6 @@
 .vscode/
 writer.log
 ./main
-data/
 static/swagger/
 .DS_Store
 *.pb.go
