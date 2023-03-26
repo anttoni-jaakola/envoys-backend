@@ -7,7 +7,7 @@ create table if not exists public.withdraws
     user_id   integer,
     broker_id integer,
     status    integer                  default 2                     not null,
-    create_at timestamp with time zone default CURRENT_TIMESTAMP,
+    create_at timestamp with time zone default CURRENT_TIMESTAMP
 );
 
 alter table public.withdraws

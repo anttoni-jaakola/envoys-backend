@@ -6,6 +6,8 @@ create table if not exists public.stocks
     zone   varchar        default 'usd'::character varying not null,
     price  numeric(20, 8) default 0.00000000               not null,
     status boolean        default false                    not null,
+    base_decimal integer  default 8                        not null,
+    quote_decimal integer  default 8                        not null,
     name   varchar        default ''::character varying    not null
 );
 

@@ -1,3 +1,4 @@
+create extension if not exists timescaledb cascade;
 create table if not exists public.trades
 (
     id         serial,

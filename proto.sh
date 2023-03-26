@@ -38,4 +38,5 @@ for d in $(find static/swagger/server/proto -name '*.json') ; do
 done
 
 rm -r static/swagger/server
+cp -r github.com/cryptogateway/backend-envoys/server/proto/* server/proto/
 rm -r github.com

@@ -120,6 +120,8 @@ func (s *Service) price() {
 				if _, err := s.Context.Db.Exec("update stocks set price = $3 where symbol = $1 and zone = $2;", pair.GetBaseUnit(), pair.GetQuoteUnit(), price); s.Context.Debug(err) {
 					return
 				}
+
+				time.Sleep(time.Second * 1)
 			}
 		}()
 	}
