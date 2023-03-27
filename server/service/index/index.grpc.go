@@ -48,8 +48,8 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 
 	// The purpose of this code is to query a database for the number of currencies with a status of either true or false,
 	// and assign the result to the variables currency.Enable and currency.Disable.
-	_ = i.Context.Db.QueryRow("select count(*) from currencies where status = $1", true).Scan(&currency.Enable)
-	_ = i.Context.Db.QueryRow("select count(*) from currencies where status = $1", false).Scan(&currency.Disable)
+	_ = i.Context.Db.QueryRow("select count(*) from assets where status = $1", true).Scan(&currency.Enable)
+	_ = i.Context.Db.QueryRow("select count(*) from assets where status = $1", false).Scan(&currency.Disable)
 
 	// The purpose of the code is to query the database for the number of transactions with a status of FILLED and PENDING
 	// and store the results in the variables "transaction.Filled" and "transaction.Pending".
@@ -75,7 +75,7 @@ func (i *Service) GetStatistic(_ context.Context, _ *pbindex.GetRequestStatistic
 	// function, and the result is returned in the rows variable. If an error occurs during the query, the err variable is
 	// populated with the error. The defer statement ensures
 	// that the rows.Close() function is called after the query is complete, which closes the connection to the database.
-	rows, err := i.Context.Db.Query("select symbol, fees_charges, fees_costs from currencies")
+	rows, err := i.Context.Db.Query("select symbol, fees_charges, fees_costs from assets")
 	if err != nil {
 		return &response, err
 	}
@@ -210,7 +210,7 @@ func (i *Service) GetPairs(ctx context.Context, req *pbindex.GetRequestPairs) (*
 
 			// This code is retrieving the latest 50 candles for a specific trading pair. The request is sent to the spot exchange
 			// and if the request is successful, the candles are returned. If there is an error, it is returned with the err variable.
-			candles, err := spot.GetCandles(ctx, &pbspot.GetRequestCandles{
+			ticker, err := spot.GetTicker(ctx, &pbspot.GetRequestTicker{
 				Limit:     50,
 				BaseUnit:  pair.GetBaseUnit(),
 				QuoteUnit: pair.GetQuoteUnit(),
@@ -222,14 +222,14 @@ func (i *Service) GetPairs(ctx context.Context, req *pbindex.GetRequestPairs) (*
 			// This code is setting the values of the High, Low, and Volume properties of the 'pair' object to the corresponding
 			// values from the 'candles' object's Stats object. This is likely being done to save the corresponding values from
 			// the 'candles' object in the 'pair' object for later use.
-			pair.High = candles.Stats.GetHigh()
-			pair.Low = candles.Stats.GetLow()
-			pair.Volume = candles.Stats.GetVolume()
+			pair.High = ticker.Stats.GetHigh()
+			pair.Low = ticker.Stats.GetLow()
+			pair.Volume = ticker.Stats.GetVolume()
 
 			// This code is looping through an array of candles and appending each candle's close value to a pair.Candles array.
 			// The purpose is to add the closing values of each candle to a list of candles for a given pair.
-			for i := 0; i < len(candles.Fields); i++ {
-				pair.Candles = append(pair.Candles, candles.Fields[i].Close)
+			for i := 0; i < len(ticker.Fields); i++ {
+				pair.Candles = append(pair.Candles, ticker.Fields[i].Close)
 			}
 
 			// This code appends a new field to the response object. The &pair parameter is added to the end of the

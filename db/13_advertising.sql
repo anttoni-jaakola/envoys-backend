@@ -24,3 +24,5 @@ values  (1, '', '', 'https://filmix.ac/series/triller/135902-k-karnival-rou-2019
         (5, '', '', 'https://filmix.ac/series/triller/135902-k-karnival-rou-2019.html', 1),
         (6, '', '', 'https://filmix.ac/series/triller/135902-k-karnival-rou-2019.html', 1),
         (8, '', '', 'https://filmix.ac/series/triller/135902-k-karnival-rou-2019.html', 1);
+
+select pg_catalog.setval('public.advertising_id_seq', 6, true);

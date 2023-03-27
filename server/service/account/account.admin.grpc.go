@@ -117,7 +117,7 @@ func (a *Service) GetAccountsRule(ctx context.Context, req *pbaccount.GetRequest
 			// The leading underscore is used to suppress the compiler warning about not using the return value of the QueryRow() function.
 			_ = a.Context.Db.QueryRow("select count(*) as count from transactions where user_id = $1", item.Id).Scan(&counts.Transaction)
 			_ = a.Context.Db.QueryRow("select count(*) as count from orders where user_id = $1", item.Id).Scan(&counts.Order)
-			_ = a.Context.Db.QueryRow("select count(*) as count from assets where user_id = $1", item.Id).Scan(&counts.Asset)
+			_ = a.Context.Db.QueryRow("select count(*) as count from balances where user_id = $1", item.Id).Scan(&counts.Asset)
 
 			// The purpose of this statement is to assign the address of the variable 'counts' to the 'Counts' item. This allows
 			// the 'Counts' item to refer to the same memory location as the 'counts' variable.

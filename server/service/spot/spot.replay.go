@@ -59,7 +59,7 @@ func (e *Service) price() {
 				// The purpose of this code is to retrieve two candles from a given pair of base and quote units. The GetCandles()
 				// function is used to retrieve the candles and the returned value is stored in the migrate variable. If an error is
 				// encountered, the code will skip the iteration and continue to the next one.
-				migrate, err := e.GetCandles(context.Background(), &pbspot.GetRequestCandles{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2})
+				migrate, err := e.GetTicker(context.Background(), &pbspot.GetRequestTicker{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2})
 				if e.Context.Debug(err) {
 					return
 				}
@@ -91,7 +91,7 @@ func (e *Service) price() {
 				// braces will be executed. Otherwise, it will be skipped.
 				if price == 0 {
 
-					// This code is used to calculate the price of an item. It checks if the migrate.Fields array has any elements in
+					// This code is used to calculate the price of an item. It checks if to migrate.Fields array has any elements in
 					// it. If it does, it takes the first element, gets its price, adds that to the price of the pair, and divides the
 					// sum by 2. If the array is empty, it just returns the price of the pair.
 					if len(migrate.Fields) > 0 {
@@ -154,7 +154,7 @@ func (e *Service) market() {
 				// This code is part of a loop that is looping over a list of currency pairs. The purpose of this code is to insert
 				// the information from each pair (assigning, base_unit, quote_unit, price, quantity, market) into a table called
 				// trades. The code is checking for any errors and if there is an error, it is continuing the loop.
-				if _, err := e.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, proto.Assigning_MARKET_PRICE, pair.GetBaseUnit(), pair.GetQuoteUnit(), pair.GetPrice(), 0, true); e.Context.Debug(err) {
+				if _, err := e.Context.Db.Exec(`insert into ohlcv (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, proto.Assigning_MARKET_PRICE, pair.GetBaseUnit(), pair.GetQuoteUnit(), pair.GetPrice(), 0, true); e.Context.Debug(err) {
 					continue
 				}
 
@@ -164,16 +164,16 @@ func (e *Service) market() {
 				for _, interval := range help.Depth() {
 
 					// The purpose of this code is to get the most recent two candles for a given currency pair and interval, using the
-					// pbspot.GetRequestCandles object. If an error occurs during the process, the code will continue execution, but the
+					// pbspot.GetRequestTicker object. If an error occurs during the process, the code will continue execution, but the
 					// error will be logged in the debug logs.
-					migrate, err := e.GetCandles(context.Background(), &pbspot.GetRequestCandles{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2, Resolution: interval})
+					migrate, err := e.GetTicker(context.Background(), &pbspot.GetRequestTicker{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2, Resolution: interval})
 					if e.Context.Debug(err) {
 						continue
 					}
 
 					// This code is part of a loop that is attempting to publish a message to an exchange. The if statement checks the
 					// result of the Publish method and, if an error occurs, the code continues to the next iteration of the loop.
-					if err := e.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/candles:%v", interval)); e.Context.Debug(err) {
+					if err := e.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/ticker:%v", interval)); e.Context.Debug(err) {
 						continue
 					}
 				}
@@ -315,7 +315,7 @@ func (e *Service) trade(order *pbspot.Order, side proto.Side) {
 				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
 				// trade process associated with them. The order and item parameters contain the necessary information needed to
 				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				e.process(order, &item)
+				e.process(proto.Side_BID, order, &item)
 
 			} else {
 				e.Context.Logger.Infof("[BID]: no matches found: (item [%v]) >= (order [%v])", order.GetPrice(), item.GetPrice())
@@ -334,7 +334,7 @@ func (e *Service) trade(order *pbspot.Order, side proto.Side) {
 				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
 				// trade process associated with them. The order and item parameters contain the necessary information needed to
 				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				e.process(order, &item)
+				e.process(proto.Side_ASK, order, &item)
 
 			} else {
 				e.Context.Logger.Infof("[ASK]: no matches found: (order [%v]) <= (item [%v])", order.GetPrice(), item.GetPrice())
@@ -359,29 +359,33 @@ func (e *Service) trade(order *pbspot.Order, side proto.Side) {
 // process - This function is used to replay a trade process. It updates two orders with different amounts to determine the result
 // of a trade. It updates the order status in the database with pending in to filled, updates the balance by adding the
 // amount of the order to the balance, and sends a mail. In addition, it logs information about the trade.
-func (e *Service) process(params ...*pbspot.Order) {
+func (e *Service) process(side proto.Side, params ...*pbspot.Order) {
 
-	// The purpose of this code is to declare and initialize a set of four variables. The first three variables are "value",
-	// "equal", and "instance", and they are all declared as type float64, bool, and int, respectively. The last variable is
-	// "migrate", and is declared as type query.Migrate, and is initialized with a Context set to e.Context.
+	// The purpose of this code is to declare two variables, instance and migrate. The variable instance is declared as an
+	// integer, and migrate is declared as a query.Migrate object with the Context field set to the value of the variable e.Context.
 	var (
-		value    float64
-		equal    bool
 		instance int
+		price    float64
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
 	)
 
-	// This code is comparing two values (from the params array) to determine if they are equal or not. If they are equal,
-	// it sets the 'equal' boolean to true and the 'instance' variable to 1. If they are not equal, it sets the 'equal'
-	// boolean to false and the 'instance' variable to 0.
+	// This code is checking whether the value of the first parameter is greater than or equal to the value of the second
+	// parameter. If it is, the instance variable is set to 1.
 	if params[0].GetValue() >= params[1].GetValue() {
-		equal = true
 		instance = 1
-	} else {
-		equal = false
-		instance = 0
+	}
+
+	// This switch statement is used to determine the price based on the side (bid or ask) of an order. The switch statement
+	// checks for the side of the order and assigns the price accordingly, using the params array. If the side is BID, it
+	// will assign the price from the second element in the params array. If the side is ASK, it will assign the price from
+	// the first element in the params array.
+	switch side {
+	case proto.Side_BID:
+		price = params[1].GetPrice()
+	case proto.Side_ASK:
+		price = params[0].GetPrice()
 	}
 
 	// This code is used to update an order status from pending to filled when the order is completed. It also updates the
@@ -393,10 +397,15 @@ func (e *Service) process(params ...*pbspot.Order) {
 		// checks for any errors that may occur during the process. Lastly, the code sends an email to the user associated with the order once the order is filled.
 		for i := 0; i < 2; i++ {
 
+			// The purpose of this code is to declare a variable named "value" of type float64. This variable can be used to store a decimal number, such as 3.14159.
+			var (
+				value float64
+			)
+
 			// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
 			// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
 			// stored in the "value" variable and the function will continue. If the query fails, the function will return.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 and type = $4 returning value;", params[i].GetId(), params[instance].GetValue(), proto.Status_PENDING, proto.Type_SPOT).Scan(&value); err != nil {
+			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 and type = $4 returning value;", params[i].GetId(), params[instance].GetValue(), proto.Status_PENDING, proto.Type_SPOT).Scan(&value); e.Context.Debug(err) {
 				return
 			}
 
@@ -405,7 +414,7 @@ func (e *Service) process(params ...*pbspot.Order) {
 				// This code is performing an update on the orders table in a database. It is setting the status of the order with the
 				// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
 				// occur during the process. If an error is found, the code will return without proceeding.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1 and type = $3;", params[i].GetId(), proto.Status_FILLED, proto.Type_SPOT); err != nil {
+				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1 and type = $3;", params[i].GetId(), proto.Status_FILLED, proto.Type_SPOT); e.Context.Debug(err) {
 					return
 				}
 
@@ -416,68 +425,64 @@ func (e *Service) process(params ...*pbspot.Order) {
 		switch params[1].GetAssigning() {
 		case proto.Assigning_BUY:
 
-			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
-			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
-			// values to the variables quantity and fees.
-			quantity, fees := e.getSum(params[0].GetQuoteUnit(), decimal.New(params[instance].GetValue()).Mul(params[1].GetPrice()).Float(), false)
-
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
+			// Order trades logs.
+			quantity, err := e.setTrade(params[0].GetId(), params[0].GetQuoteUnit(), params[instance].GetValue(), price, true)
+			if e.Context.Debug(err) {
 				return
 			}
-			params[0].Header = &pbspot.Header{Fees: fees, Maker: false, Turn: false, Equal: equal}
-
-			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
-			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
-			// values to the variables quantity and fees.
-			quantity, fees = e.getSum(params[0].GetBaseUnit(), params[instance].GetValue(), true)
 
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); e.Context.Debug(err) {
+				return
+			}
+
+			// Order trades logs.
+			quantity, err = e.setTrade(params[1].GetId(), params[0].GetBaseUnit(), params[instance].GetValue(), price, false)
+			if e.Context.Debug(err) {
+				return
+			}
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
 			if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
 				return
 			}
-			params[1].Header = &pbspot.Header{Fees: fees, Maker: true, Turn: true, Equal: equal}
 
 			break
 		case proto.Assigning_SELL:
 
-			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
-			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
-			// values to the variables quantity and fees.
-			quantity, fees := e.getSum(params[0].GetBaseUnit(), params[instance].GetValue(), false)
-
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
+			// Order trades logs.
+			quantity, err := e.setTrade(params[0].GetId(), params[0].GetBaseUnit(), params[instance].GetValue(), price, false)
+			if e.Context.Debug(err) {
 				return
 			}
-			params[0].Header = &pbspot.Header{Fees: fees, Maker: false, Turn: true, Equal: equal}
-
-			// The purpose of this code is to calculate a quantity and fees given certain parameters. It uses the getSum()
-			// function to calculate the quantity and fees of a given quote unit, value, and price. It then assigns the resulting
-			// values to the variables quantity and fees.
-			quantity, fees = e.getSum(params[0].GetQuoteUnit(), decimal.New(params[instance].GetValue()).Mul(params[0].GetPrice()).Float(), true)
 
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); e.Context.Debug(err) {
 				return
 			}
-			params[1].Header = &pbspot.Header{Fees: fees, Maker: true, Turn: false, Equal: equal}
+
+			// Order trades logs.
+			quantity, err = e.setTrade(params[1].GetId(), params[0].GetQuoteUnit(), params[instance].GetValue(), price, true)
+			if e.Context.Debug(err) {
+				return
+			}
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); e.Context.Debug(err) {
+				return
+			}
 
 			break
 		}
 	}
 
-	// The purpose of this code is to check for an error when the setTrade method is called with the given parameters. If
-	// there is an error, it will return without continuing with the code.
-	if err := e.setTrade(params[0], params[1]); err != nil {
+	// The purpose of this code is to set a ticker with the given parameters and check for errors. If an error is
+	// encountered, the code will trigger the debug function of the context and return.
+	if err := e.setTicker(params[0]); e.Context.Debug(err) {
 		return
 	}
 }
@@ -922,7 +927,7 @@ func (e *Service) confirmation() {
 					// This code is updating the balance of an asset with a given symbol and user ID. The purpose is to update the
 					// balance with a given value (item.GetValue()) for the user and symbol combination. The code is using the Exec
 					// function on the database object and passing in the appropriate values. If there is an error, the code continues.
-					if _, err := e.Context.Db.Exec("update assets set balance = balance + $1 where symbol = $2 and user_id = $3 and type = $4;", item.GetValue(), item.GetSymbol(), item.GetUserId(), proto.Type_SPOT); e.Context.Debug(err) {
+					if _, err := e.Context.Db.Exec("update balances set value = value + $1 where symbol = $2 and user_id = $3 and type = $4;", item.GetValue(), item.GetSymbol(), item.GetUserId(), proto.Type_SPOT); e.Context.Debug(err) {
 						return
 					}
 

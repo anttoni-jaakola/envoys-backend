@@ -673,7 +673,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 
 		// This code is used to update the fees_charges for a currency specified by the symbol variable. The fees_charges will
 		// be increased by the amount in the convert variable. If there is an error, the code will log it using the Debug method and then return.
-		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, convert); e.Context.Debug(err) {
+		if _, err := e.Context.Db.Exec("update assets set fees_charges = fees_charges + $2 where symbol = $1;", symbol, convert); e.Context.Debug(err) {
 			return
 		}
 

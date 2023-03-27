@@ -55,10 +55,10 @@ func (s *Service) price() {
 					return
 				}
 
-				// The purpose of this code is to retrieve two candles from a given pair of base and quote units. The GetCandles()
+				// The purpose of this code is to retrieve two candles from a given pair of base and quote units. The GetTicker()
 				// function is used to retrieve the candles and the returned value is stored in the migrate variable. If an error is
 				// encountered, the code will skip the iteration and continue to the next one.
-				migrate, err := s.GetCandles(context.Background(), &pbstock.GetRequestCandles{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2})
+				migrate, err := s.GetTicker(context.Background(), &pbstock.GetRequestTicker{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2})
 				if s.Context.Debug(err) {
 					return
 				}
@@ -173,7 +173,7 @@ func (s *Service) market() {
 				// This code is part of a loop that is looping over a list of currency pairs. The purpose of this code is to insert
 				// the information from each pair (assigning, base_unit, quote_unit, price, quantity, market) into a table called
 				// trades. The code is checking for any errors and if there is an error, it is continuing the loop.
-				if _, err := s.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, proto.Assigning_MARKET_PRICE, item.GetSymbol(), item.GetZone(), item.GetPrice(), 0, true); s.Context.Debug(err) {
+				if _, err := s.Context.Db.Exec(`insert into ohlcv (assigning, base_unit, quote_unit, price, quantity, market) values ($1, $2, $3, $4, $5, $6);`, proto.Assigning_MARKET_PRICE, item.GetSymbol(), item.GetZone(), item.GetPrice(), 0, true); s.Context.Debug(err) {
 					continue
 				}
 
@@ -183,16 +183,16 @@ func (s *Service) market() {
 				for _, interval := range help.Depth() {
 
 					// The purpose of this code is to get the most recent two candles for a given currency pair and interval, using the
-					// pbstock.GetRequestCandles object. If an error occurs during the process, the code will continue execution, but the
+					// pbstock.GetRequestTicker object. If an error occurs during the process, the code will continue execution, but the
 					// error will be logged in the debug logs.
-					migrate, err := s.GetCandles(context.Background(), &pbstock.GetRequestCandles{BaseUnit: item.GetSymbol(), QuoteUnit: item.GetZone(), Limit: 2, Resolution: interval})
+					migrate, err := s.GetTicker(context.Background(), &pbstock.GetRequestTicker{BaseUnit: item.GetSymbol(), QuoteUnit: item.GetZone(), Limit: 2, Resolution: interval})
 					if s.Context.Debug(err) {
 						continue
 					}
 
 					// This code is part of a loop that is attempting to publish a message to an exchange. The if statement checks the
 					// result of the Publish method and, if an error occurs, the code continues to the next iteration of the loop.
-					if err := s.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/candles:%v", interval)); s.Context.Debug(err) {
+					if err := s.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/ticker:%v", interval)); s.Context.Debug(err) {
 						continue
 					}
 				}

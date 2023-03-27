@@ -24,7 +24,7 @@ func (i *Service) getPrice(base, quote string) (ratio float64, err error) {
 	// This code is querying a database for two values: the price from trades for two provided units, and ordering the
 	// results by their ID in descending order. It is then limiting the result set to the two most recent results. Finally,
 	// it is deferring the closing of the rows until the function ends.
-	rows, err := i.Context.Db.Query("select price from trades where base_unit = $1 and quote_unit = $2 order by id desc limit 2", base, quote)
+	rows, err := i.Context.Db.Query("select price from ohlcv where base_unit = $1 and quote_unit = $2 order by id desc limit 2", base, quote)
 	if err != nil {
 		return ratio, err
 	}

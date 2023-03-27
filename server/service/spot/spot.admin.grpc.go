@@ -56,16 +56,16 @@ func (e *Service) GetMarketPriceRule(ctx context.Context, req *pbspot.GetRequest
 	return &response, nil
 }
 
-// SetCurrencyRule - This function is used to set currency rules in a context. It checks the authorization of the user, the length of the
+// SetAssetRule - This function is used to set currency rules in a context. It checks the authorization of the user, the length of the
 // currency name and symbol, and sets the currency by either updating existing data or inserting new data into the
 // database. It also handles renaming and creating images related to the currency.
-func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCurrencyRule) (*pbspot.ResponseCurrency, error) {
+func (e *Service) SetAssetRule(ctx context.Context, req *pbspot.SetRequestAssetRule) (*pbspot.ResponseAsset, error) {
 
 	// The purpose of this code is to create variables which can be used in order to make queries and handle responses from
-	// the PBSpot API. The variables are of type 'pbspot.ResponseCurrency', 'query.Migrate', and 'query.Query'. These
+	// the PBSpot API. The variables are of type 'pbspot.ResponseAsset', 'query.Migrate', and 'query.Query'. These
 	// variables can then be used to make calls to the API, handle responses, and perform migrations as needed.
 	var (
-		response pbspot.ResponseCurrency
+		response pbspot.ResponseAsset
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
@@ -81,25 +81,25 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 
 	// This code is checking if the user has the proper permissions to access and edit data. If they do not have the
 	// required authorization, it returns an error message letting them know they are not allowed to access the data.
-	if !migrate.Rules(auth, "currencies", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
+	if !migrate.Rules(auth, "assets", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
 		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code checks if the length of the currency name is less than 4 characters. If it is less than 4 characters, it
-	// returns an error message indicating that the currency name must not be less than 4 characters.
-	if len(req.Currency.GetName()) < 4 {
-		return &response, status.Error(86618, "currency name must not be less than < 4 characters")
+	// returns an error message indicating that the asset name must not be less than 4 characters.
+	if len(req.Asset.GetName()) < 4 {
+		return &response, status.Error(86618, "asset name must not be less than < 4 characters")
 	}
 
-	// This code checks the length of the currency symbol. If the length of the currency symbol is less than 2 characters,
-	// it returns an error message indicating that the currency symbol must not be less than 2 characters. This is to ensure that the currency symbol is valid.
-	if len(req.Currency.GetSymbol()) < 2 {
-		return &response, status.Error(17078, "currency symbol must not be less than < 2 characters")
+	// This code checks the length of the asset symbol. If the length of the currency symbol is less than 2 characters,
+	// it returns an error message indicating that the asset symbol must not be less than 2 characters. This is to ensure that the asset symbol is valid.
+	if len(req.Asset.GetSymbol()) < 2 {
+		return &response, status.Error(17078, "asset symbol must not be less than < 2 characters")
 	}
 
-	// This code is using the json.Marshal function to convert a Go data structure req.Currency.GetChainsIds() into JSON. If
+	// This code is using the json.Marshal function to convert a Go data structure req.Asset.GetChainsIds() into JSON. If
 	// an error occurs, the error is returned with the Context.Error function.
-	serialize, err := json.Marshal(req.Currency.GetChainsIds())
+	serialize, err := json.Marshal(req.Asset.GetChainsIds())
 	if err != nil {
 		return &response, err
 	}
@@ -108,66 +108,66 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 	// comparisons and searches, as it makes the comparison easier and more accurate.
 	req.Symbol = strings.ToLower(req.GetSymbol())
 
-	// This code is setting the Currency Symbol field of the req object to the lowercase version of the symbol that is
+	// This code is setting the asset symbol field of the req object to the lowercase version of the symbol that is
 	// returned from the GetSymbol() method. This is likely being done to ensure that symbols are consistently stored in the same format.
-	req.Currency.Symbol = strings.ToLower(req.Currency.GetSymbol())
+	req.Asset.Symbol = strings.ToLower(req.Asset.GetSymbol())
 
 	// This statement is checking if the length of the req.GetSymbol() is greater than 0. If it is, then the code following
 	// this statement will be executed. This statement is used to verify that the req.GetSymbol() is not empty.
 	if len(req.GetSymbol()) > 0 {
 
-		// This code is part of an update statement in which the purpose is to update the currency's information in the
+		// This code is part of an update statement in which the purpose is to update the asset's information in the
 		// database. This statement is written in the Go programming language, and it uses the Exec method to execute a SQL
-		// query that updates the currency's name, symbol, min/max withdraw/deposit/trade, fees, marker, status, type, and
+		// query that updates the asset's name, symbol, min/max withdraw/deposit/trade, fees, marker, status, type, and
 		// chains based on the parameters passed in through the req object. The last parameter, req.GetSymbol(), is used to identify which record should be updated.
-		if _, err := e.Context.Db.Exec("update currencies set name = $1, symbol = $2, min_withdraw = $3, max_withdraw = $4, min_trade = $5, max_trade = $6, fees_trade = $7, fees_discount = $8, marker = $9, status = $10, type = $11, chains = $12 where symbol = $13;",
-			req.Currency.GetName(),
-			req.Currency.GetSymbol(),
-			req.Currency.GetMinWithdraw(),
-			req.Currency.GetMaxWithdraw(),
-			req.Currency.GetMinTrade(),
-			req.Currency.GetMaxTrade(),
-			req.Currency.GetFeesTrade(),
-			req.Currency.GetFeesDiscount(),
-			req.Currency.GetMarker(),
-			req.Currency.GetStatus(),
-			req.Currency.GetType(),
+		if _, err := e.Context.Db.Exec("update assets set name = $1, symbol = $2, min_withdraw = $3, max_withdraw = $4, min_trade = $5, max_trade = $6, fees_trade = $7, fees_discount = $8, marker = $9, status = $10, type = $11, chains = $12 where symbol = $13;",
+			req.Asset.GetName(),
+			req.Asset.GetSymbol(),
+			req.Asset.GetMinWithdraw(),
+			req.Asset.GetMaxWithdraw(),
+			req.Asset.GetMinTrade(),
+			req.Asset.GetMaxTrade(),
+			req.Asset.GetFeesTrade(),
+			req.Asset.GetFeesDiscount(),
+			req.Asset.GetMarker(),
+			req.Asset.GetStatus(),
+			req.Asset.GetType(),
 			serialize,
 			req.GetSymbol(),
 		); err != nil {
 			return &response, err
 		}
 
-		// The purpose of this code is to update all the relevant tables in a database when the currency symbol changes. It
+		// The purpose of this code is to update all the relevant tables in a database when the asset symbol changes. It
 		// does this by checking if the currency symbol from the request is different from the existing currency symbol, and if
 		// so, it updates the associated tables with the new symbol.
-		if req.GetSymbol() != req.Currency.GetSymbol() {
-			_, _ = e.Context.Db.Exec("update wallets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update assets set symbol = $2 where symbol = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), proto.Type_SPOT)
-			_, _ = e.Context.Db.Exec("update trades set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update transfers set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update orders set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 and type = $3 or quote_unit = $1 and type = $3", req.GetSymbol(), req.Currency.GetSymbol(), proto.Type_SPOT)
-			_, _ = e.Context.Db.Exec("update reserves set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
-			_, _ = e.Context.Db.Exec("update currencies set symbol = $2 where symbol = $1", req.GetSymbol(), req.Currency.GetSymbol())
+		if req.GetSymbol() != req.Asset.GetSymbol() {
+			_, _ = e.Context.Db.Exec("update wallets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Asset.GetSymbol())
+			_, _ = e.Context.Db.Exec("update balances set symbol = $2 where symbol = $1 and type = $3", req.GetSymbol(), req.Asset.GetSymbol(), proto.Type_SPOT)
+			_, _ = e.Context.Db.Exec("update ohlcv set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Asset.GetSymbol())
+			_, _ = e.Context.Db.Exec("update trades set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Asset.GetSymbol())
+			_, _ = e.Context.Db.Exec("update orders set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 and type = $3 or quote_unit = $1 and type = $3", req.GetSymbol(), req.Asset.GetSymbol(), proto.Type_SPOT)
+			_, _ = e.Context.Db.Exec("update reserves set symbol = $2 where symbol = $1", req.GetSymbol(), req.Asset.GetSymbol())
+			_, _ = e.Context.Db.Exec("update assets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Asset.GetSymbol())
 		}
 
 	} else {
 
-		// This code is inserting new information into a table called currencies. The information being inserted is coming from
-		// the req.Currency object. The information is being inserted into a specific order, corresponding to the columns of
+		// This code is inserting new information into a table called assets. The information being inserted is coming from
+		// the req.Asset object. The information is being inserted into a specific order, corresponding to the columns of
 		// the table. The purpose is to store the information about a currency in the currencies table.
-		if _, err := e.Context.Db.Exec("insert into currencies (name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, marker, type, status, chains) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
-			req.Currency.GetName(),
-			req.Currency.GetSymbol(),
-			req.Currency.GetMinWithdraw(),
-			req.Currency.GetMaxWithdraw(),
-			req.Currency.GetMinTrade(),
-			req.Currency.GetMaxTrade(),
-			req.Currency.GetFeesTrade(),
-			req.Currency.GetFeesDiscount(),
-			req.Currency.GetMarker(),
-			req.Currency.GetType(),
-			req.Currency.GetStatus(),
+		if _, err := e.Context.Db.Exec("insert into assets (name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, marker, type, status, chains) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+			req.Asset.GetName(),
+			req.Asset.GetSymbol(),
+			req.Asset.GetMinWithdraw(),
+			req.Asset.GetMaxWithdraw(),
+			req.Asset.GetMinTrade(),
+			req.Asset.GetMaxTrade(),
+			req.Asset.GetFeesTrade(),
+			req.Asset.GetFeesDiscount(),
+			req.Asset.GetMarker(),
+			req.Asset.GetType(),
+			req.Asset.GetStatus(),
 			serialize,
 		); err != nil {
 			return &response, err
@@ -186,7 +186,7 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 		if len(req.GetSymbol()) > 0 {
 			q.Name = req.GetSymbol()
 		} else {
-			q.Name = req.Currency.GetSymbol()
+			q.Name = req.Asset.GetSymbol()
 		}
 
 		// This code is used to perform an image migration. It takes the image from the request, saves it as "icon" with a
@@ -198,13 +198,13 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 	} else {
 
 		// This if statement is checking if the symbol of the request (req.GetSymbol()) is not equal to the currency symbol of
-		// the request (req.Currency.GetSymbol()). This could be used to check if the currency being requested is valid for the given symbol.
-		if req.GetSymbol() != req.Currency.GetSymbol() {
+		// the request (req.Asset.GetSymbol()). This could be used to check if the currency being requested is valid for the given symbol.
+		if req.GetSymbol() != req.Asset.GetSymbol() {
 
 			// This code is part of a function that is likely updating a database and renaming a currency's symbol. The purpose of
-			// this code is to attempt to rename the currency's symbol using the migrate.Rename() function, and if an error
-			// occurs, the error is returned using the err.
-			if err := migrate.Rename("icon", req.GetSymbol(), req.Currency.GetSymbol()); err != nil {
+			// this code is to attempt to rename the currency's symbol using to migrate.Rename() function, and if an error
+			// occurs, the error is returned using to err.
+			if err := migrate.Rename("icon", req.GetSymbol(), req.Asset.GetSymbol()); err != nil {
 				return &response, err
 			}
 		}
@@ -213,16 +213,16 @@ func (e *Service) SetCurrencyRule(ctx context.Context, req *pbspot.SetRequestCur
 	return &response, nil
 }
 
-// GetCurrencyRule - This code is part of a service that is used to get currency rules. It is responsible for authenticating the user and
+// GetAssetRule - This code is part of a service that is used to get asset rules. It is responsible for authenticating the user and
 // retrieving the authentication data. It then checks to see if the user has the correct permissions to access the
 // currency data. If so, it retrieves the requested currency information and returns it. If there is an error, it is returned to the caller.
-func (e *Service) GetCurrencyRule(ctx context.Context, req *pbspot.GetRequestCurrencyRule) (*pbspot.ResponseCurrency, error) {
+func (e *Service) GetAssetRule(ctx context.Context, req *pbspot.GetRequestAssetRule) (*pbspot.ResponseAsset, error) {
 
-	// This code creates two variables, response and migrate. The variable response is of type pbspot.ResponseCurrency and
-	// the variable migrate is of type query.Migrate. The migrate variable contains a Context field and it is assigned the
+	// This code creates two variables, response and migrate. The variable response is of type pbspot.ResponseAsset and
+	// the variable migrate is of type query.Migrate. To migrate variable contains a Context field, and it is assigned the
 	// e.Context value. The purpose of this code is to create two variables and assign values to them.
 	var (
-		response pbspot.ResponseCurrency
+		response pbspot.ResponseAsset
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
@@ -238,29 +238,29 @@ func (e *Service) GetCurrencyRule(ctx context.Context, req *pbspot.GetRequestCur
 	// This code is checking if the user has the correct permissions to access the data. The `migrate.Rules` function takes
 	// in the user's authorization, the data they are trying to access (in this case "currencies"), and their role (in this
 	// case "RoleSpot"). If the user does not have the correct permissions, the code returns an error with status code 12011.
-	if !migrate.Rules(auth, "currencies", query.RoleSpot) {
+	if !migrate.Rules(auth, "assets", query.RoleSpot) {
 		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
 	// This code is checking if the currency ID of the requested symbol is greater than 0. If it is, it will add the
-	// currency to a list of fields in the response.
-	if currency, _ := e.getCurrency(req.GetSymbol(), false); currency.GetId() > 0 {
+	// asset to a list of fields in the response.
+	if currency, _ := e.getAsset(req.GetSymbol(), false); currency.GetId() > 0 {
 		response.Fields = append(response.Fields, currency)
 	}
 
 	return &response, nil
 }
 
-// GetCurrenciesRule - This code is part of a service for retrieving currency rules. It is used to authenticate the user, retrieve the
+// GetAssetsRule - This code is part of a service for retrieving currency rules. It is used to authenticate the user, retrieve the
 // authentication data, and query the database for the currency rule data requested by the user. It will return any
 // errors encountered during the authentication and query processes.
-func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestCurrenciesRule) (*pbspot.ResponseCurrency, error) {
+func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAssetsRule) (*pbspot.ResponseAsset, error) {
 
 	// The purpose of this code is to declare three variables: response, migrate, and maps. The variable response is of the
-	// type pbspot.ResponseCurrency. The variable migrate is of the type query.Migrate, and has a field of type context. The
+	// type pbspot.ResponseAsset. The variable migrate is of the type query.Migrate, and has a field of type context. The
 	// variable maps is of the type string array.
 	var (
-		response pbspot.ResponseCurrency
+		response pbspot.ResponseAsset
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
@@ -282,7 +282,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 
 	// The purpose of this if statement is to check if the user has the necessary permissions to perform the desired action.
 	// If the user does not have the correct permissions, an error is returned to the user.
-	if !migrate.Rules(auth, "currencies", query.RoleSpot) {
+	if !migrate.Rules(auth, "assets", query.RoleSpot) {
 		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
@@ -297,7 +297,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 	// function to execute a statement which retrieves the count of the number of rows in the 'currencies' table. The result
 	// is then stored in the 'response.Count' variable. The 'strings.Join(maps, " ")' is used to join the elements of the
 	// 'maps' array with a space in between.
-	_ = e.Context.Db.QueryRow(fmt.Sprintf("select count(*) as count from currencies %s", strings.Join(maps, " "))).Scan(&response.Count)
+	_ = e.Context.Db.QueryRow(fmt.Sprintf("select count(*) as count from assets %s", strings.Join(maps, " "))).Scan(&response.Count)
 
 	// The purpose of this code is to check if the response object has a count value greater than 0. If it has a value
 	// greater than 0, it means that the response has been successfully processed and can be used.
@@ -314,7 +314,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 
 		// This code is used to query the database. It builds a query with the given parameters (maps, req.GetLimit(), offset).
 		// It then attempts to execute it and, if an error is encountered, the function returns the error. Finally, it closes the rows.
-		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at from currencies %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
+		rows, err := e.Context.Db.Query(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at from assets %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
 		if err != nil {
 			return &response, err
 		}
@@ -326,7 +326,7 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 		for rows.Next() {
 
 			var (
-				item pbspot.Currency
+				item pbspot.Asset
 			)
 
 			// This code is used to scan through a row from a database and assign each column value to the corresponding item
@@ -367,17 +367,17 @@ func (e *Service) GetCurrenciesRule(ctx context.Context, req *pbspot.GetRequestC
 	return &response, nil
 }
 
-// DeleteCurrencyRule - This code is part of a delete currency rule function. The purpose of the code is to delete a currency rule, including
+// DeleteAssetRule - This code is part of a delete currency rule function. The purpose of the code is to delete a currency rule, including
 // the associated data in the wallets, assets, trades, transfers, orders, reserves and currencies tables. The code also
 // attempts to authenticate the user before deleting the data and checks their authorization to delete the data. If there
 // is an error, it is returned to the caller.
-func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequestCurrencyRule) (*pbspot.ResponseCurrency, error) {
+func (e *Service) DeleteAssetRule(ctx context.Context, req *pbspot.DeleteRequestAssetRule) (*pbspot.ResponseAsset, error) {
 
 	// The purpose of this code is to create two variables, response and migrate, which are of the types
-	// pbspot.ResponseCurrency and query.Migrate, respectively. The migrate variable is also given a Context property which
+	// pbspot.ResponseAsset and query.Migrate, respectively. To migrate variable is also given a Context property which
 	// is equal to the context stored in the e variable.
 	var (
-		response pbspot.ResponseCurrency
+		response pbspot.ResponseAsset
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
@@ -392,7 +392,7 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 
 	// This code is checking whether the user has the correct permissions for writing and editing data. If the user does not
 	// have the necessary permissions, it will return an error message.
-	if !migrate.Rules(auth, "currencies", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
+	if !migrate.Rules(auth, "assets", query.RoleSpot) || migrate.Rules(auth, "deny-record", query.RoleDefault) {
 		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
@@ -405,14 +405,14 @@ func (e *Service) DeleteCurrencyRule(ctx context.Context, req *pbspot.DeleteRequ
 	// This code is part of a function used to delete a currency from the database. The first part of the code checks if the
 	// currency exists and if it does, the code will then execute a series of SQL queries to delete the currency and all
 	// related data in other related tables.
-	if row, _ := e.getCurrency(req.GetSymbol(), false); row.GetId() > 0 {
+	if row, _ := e.getAsset(req.GetSymbol(), false); row.GetId() > 0 {
 		_, _ = e.Context.Db.Exec("delete from wallets where symbol = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from assets where symbol = $1 and type = $2", row.GetSymbol(), proto.Type_SPOT)
+		_, _ = e.Context.Db.Exec("delete from balances where symbol = $1 and type = $2", row.GetSymbol(), proto.Type_SPOT)
+		_, _ = e.Context.Db.Exec("delete from ohlcv where base_unit = $1 or quote_unit = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 or quote_unit = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from transfers where base_unit = $1 or quote_unit = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and type = $2 or quote_unit = $1 and type $2", row.GetSymbol(), proto.Type_SPOT)
 		_, _ = e.Context.Db.Exec("delete from reserves where symbol = $1", row.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from currencies where symbol = $1", row.GetSymbol())
+		_, _ = e.Context.Db.Exec("delete from assets where symbol = $1", row.GetSymbol())
 	}
 
 	// This code is used to remove a symbol from the "icon" database. It is checking for any errors that may occur while
@@ -690,7 +690,7 @@ func (e *Service) DeleteChainRule(ctx context.Context, req *pbspot.DeleteRequest
 	// The first line is getting the chain from the database, and the second line is removing it from the database. The
 	// third line is deleting the chain from the chains table.
 	if row, _ := e.getChain(req.GetId(), false); row.GetId() > 0 {
-		_, _ = e.Context.Db.Exec(fmt.Sprintf(`update currencies set chains = jsonb_path_query_array(chains, '$[*] ? (@ != %[1]d)') where chains @> '%[1]d'`, row.GetId()))
+		_, _ = e.Context.Db.Exec(fmt.Sprintf(`update assets set chains = jsonb_path_query_array(chains, '$[*] ? (@ != %[1]d)') where chains @> '%[1]d'`, row.GetId()))
 		_, _ = e.Context.Db.Exec("delete from chains where id = $1", row.GetId())
 	}
 	response.Success = true
@@ -900,7 +900,7 @@ func (e *Service) SetPairRule(ctx context.Context, req *pbspot.SetRequestPairRul
 		// and quote unit that match the values provided in the request. The if statement is checking the value of
 		// GetGraphClear() before executing the delete statement.
 		if req.Pair.GetGraphClear() {
-			_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 and quote_unit = $2", req.Pair.GetBaseUnit(), req.Pair.GetQuoteUnit())
+			_, _ = e.Context.Db.Exec("delete from ohlcv where base_unit = $1 and quote_unit = $2", req.Pair.GetBaseUnit(), req.Pair.GetQuoteUnit())
 		}
 
 		// This code is used to update an entry in the database table 'pairs', using the values in the 'req' struct. It updates
@@ -980,8 +980,8 @@ func (e *Service) DeletePairRule(ctx context.Context, req *pbspot.DeleteRequestP
 	// from the database, as well as all associated trades, transfers, and orders.
 	if row, _ := e.getPair(req.GetId(), false); row.GetId() > 0 {
 		_, _ = e.Context.Db.Exec("delete from pairs where id = $1", row.GetId())
+		_, _ = e.Context.Db.Exec("delete from ohlcv where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
-		_, _ = e.Context.Db.Exec("delete from transfers where base_unit = $1 and quote_unit = $2", row.GetBaseUnit(), row.GetQuoteUnit())
 		_, _ = e.Context.Db.Exec("delete from orders where base_unit = $1 and quote_unit = $2 and type = $3", row.GetBaseUnit(), row.GetQuoteUnit(), proto.Type_SPOT)
 	}
 	response.Success = true
@@ -1584,17 +1584,17 @@ func (e *Service) SetReserveUnlockRule(ctx context.Context, req *pbspot.SetReque
 	return &response, nil
 }
 
-// GetAssetsRule - This code is a function used to retrieve a list of assets from a database. It sets up a limit on the request if no
+// GetBalancesRule - This code is a function used to retrieve a list of assets from a database. It sets up a limit on the request if no
 // limit is specified, authenticates the user, checks their permissions, and retrieves the asset data from the database.
 // It also sets up an offset for a paginated request and appends the asset data to the response. It returns the response
 // and any errors that occur to the caller.
-func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAssetsManual) (*pbspot.ResponseAsset, error) {
+func (e *Service) GetBalancesRule(ctx context.Context, req *pbspot.GetRequestBalancesRule) (*pbspot.ResponseBalance, error) {
 
 	// The purpose of this code is to define two variables, response and migrate. The first variable, response, is of type
-	// pbspot.ResponseAsset, while the second variable, migrate, is of type query.Migrate. The query.Migrate variable is
+	// pbspot.ResponseBalance, while the second variable, migrate, is of type query.Migrate. The query.Migrate variable is
 	// initialized with an e.Context value.
 	var (
-		response pbspot.ResponseAsset
+		response pbspot.ResponseBalance
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
@@ -1617,7 +1617,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 		return &response, status.Error(12011, "you do not have rules for writing and editing data")
 	}
 
-	if _ = e.Context.Db.QueryRow("select count(*) as count from assets where user_id = $1 and type = $2", req.GetId(), proto.Type_SPOT).Scan(&response.Count); response.GetCount() > 0 {
+	if _ = e.Context.Db.QueryRow("select count(*) as count from balances where user_id = $1 and type = $2", req.GetId(), proto.Type_SPOT).Scan(&response.Count); response.GetCount() > 0 {
 
 		// This code is setting an offset for a Paginated request. The offset is used to determine the index of the first item
 		// that should be returned. This code is calculating the offset by multiplying the limit (the number of items per page)
@@ -1627,7 +1627,7 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 			offset = req.GetLimit() * (req.GetPage() - 1)
 		}
 
-		rows, err := e.Context.Db.Query("select id, balance, symbol from assets where type = $1 and user_id = $2 order by id desc limit $3 offset $4", proto.Type_SPOT, req.GetId(), req.GetLimit(), offset)
+		rows, err := e.Context.Db.Query("select id, value, symbol from balances where type = $1 and user_id = $2 order by id desc limit $3 offset $4", proto.Type_SPOT, req.GetId(), req.GetLimit(), offset)
 		if err != nil {
 			return &response, err
 		}
@@ -1638,16 +1638,16 @@ func (e *Service) GetAssetsRule(ctx context.Context, req *pbspot.GetRequestAsset
 		// programmer to iterate through the result set, one row at a time, and process the data as needed.
 		for rows.Next() {
 
-			// The purpose of this code is to declare a variable called asset of the type pbspot.Currency. This allows the code to
+			// The purpose of this code is to declare a variable called asset of the type pbspot.Balance. This allows the code to
 			// reference this type of asset later in the code.
 			var (
-				asset pbspot.Currency
+				asset pbspot.Balance
 			)
 
 			// This code is part of a larger program, and its purpose is to scan the rows in a database for a particular asset and
-			// assign the corresponding id, balance, and symbol to the asset variable. If an error occurs at any point during the
+			// assign the corresponding id, value, and symbol to the asset variable. If an error occurs at any point during the
 			// rows.Scan, the code returns an error response and passes the error to the context.
-			if err := rows.Scan(&asset.Id, &asset.Balance, &asset.Symbol); err != nil {
+			if err := rows.Scan(&asset.Id, &asset.Value, &asset.Symbol); err != nil {
 				return &response, err
 			}
 
@@ -1833,14 +1833,14 @@ func (e *Service) SetRepaymentsRule(ctx context.Context, req *pbspot.SetRequestR
 		}
 
 		// This code checks if the exchange fees are sufficient to cover the deficit. If not, it returns an error.
-		if _ = e.Context.Db.QueryRow("select fees_charges from currencies where symbol = $1", chain.GetParentSymbol()).Scan(&item.Value); item.GetFees() > item.GetValue() {
+		if _ = e.Context.Db.QueryRow("select fees_charges from assets where symbol = $1", chain.GetParentSymbol()).Scan(&item.Value); item.GetFees() > item.GetValue() {
 			return &response, status.Error(521233, "exchange fees are insufficient to cover the deficit")
 		}
 
 		// This code is updating the fees_charges and fees_costs of a currency in a database using the Exec() method. The code
 		// is using $1 and $2, which are placeholder variables for the first and second parameters given to the Exec() method.
 		// The first parameter is the symbol of the parent chain and the second parameter is the fees associated with the item. If an error occurs, the code will return an error response.
-		if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), item.GetFees()); err != nil {
+		if _, err := e.Context.Db.Exec("update assets set fees_charges = fees_charges - $2, fees_costs = fees_costs + $2 where symbol = $1;", chain.GetParentSymbol(), item.GetFees()); err != nil {
 			return &response, err
 		}
 

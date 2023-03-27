@@ -9,14 +9,14 @@ import (
 	"strconv"
 )
 
-// helperSymbol - This function checks whether a given currency symbol exists and is enabled. It returns an error if the currency symbol
+// helperSymbol - This function checks whether a given asset symbol exists and is enabled. It returns an error if the asset symbol
 // does not exist or is disabled.
 func (e *Service) helperSymbol(symbol string) error {
 
 	// This code is checking if a given currency exists and is enabled. If either of these conditions are not met, it
-	// returns an error with status 11580 and a message informing the user that the currency does not exist or is disabled.
-	if _, err := e.getCurrency(symbol, true); err != nil {
-		return status.Errorf(11580, "this %v currency does not exist, or this currency is disabled", symbol)
+	// returns an error with status 11580 and a message informing the user that the asset does not exist or is disabled.
+	if _, err := e.getAsset(symbol, true); err != nil {
+		return status.Errorf(11580, "this %v asset does not exist, or this currency is disabled", symbol)
 	}
 
 	return nil

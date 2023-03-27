@@ -98,12 +98,12 @@ service Api {
       body: "*"
     };
   }
-  rpc GetCandles (GetRequestCandles) returns (ResponseCandles) {
+  rpc GetTicker (GetRequestTicker) returns (ResponseTicker) {
     option (google.api.http) = {
-      post: "/v2/stock/get-candles",
+      post: "/v2/stock/get-ticker",
       body: "*"
       additional_bindings {
-        get: "/v2/stock/get-candles"
+        get: "/v2/stock/get-ticker"
       }
     };
   }
@@ -229,8 +229,8 @@ message ResponsePair {
   repeated Pair fields = 1;
 }
 
-// Candles message structure.
-message Candles {
+// Ticker message structure.
+message Ticker {
   int64 id = 1;
   int64 time = 2;
   string base_unit = 3;
@@ -252,7 +252,7 @@ message Stats {
   double volume = 6;
   int32 count = 7;
 }
-message GetRequestCandles {
+message GetRequestTicker {
   int64 limit = 1;
   int64 from = 2;
   int64 to = 3;
@@ -260,8 +260,8 @@ message GetRequestCandles {
   string quote_unit = 5;
   string resolution = 6;
 }
-message ResponseCandles {
-  repeated Candles fields = 1;
+message ResponseTicker {
+  repeated Ticker fields = 1;
   Stats stats = 2;
 }
 

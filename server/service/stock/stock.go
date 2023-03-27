@@ -51,7 +51,7 @@ func (s *Service) setBalance(symbol string, userId int64, quantity float64, cros
 		// The code above is an if statement that is used to update the balance of an asset with a given symbol and user_id in
 		// a database. The statement executes an update query, passing in the values of symbol, quantity, and userId as
 		// parameters to the query. If the query fails to execute, the if statement will return an error.
-		if _, err := s.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_STOCK); err != nil {
+		if _, err := s.Context.Db.Exec("update balances set value = value + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_STOCK); err != nil {
 			return err
 		}
 		break
@@ -60,7 +60,7 @@ func (s *Service) setBalance(symbol string, userId int64, quantity float64, cros
 		// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 		// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 		// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-		if _, err := s.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_STOCK); err != nil {
+		if _, err := s.Context.Db.Exec("update balances set value = value - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_STOCK); err != nil {
 			return err
 		}
 		break
@@ -79,7 +79,7 @@ func (s *Service) setAsset(symbol string, userId int64, error bool) error {
 	// The purpose of this code is to query the database for a specific asset with a given symbol and userId. The query is
 	// then stored in a row variable and an error is checked for. If there is an error, it will be returned. Finally, the
 	// row is closed when the code is finished.
-	row, err := s.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, proto.Type_STOCK)
+	row, err := s.Context.Db.Query(`select id from balances where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, proto.Type_STOCK)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (s *Service) setAsset(symbol string, userId int64, error bool) error {
 
 		// This code is inserting values into a database table called "assets" with the specific columns "user_id" and
 		// "symbol". The purpose of this code is to save the values of userId and symbol into the table for future reference.
-		if _, err = s.Context.Db.Exec("insert into assets (user_id, symbol, type) values ($1, $2, $3)", userId, symbol, proto.Type_STOCK); err != nil {
+		if _, err = s.Context.Db.Exec("insert into balances (user_id, symbol, type) values ($1, $2, $3)", userId, symbol, proto.Type_STOCK); err != nil {
 			return err
 		}
 
@@ -114,7 +114,7 @@ func (s *Service) getBalance(symbol string, userId int64) (balance float64) {
 
 	// This line of code is used to retrieve the balance from the assets table in a database. It takes in two parameters
 	// (symbol and userId) and uses them to query the database. The result is then stored in the variable balance.
-	_ = s.Context.Db.QueryRow("select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3", symbol, userId, proto.Type_STOCK).Scan(&balance)
+	_ = s.Context.Db.QueryRow("select value as balance from balances where symbol = $1 and user_id = $2 and type = $3", symbol, userId, proto.Type_STOCK).Scan(&balance)
 	return balance
 }
 
@@ -184,7 +184,7 @@ func (s *Service) setTrade(param ...*pbstock.Order) error {
 
 	// This code is used to insert a new row of data into the trades table of a database. The values for the new row are
 	// taken from the param[0] variable. If the insertion fails, an error is returned.
-	if _, err := s.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity) values ($1, $2, $3, $4, $5)`, param[0].GetAssigning(), param[0].GetBaseUnit(), param[0].GetQuoteUnit(), param[0].GetPrice(), param[0].GetValue()); err != nil {
+	if _, err := s.Context.Db.Exec(`insert into ohlcv (assigning, base_unit, quote_unit, price, quantity) values ($1, $2, $3, $4, $5)`, param[0].GetAssigning(), param[0].GetBaseUnit(), param[0].GetQuoteUnit(), param[0].GetPrice(), param[0].GetValue()); err != nil {
 		return err
 	}
 
@@ -205,19 +205,19 @@ func (s *Service) setTrade(param ...*pbstock.Order) error {
 	for _, interval := range help.Depth() {
 
 		// This code is used to retrieve two candles with a given resolution from a spot exchange. The purpose of the migrate,
-		// err := e.GetCandles() line is to make a request to the spot exchange using the BaseUnit, QuoteUnit, Limit, and
+		// err := e.GetTicker() line is to make a request to the spot exchange using the BaseUnit, QuoteUnit, Limit, and
 		// Resolution parameters provided. The if err != nil { return err } line is used to check if there was an error with
 		// the request and return that error if necessary.
-		migrate, err := s.GetCandles(context.Background(), &pbstock.GetRequestCandles{BaseUnit: param[0].GetBaseUnit(), QuoteUnit: param[1].GetQuoteUnit(), Limit: 2, Resolution: interval})
+		migrate, err := s.GetTicker(context.Background(), &pbstock.GetRequestTicker{BaseUnit: param[0].GetBaseUnit(), QuoteUnit: param[1].GetQuoteUnit(), Limit: 2, Resolution: interval})
 		if err != nil {
 			return err
 		}
 
 		// This code is used to publish a message to an exchange on a specific topic. The message is "migrate" and the topic is
-		// "trade/candles:interval". The purpose of this code is to send a message to the exchange,
+		// "trade/ticker:interval". The purpose of this code is to send a message to the exchange,
 		// action based on the message. The if statement is used to check for any errors that may occur during the publishing
 		// of the message. If an error is encountered, it will be returned.
-		if err := s.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/candles:%v", interval)); err != nil {
+		if err := s.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/ticker:%v", interval)); err != nil {
 			return err
 		}
 	}
@@ -301,7 +301,7 @@ func (s *Service) getRatio(base, quote string) (ratio float64, ok bool) {
 	// This code is part of a function that is attempting to get the ratio of two different currencies. The code is
 	// attempting to get two candles from the e (which is an exchange) with the given base and quote units. If an error is
 	// encountered, the function will return the ratio and ok.
-	migrate, err := s.GetCandles(context.Background(), &pbstock.GetRequestCandles{BaseUnit: base, QuoteUnit: quote, Limit: 2})
+	migrate, err := s.GetTicker(context.Background(), &pbstock.GetRequestTicker{BaseUnit: base, QuoteUnit: quote, Limit: 2})
 	if err != nil {
 		return ratio, ok
 	}

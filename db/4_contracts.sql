@@ -36,3 +36,5 @@ values  (1, 'link', 2, '0x514910771af9ca656af840dff83e8264ecf986ca', 2.24, 1, 18
         (9, 'usdt', 2, '0xdac17f958d2ee523a2206206994597c13d831ec7', 0.001, 1, 18),
         (8, 'usdt', 3, '0x55d398326f99059ff775485246999027b3197955', 0.0001, 6, 18),
         (10, 'usdt', 1, 'TVX2k4NQPZzVZ1WPvAA8nPza4g2yJhbpLr', 6, 9, 8);
+
+select pg_catalog.setval('public.contracts_id_seq', 9, true);

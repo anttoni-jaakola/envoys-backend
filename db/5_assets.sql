@@ -1,9 +1,9 @@
-create table if not exists public.currencies
+create table if not exists public.assets
 (
     id            serial
-        constraint currencies_pk
+        constraint assets_pk
             primary key
-        constraint currencies_id_key
+        constraint assets_id_key
             unique,
     name          varchar(40),
     symbol        varchar(6),
@@ -22,25 +22,25 @@ create table if not exists public.currencies
     create_at     timestamp with time zone default CURRENT_TIMESTAMP
 );
 
-comment on column public.currencies.type is '0 - crypto
+comment on column public.assets.type is '0 - crypto
 1 - fiat';
 
-alter table public.currencies
+alter table public.assets
     owner to envoys;
 
-alter table public.currencies
+alter table public.assets
     add unique (symbol);
 
-alter table public.currencies
+alter table public.assets
     add unique (id);
 
-create unique index if not exists currencies_id_uindex
-    on public.currencies (id);
+create unique index if not exists assets_id_uindex
+    on public.assets (id);
 
-create unique index if not exists currencies_symbol_uindex
-    on public.currencies (symbol);
+create unique index if not exists assets_symbol_uindex
+    on public.assets (symbol);
 
-insert into public.currencies (id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, type, create_at)
+insert into public.assets (id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, chains, status, type, create_at)
 values  (1, 'Omisego', 'omg', 0.0100, 100.00000000, 0.0100, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, false, '[2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
         (2, 'Binance', 'bnb', 0.0100, 100.00000000, 0.0010, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, true, '[3, 2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
         (3, 'Chain Link', 'link', 0.0100, 100.00000000, 0.0100, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, false, '[2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
@@ -53,3 +53,5 @@ values  (1, 'Omisego', 'omg', 0.0100, 100.00000000, 0.0100, 1000000.00000000, 0.
         (5, 'Bitcoin', 'btc', 0.0001, 100.00000000, 0.0001, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, true, '[4, 2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
         (12, 'Ethereum', 'eth', 0.0010, 100.00000000, 0.0100, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, true, '[3, 2]', true, 0, '2021-12-26 10:27:02.914683 +00:00'),
         (14, 'Tether USD', 'usdt', 10.0000, 1000.00000000, 1.0000, 1000000.00000000, 0.1500, 0.0500, 0.000000000000000000, 0.000000000000000000, false, '[1, 2, 3]', true, 0, '2021-12-26 10:27:02.914683 +00:00');
+
+select pg_catalog.setval('public.assets_id_seq', 12, true);

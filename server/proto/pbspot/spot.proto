@@ -85,25 +85,18 @@ service Api {
             body: "*"
         };
     }
-    // Get candles.
-    rpc GetCandles (GetRequestCandles) returns (ResponseCandles) {
+    // Get ticker.
+    rpc GetTicker (GetRequestTicker) returns (ResponseTicker) {
         option (google.api.http) = {
-            post: "/v2/spot/get-candles",
+            post: "/v2/spot/get-ticker",
             body: "*"
             additional_bindings {
-                get: "/v2/spot/get-candles"
+                get: "/v2/spot/get-ticker"
             }
         };
     }
-    // Get trade transfers.
-    rpc GetTransfers (GetRequestTransfers) returns (ResponseTransfer) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-transfers",
-            body: "*"
-        };
-    }
     // Get trades.
-    rpc GetTrades (GetRequestTrades) returns (ResponseTrades) {
+    rpc GetTrades (GetRequestTrades) returns (ResponseTrade) {
         option (google.api.http) = {
             post: "/v2/spot/get-trades",
             body: "*"
@@ -145,31 +138,31 @@ service Api {
             body: "*"
         };
     }
-    // Set currency.
-    rpc SetCurrencyRule (SetRequestCurrencyRule) returns (ResponseCurrency) {
+    // Set asset.
+    rpc SetAssetRule (SetRequestAssetRule) returns (ResponseAsset) {
         option (google.api.http) = {
-            post: "/v2/admin/spot/set-currency",
+            post: "/v2/admin/spot/set-asset",
             body: "*"
         };
     }
-    // Get currency.
-    rpc GetCurrencyRule (GetRequestCurrencyRule) returns (ResponseCurrency) {
+    // Get asset.
+    rpc GetAssetRule (GetRequestAssetRule) returns (ResponseAsset) {
         option (google.api.http) = {
-            post: "/v2/admin/spot/get-currency",
+            post: "/v2/admin/spot/get-asset",
             body: "*"
         };
     }
-    // Get currencies.
-    rpc GetCurrenciesRule (GetRequestCurrenciesRule) returns (ResponseCurrency) {
+    // Get assets.
+    rpc GetAssetsRule (GetRequestAssetsRule) returns (ResponseAsset) {
         option (google.api.http) = {
-            post: "/v2/admin/spot/get-currencies",
+            post: "/v2/admin/spot/get-assets",
             body: "*"
         };
     }
-    // Delete currency.
-    rpc DeleteCurrencyRule (DeleteRequestCurrencyRule) returns (ResponseCurrency) {
+    // Delete asset.
+    rpc DeleteAssetRule (DeleteRequestAssetRule) returns (ResponseAsset) {
         option (google.api.http) = {
-            post: "/v2/admin/spot/delete-currency",
+            post: "/v2/admin/spot/delete-asset",
             body: "*"
         };
     }
@@ -294,12 +287,12 @@ service Api {
             body: "*"
         };
     }
-    // This rpc is used to get the assets rule from the GetRequestAssetsManual and return a response in the form of a
-    // ResponseAsset. The option (google.api.http) defines an HTTP request with a POST method at
-    // "/v2/admin/spot/get-assets" and specifies the body of the request as "*".
-    rpc GetAssetsRule (GetRequestAssetsManual) returns (ResponseAsset) {
+    // This rpc is used to get the assets rule from the GetRequestBalancesRule and return a response in the form of a
+    // ResponseBalance. The option (google.api.http) defines an HTTP request with a POST method at
+    // "/v2/admin/spot/get-balances" and specifies the body of the request as "*".
+    rpc GetBalancesRule (GetRequestBalancesRule) returns (ResponseBalance) {
         option (google.api.http) = {
-            post: "/v2/admin/spot/get-assets",
+            post: "/v2/admin/spot/get-balances",
             body: "*"
         };
     }
@@ -445,8 +438,8 @@ message Contract {
     Protocol protocol = 10;
 }
 
-// Currency message structure.
-message Currency {
+// Asset message structure.
+message Asset {
     int64 id = 1;
     string name = 2;
     string symbol = 3;
@@ -507,8 +500,8 @@ message Pair {
     bool graph_clear = 11;
 }
 
-// Candles message structure.
-message Candles {
+// Ticker message structure.
+message Ticker {
     int64 id = 1;
     int64 time = 2;
     string base_unit = 3;
@@ -534,26 +527,6 @@ message Stats {
     int32 count = 7;
 }
 
-// Trade message structure.
-message Trade {
-    int64 id = 1;
-    string base_unit = 2;
-    string quote_unit = 3;
-    string create_at = 4;
-    double price = 5;
-    double quantity = 6;
-    double fees = 7;
-    basic.Assigning assigning = 8;
-}
-
-// Order header message structure.
-message Header {
-    bool turn = 1;
-    bool maker = 2;
-    bool equal = 3;
-    double fees = 9;
-}
-
 // Order message structure.
 message Order {
     int64 id = 1;
@@ -564,8 +537,8 @@ message Order {
     double price = 6;
     double value = 7;
     double quantity = 8;
-    int32 count = 9;
-    Header header = 10;
+    double fees = 9;
+    int32 count = 10;
     basic.Assigning assigning = 11;
     basic.Trading trading = 12;
     basic.Status status = 13;
@@ -610,11 +583,11 @@ message Analysis {
     double price = 4;
     double buy_ratio = 5;
     double sel_ratio = 6;
-    repeated double candles = 7;
+    repeated double ticker = 7;
 }
 
-// Transfer message structure.
-message Transfer {
+// Trade message structure.
+message Trade {
     int64 id = 1;
     int64 user_id = 2;
     string base_unit = 3;
@@ -623,7 +596,26 @@ message Transfer {
     double price = 6;
     double quantity = 7;
     double fees = 8;
-    basic.Assigning assigning = 9;
+    bool maker = 9;
+    basic.Assigning assigning = 10;
+}
+
+// Balance message structure.
+message Balance {
+    int64 id = 1;
+    double value = 2;
+    string symbol = 3;
+}
+
+// Balance structure.
+message GetRequestBalancesRule {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
+message ResponseBalance {
+    repeated Balance fields = 1;
+    int32 count = 2;
 }
 
 // Price structure.
@@ -678,26 +670,42 @@ message ResponseChain {
     bool success = 3;
 }
 
-// Currency structure.
-message GetRequestCurrenciesRule {
+// Assets structure.
+message GetRequestAssetsRule {
     string search = 1;
     int64 limit = 2;
     int64 page = 3;
 }
-message GetRequestCurrencyRule {
+message GetRequestAssetRule {
     string symbol = 1;
 }
-message SetRequestCurrencyRule {
+message SetRequestAssetRule {
     string symbol = 1;
     bytes image = 2;
-    Currency currency = 3;
+    Asset asset = 3;
 }
-message DeleteRequestCurrencyRule {
+message DeleteRequestAssetRule {
     string symbol = 1;
 }
-message ResponseCurrency {
-    repeated Currency fields = 1;
-    int32 count = 2;
+message GetRequestAssetsManual {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
+message GetRequestAsset {
+    string symbol = 1;
+}
+message SetRequestAsset {
+    string symbol = 1;
+    Platform platform = 2;
+    Protocol protocol = 3;
+    Type type = 4;
+}
+message ResponseAsset {
+    repeated Asset fields = 1;
+    string address = 2;
+    bool success = 3;
+    int32 count = 4;
 }
 
 // Pair structure.
@@ -727,28 +735,6 @@ message ResponsePair {
     repeated Pair fields = 1;
     int32 count = 2;
     bool success = 3;
-}
-
-// Asset structure.
-message GetRequestAssetsManual {
-    int64 id = 1;
-    int64 limit = 2;
-    int64 page = 3;
-}
-message GetRequestAsset {
-    string symbol = 1;
-}
-message SetRequestAsset {
-    string symbol = 1;
-    Platform platform = 2;
-    Protocol protocol = 3;
-    Type type = 4;
-}
-message ResponseAsset {
-    repeated Currency fields = 1;
-    string address = 2;
-    bool success = 3;
-    int32 count = 4;
 }
 
 // Symbol structure.
@@ -805,8 +791,8 @@ message ResponseOrder {
     bool success = 4;
 }
 
-// Candles structure.
-message GetRequestCandles {
+// Ticker structure.
+message GetRequestTicker {
     int64 limit = 1;
     int64 from = 2;
     int64 to = 3;
@@ -814,33 +800,20 @@ message GetRequestCandles {
     string quote_unit = 5;
     string resolution = 6;
 }
-message ResponseCandles {
-    repeated Candles fields = 1;
+message ResponseTicker {
+    repeated Ticker fields = 1;
     Stats stats = 2;
 }
 
-// Transfer structure.
-message GetRequestTransfers {
+// Trade structure.
+message GetRequestTrades {
     bool owner = 1;
     int64 limit = 2;
     int64 order_id = 3;
     basic.Assigning assigning = 4;
 }
-message ResponseTransfer {
-    repeated Transfer fields = 1;
-}
-
-// Trade structure.
-message GetRequestTrades {
-    int64 limit = 1;
-    int64 page = 2;
-    string base_unit = 3;
-    string quote_unit = 4;
-    basic.Assigning assigning = 11;
-}
-message ResponseTrades {
+message ResponseTrade {
     repeated Trade fields = 1;
-    int32 count = 2;
 }
 
 // Transaction structure.

@@ -45,3 +45,5 @@ values  (4, 'trx', 'usd', 0.06819350, 6, 2, false),
         (18, 'eth', 'gbp', 1420.53327339, 6, 2, true),
         (19, 'bnb', 'uah', 12608.72073956, 6, 2, true),
         (20, 'usdt', 'uah', 39.69596824, 2, 2, true);
+
+select pg_catalog.setval('public.pairs_id_seq', 22, true);

@@ -577,7 +577,7 @@ func (s *Service) GetAssets(ctx context.Context, req *pbstock.GetRequestAssets) 
 		// code is to retrieve the ID, name, and symbol of each currency so they can be used in further processing. The row
 		// variable is used to store the query results, err is used to store any errors that may occur during the query, and
 		// defer row.Close() is used to ensure that the query results are properly closed.
-		row, err := s.Context.Db.Query(`select id, name, symbol, status from currencies where type = $1`, pbspot.Type_FIAT)
+		row, err := s.Context.Db.Query(`select id, name, symbol, status from assets where type = $1`, pbspot.Type_FIAT)
 		if err != nil {
 			return &response, err
 		}
@@ -602,7 +602,7 @@ func (s *Service) GetAssets(ctx context.Context, req *pbstock.GetRequestAssets) 
 
 			// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
 			// store the retrieved balance in the item.Balance variable.
-			_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
+			_ = s.Context.Db.QueryRow(`select value from balances where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
 
 			response.Fields = append(response.Fields, &item)
 		}
@@ -638,7 +638,7 @@ func (s *Service) GetAssets(ctx context.Context, req *pbstock.GetRequestAssets) 
 
 			// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
 			// store the retrieved balance in the item.Balance variable.
-			_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
+			_ = s.Context.Db.QueryRow(`select value from balances where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
 
 			response.Fields = append(response.Fields, &item)
 		}
@@ -690,7 +690,7 @@ func (s *Service) GetAsset(ctx context.Context, req *pbstock.GetRequestAsset) (*
 
 	// The purpose of the following code is to check if a given asset exists in the database.
 	// The code is querying the database with a specific symbol, user_id and asset type and then scanning the result of the query into a boolean value which is stored in the item.Exist variable.
-	_ = s.Context.Db.QueryRow("select exists(select id from assets where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Exist)
+	_ = s.Context.Db.QueryRow("select exists(select id from balances where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Exist)
 
 	// This code is used to query a database. The purpose of this code is to query a database and select the id and name
 	// from the stocks table where the symbol is equal to the value stored in the req.GetSymbol() variable. If an error
@@ -714,7 +714,7 @@ func (s *Service) GetAsset(ctx context.Context, req *pbstock.GetRequestAsset) (*
 
 		// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
 		// store the retrieved balance in the item.Balance variable.
-		_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
+		_ = s.Context.Db.QueryRow(`select value from balances where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
 
 	} else {
 
@@ -722,7 +722,7 @@ func (s *Service) GetAsset(ctx context.Context, req *pbstock.GetRequestAsset) (*
 		// protect against SQL injection attacks. The parameters are taken from the req.GetSymbol() and pbspot.Type_FIAT
 		// variables. The row.Close() statement is used to close the open database connection when the query is finished,
 		// preventing potential connection leaks.
-		row, err = s.Context.Db.Query(`select id, name, symbol, status from currencies where symbol = $1 and type = $2`, req.GetSymbol(), pbspot.Type_FIAT)
+		row, err = s.Context.Db.Query(`select id, name, symbol, status from assets where symbol = $1 and type = $2`, req.GetSymbol(), pbspot.Type_FIAT)
 		if err != nil {
 			return &response, err
 		}
@@ -742,7 +742,7 @@ func (s *Service) GetAsset(ctx context.Context, req *pbstock.GetRequestAsset) (*
 
 			// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
 			// store the retrieved balance in the item.Balance variable.
-			_ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
+			_ = s.Context.Db.QueryRow(`select value from balances where symbol = $1 and user_id = $2 and type = $3`, item.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance)
 
 			item.Tag = pbstock.Tag_FIAT
 		}
@@ -774,12 +774,12 @@ func (s *Service) SetAsset(ctx context.Context, req *pbstock.SetRequestAsset) (*
 
 	// The purpose of the following code is to check if a given asset exists in the database.
 	// The code is querying the database with a specific symbol, user_id and asset type and then scanning the result of the query into a boolean value which is stored in the item.Exist variable.
-	if _ = s.Context.Db.QueryRow("select exists(select id from assets where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Exist); !item.Exist {
+	if _ = s.Context.Db.QueryRow("select exists(select id from balances where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Exist); !item.Exist {
 
 		// This is an if statement to insert values into the database table "assets". The statement sets the variables,
 		// user_id, symbol, and type, to the values of the auth, req.GetSymbol(), and proto.Type_STOCK variables,
 		// respectively. If an error occurs, the statement will return an error.
-		if _, err = s.Context.Db.Exec("insert into assets (user_id, symbol, type) values ($1, $2, $3);", auth, req.GetSymbol(), proto.Type_STOCK); err != nil {
+		if _, err = s.Context.Db.Exec("insert into balances (user_id, symbol, type) values ($1, $2, $3);", auth, req.GetSymbol(), proto.Type_STOCK); err != nil {
 			return &response, err
 		}
 
@@ -851,7 +851,7 @@ func (s *Service) SetWithdraw(ctx context.Context, req *pbstock.SetRequestWithdr
 	// the query are stored in a "row" object and can be accessed using the "row.Close()" function. If an error occurs while
 	// executing the query, the "err" variable is used to return an error message. The "defer row.Close()" statement ensures
 	// that the row object is closed and the connection to the database is properly terminated when the function ends.
-	row, err := s.Context.Db.Query(`select balance, symbol from assets where symbol = $1 and type = $2 and user_id = $3`, req.GetSymbol(), proto.Type_STOCK, auth)
+	row, err := s.Context.Db.Query(`select value, symbol from balances where symbol = $1 and type = $2 and user_id = $3`, req.GetSymbol(), proto.Type_STOCK, auth)
 	if err != nil {
 		return &response, err
 	}
@@ -874,7 +874,7 @@ func (s *Service) SetWithdraw(ctx context.Context, req *pbstock.SetRequestWithdr
 			// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 			// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 			// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-			if _, err := s.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", req.GetSymbol(), req.GetQuantity(), auth, proto.Type_STOCK); err != nil {
+			if _, err := s.Context.Db.Exec("update balances set value = value - $2 where symbol = $1 and user_id = $3 and type = $4;", req.GetSymbol(), req.GetQuantity(), auth, proto.Type_STOCK); err != nil {
 				return &response, err
 			}
 
@@ -1094,7 +1094,7 @@ func (s *Service) CancelWithdraw(ctx context.Context, req *pbstock.CancelRequest
 		// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 		// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 		// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-		if _, err := s.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", item.GetSymbol(), item.GetValue(), item.GetUserId(), proto.Type_STOCK); err != nil {
+		if _, err := s.Context.Db.Exec("update balances set value = value + $2 where symbol = $1 and user_id = $3 and type = $4;", item.GetSymbol(), item.GetValue(), item.GetUserId(), proto.Type_STOCK); err != nil {
 			return &response, err
 		}
 
@@ -1167,14 +1167,14 @@ func (s *Service) SetBrokerAsset(ctx context.Context, req *pbstock.SetRequestBro
 
 			// The purpose of this code is to query the database for a user's balance on a certain stock or other asset, and then
 			// store the retrieved balance in the item.Balance variable.
-			if _ = s.Context.Db.QueryRow(`select balance from assets where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance); item.GetBalance() == 0 {
+			if _ = s.Context.Db.QueryRow(`select value from balances where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, proto.Type_STOCK).Scan(&item.Balance); item.GetBalance() == 0 {
 				return &response, status.Error(796743, "your asset balance is zero, you cannot withdraw the asset from circulation")
 			}
 
 			// This code is an example of an SQL query that is used to update the balance of a particular asset. The purpose of
 			// this code is to subtract a certain quantity from the balance of an asset with a given symbol, user ID, and type.
 			// This code checks for an error after executing the query and returns an error if there is one.
-			if _, err := s.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", req.GetSymbol(), req.GetQuantity(), auth, proto.Type_STOCK); err != nil {
+			if _, err := s.Context.Db.Exec("update balances set value = value - $2 where symbol = $1 and user_id = $3 and type = $4;", req.GetSymbol(), req.GetQuantity(), auth, proto.Type_STOCK); err != nil {
 				return &response, err
 			}
 
@@ -1183,7 +1183,7 @@ func (s *Service) SetBrokerAsset(ctx context.Context, req *pbstock.SetRequestBro
 			// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 			// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 			// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-			if _, err := s.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", req.GetSymbol(), req.GetQuantity(), auth, proto.Type_STOCK); err != nil {
+			if _, err := s.Context.Db.Exec("update balances set value = value + $2 where symbol = $1 and user_id = $3 and type = $4;", req.GetSymbol(), req.GetQuantity(), auth, proto.Type_STOCK); err != nil {
 				return &response, err
 			}
 		}
@@ -1196,16 +1196,16 @@ func (s *Service) SetBrokerAsset(ctx context.Context, req *pbstock.SetRequestBro
 	return &response, nil
 }
 
-// GetCandles - This function is a method of the service struct and serves to provide a response of candles for a given request. It is
+// GetTicker - This function is a method of the service struct and serves to provide a response of candles for a given request. It is
 // responsible for querying the database for the candle data, and then formatting it into a response struct. It also
 // calculates some statistics based on the requested data and adds them to the response struct.
-func (s *Service) GetCandles(_ context.Context, req *pbstock.GetRequestCandles) (*pbstock.ResponseCandles, error) {
+func (s *Service) GetTicker(_ context.Context, req *pbstock.GetRequestTicker) (*pbstock.ResponseTicker, error) {
 
 	// The purpose of this code is to create three variables with zero values: response, limit and maps. The response
-	// variable is of type pbstock.ResponseCandles, the limit variable is of type string, and the maps variable is of type
+	// variable is of type pbstock.ResponseTicker, the limit variable is of type string, and the maps variable is of type
 	// slice of strings.
 	var (
-		response pbstock.ResponseCandles
+		response pbstock.ResponseTicker
 		limit    string
 		maps     []string
 	)
@@ -1227,14 +1227,14 @@ func (s *Service) GetCandles(_ context.Context, req *pbstock.GetRequestCandles) 
 	// formatted string will be appended to the "maps" array containing a timestamp that is less than the "To" value in the
 	// request. This code is likely used to filter a query based on a time range.
 	if req.GetTo() > 0 {
-		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') < to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetTo()))
+		maps = append(maps, fmt.Sprintf(`and to_char(o.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') < to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetTo()))
 	}
 
 	// This code is used to query the database to return OHLC (open-high-low-close) data. The SQL query is using the
 	// fmt.Sprintf function to substitute the variables (req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "),
 	// help.Resolution(req.GetResolution()), limit) into the query. The query is then executed, and the results are stored
 	// in the rows variable. Finally, the rows variable is closed at the end of the code.
-	rows, err := s.Context.Db.Query(fmt.Sprintf("select extract(epoch from time_bucket('%[4]s', ohlc.create_at))::integer buckettime, first(ohlc.price, ohlc.create_at) as open, last(ohlc.price, ohlc.create_at) as close, first(ohlc.price, ohlc.price) as low, last(ohlc.price, ohlc.price) as high, sum(ohlc.quantity) as volume, avg(ohlc.price) as avg_price, ohlc.base_unit, ohlc.quote_unit from trades as ohlc where ohlc.base_unit = '%[1]s' and ohlc.quote_unit = '%[2]s' %[3]s group by buckettime, ohlc.base_unit, ohlc.quote_unit order by buckettime desc %[5]s", req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "), help.Resolution(req.GetResolution()), limit))
+	rows, err := s.Context.Db.Query(fmt.Sprintf("select extract(epoch from time_bucket('%[4]s', o.create_at))::integer buckettime, first(o.price, o.create_at) as open, last(o.price, o.create_at) as close, first(o.price, o.price) as low, last(o.price, o.price) as high, sum(o.quantity) as volume, avg(o.price) as avg_price, o.base_unit, o.quote_unit from ohlcv as o where o.base_unit = '%[1]s' and o.quote_unit = '%[2]s' %[3]s group by buckettime, o.base_unit, o.quote_unit order by buckettime desc %[5]s", req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "), help.Resolution(req.GetResolution()), limit))
 	if err != nil {
 		return &response, err
 	}
@@ -1245,10 +1245,10 @@ func (s *Service) GetCandles(_ context.Context, req *pbstock.GetRequestCandles) 
 	// deleting the row.
 	for rows.Next() {
 
-		// The purpose of the variable "item" is to store data of type pbstock.Candles. This could be used to store an array of
-		// candles or other data related to pbstock.Candles.
+		// The purpose of the variable "item" is to store data of type pbstock.Ticker. This could be used to store an array of
+		// candles or other data related to pbstock.Ticker.
 		var (
-			item pbstock.Candles
+			item pbstock.Ticker
 		)
 
 		// This code is checking for errors while scanning a row of data from a database. It is assigning the values of the row
@@ -1272,7 +1272,7 @@ func (s *Service) GetCandles(_ context.Context, req *pbstock.GetRequestCandles) 
 	// This code is used to fetch and analyze data from a database. It uses the QueryRow() method to retrieve data from the
 	// database and then scan it into the stats variable. The code is specifically used to get the count, volume, low, high,
 	// first and last values from the trades table for a given base unit and quote unit.
-	_ = s.Context.Db.QueryRow(fmt.Sprintf(`select count(*) as count, sum(h24.quantity) as volume, first(h24.price, h24.price) as low, last(h24.price, h24.price) as high, first(h24.price, h24.create_at) as first, last(h24.price, h24.create_at) as last from trades as h24 where h24.create_at > now()::timestamp - '24 hours'::interval and h24.base_unit = '%[1]s' and h24.quote_unit = '%[2]s'`, req.GetBaseUnit(), req.GetQuoteUnit())).Scan(&stats.Count, &stats.Volume, &stats.Low, &stats.High, &stats.First, &stats.Last)
+	_ = s.Context.Db.QueryRow(fmt.Sprintf(`select count(*) as count, sum(h24.quantity) as volume, first(h24.price, h24.price) as low, last(h24.price, h24.price) as high, first(h24.price, h24.create_at) as first, last(h24.price, h24.create_at) as last from ohlcv as h24 where h24.create_at > now()::timestamp - '24 hours'::interval and h24.base_unit = '%[1]s' and h24.quote_unit = '%[2]s'`, req.GetBaseUnit(), req.GetQuoteUnit())).Scan(&stats.Count, &stats.Volume, &stats.Low, &stats.High, &stats.First, &stats.Last)
 
 	// This code checks if the length of the 'response.Fields' array is greater than 1. If so, it assigns the 'Close' value
 	// of the second element in the 'response.Fields' array to the 'Previous' field of the 'stats' object.

@@ -31,16 +31,16 @@ func (e *Service) GetSymbol(_ context.Context, req *pbspot.GetRequestSymbol) (*p
 
 	// This piece of code checks if the base unit of the request is valid. If it is not valid, an error is returned with a
 	// status code and a message.
-	if row, err := e.getCurrency(req.GetBaseUnit(), false); err != nil {
-		return &response, status.Errorf(11584, "this base currency does not exist, %v", row.GetSymbol())
+	if row, err := e.getAsset(req.GetBaseUnit(), false); err != nil {
+		return &response, status.Errorf(11584, "this base asset does not exist, %v", row.GetSymbol())
 	}
 
 	// The purpose of this code is to check if the requested currency exists and if it does not, then return an error
 	// message with the appropriate status code. The if statement checks to see if the requested currency exists by using
 	// the function getCurrency() with the parameters req.GetQuoteUnit() and false. If an error is returned, the error
 	// message is set with the status code 11582 and the currency symbol is included in the message.
-	if row, err := e.getCurrency(req.GetQuoteUnit(), false); err != nil {
-		return &response, status.Errorf(11582, "this quote currency does not exist, %v", row.GetSymbol())
+	if row, err := e.getAsset(req.GetQuoteUnit(), false); err != nil {
+		return &response, status.Errorf(11582, "this quote asset does not exist, %v", row.GetSymbol())
 	}
 
 	// The purpose of this code is to check if the pair (base_unit and quote_unit) provided by the request exists in the
@@ -135,7 +135,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 			// This code is used to request 40 candles from a given base and quote unit. The migrate variable is used to store the
 			// response of the GetCandles function and the err variable is used to store any errors that occur. If an error
 			// occurs, the response is returned and the error is logged.
-			migrate, err := e.GetCandles(context.Background(), &pbspot.GetRequestCandles{BaseUnit: analysis.GetBaseUnit(), QuoteUnit: analysis.GetQuoteUnit(), Limit: 40})
+			migrate, err := e.GetTicker(context.Background(), &pbspot.GetRequestTicker{BaseUnit: analysis.GetBaseUnit(), QuoteUnit: analysis.GetQuoteUnit(), Limit: 40})
 			if err != nil {
 				return &response, err
 			}
@@ -143,7 +143,7 @@ func (e *Service) GetAnalysis(ctx context.Context, req *pbspot.GetRequestAnalysi
 			// This loop iterates through the fields in the migrate object and appends the prices of each field to the Candles
 			// field of the analysis object.
 			for i := 0; i < len(migrate.Fields); i++ {
-				analysis.Candles = append(analysis.Candles, migrate.Fields[i].GetPrice())
+				analysis.Ticker = append(analysis.Ticker, migrate.Fields[i].GetPrice())
 			}
 
 			// The for loop is used to execute a set of statements repeatedly until a certain condition is met. In this example,
@@ -227,7 +227,7 @@ func (e *Service) GetMarkers(_ context.Context, _ *pbspot.GetRequestMarkers) (*p
 	// This code is querying a database for a certain symbol from the currencies table. The purpose of the code is to query
 	// the database and check for an error. If an error is present, it will return an error response. If no error is
 	// present, the rows will be closed.
-	rows, err := e.Context.Db.Query("select symbol from currencies where marker = $1", true)
+	rows, err := e.Context.Db.Query("select symbol from assets where marker = $1", true)
 	if err != nil {
 		return &response, err
 	}
@@ -500,7 +500,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 			return &response, err
 		}
 
-		// The purpose of e.trade(&order, pbspot.Side_BID) is to replay a trade initiation with the given order and
+		// The purpose of e.trade(&order, proto.Side_BID) is to replay a trade initiation with the given order and
 		// side (BID). This is typically used when the trade is being initiated manually by an operator or trader. It allows
 		// the trade to be replayed with the same parameters for accuracy and consistency.
 		e.trade(&order, proto.Side_BID)
@@ -521,7 +521,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 			return &response, err
 		}
 
-		// The purpose of e.trade(&order, pbspot.Side_ASK) is to replay a trade initiation with the given order and
+		// The purpose of e.trade(&order, proto.Side_ASK) is to replay a trade initiation with the given order and
 		// side (ASK). This is typically used when the trade is being initiated manually by an operator or trader. It allows
 		// the trade to be replayed with the same parameters for accuracy and consistency.
 		e.trade(&order, proto.Side_ASK)
@@ -683,7 +683,7 @@ func (e *Service) GetAssets(ctx context.Context, _ *pbspot.GetRequestAssetsManua
 	// purpose of the code is to retrieve the information from the table currencies and store them in the variables rows and
 	// err. If there is an error, the code will return the response and an error message. Finally, the defer rows.Close()
 	// will close the rows of information when the function is finished executing.
-	rows, err := e.Context.Db.Query("select id, name, symbol, status from currencies")
+	rows, err := e.Context.Db.Query("select id, name, symbol, status from assets")
 	if err != nil {
 		return &response, err
 	}
@@ -697,7 +697,7 @@ func (e *Service) GetAssets(ctx context.Context, _ *pbspot.GetRequestAssetsManua
 		// The purpose of this code is to declare a variable called asset of the type pbspot.Currency. This allows the code to
 		// reference this type of asset later in the code.
 		var (
-			asset pbspot.Currency
+			asset pbspot.Asset
 		)
 
 		// This is a snippet of code used to query a database. The purpose of this code is to scan the rows of the database and
@@ -776,7 +776,7 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 		// result of the query, and err is used to store any errors that may occur. The if err != nil statement checks for any
 		// errors that may have occurred and, if one is found, the error is returned. To defer row.Close() statement closes
 		// the database query at the end of the function, regardless of how the function ends.
-		row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, proto.Type_SPOT)
+		row, err := e.Context.Db.Query(`select id from balances where symbol = $1 and user_id = $2 and type = $3`, req.GetSymbol(), auth, proto.Type_SPOT)
 		if err != nil {
 			return &response, err
 		}
@@ -806,7 +806,7 @@ func (e *Service) SetAsset(ctx context.Context, req *pbspot.SetRequestAsset) (*p
 		// This code snippet is used to execute an SQL query to insert a row of data into the 'assets' table. The first
 		// parameter is the user_id from the auth variable, and the second parameter is the symbol from the req.GetSymbol()
 		// variable. If there is an error during the execution of the query, an error will be returned.
-		if _, err = e.Context.Db.Exec("insert into assets (user_id, symbol) values ($1, $2);", auth, req.GetSymbol()); err != nil {
+		if _, err = e.Context.Db.Exec("insert into balances (user_id, symbol) values ($1, $2);", auth, req.GetSymbol()); err != nil {
 			return &response, err
 		}
 
@@ -851,7 +851,7 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 
 	// The code is checking to see if an error occurred while attempting to get a currency. If there is an error, the
 	// function will return the response and the error.
-	row, err := e.getCurrency(req.GetSymbol(), false)
+	row, err := e.getAsset(req.GetSymbol(), false)
 	if err != nil {
 		return &response, err
 	}
@@ -912,9 +912,8 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 			// source (e.getAddress) and assign the address to the chain.Address variable.
 			chain.Address = e.getAddress(auth, req.GetSymbol(), chain.GetPlatform(), chain.Contract.GetProtocol())
 
-			// The purpose of this code is to retrieve an asset from the chain with the symbol provided in the request. The Exist
-			// variable is being set to the result of calling the getAsset() method on the chain object, which takes the symbol from the request and the authentication details as parameters.
-			chain.Exist = e.getAsset(req.GetSymbol(), auth)
+			//The purpose of this code is to query a database for a row that matches the given parameters, which include the symbol, user_id, and type. It then stores the result in the 'chain.Exist' boolean variable.
+			_ = e.Context.Db.QueryRow("select exists(select value as balance from balances where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, proto.Type_SPOT).Scan(&chain.Exist)
 
 			// This statement is used to add a new item, "chain", to the end of an existing slice of items, "row.Chains". Append
 			// is a built-in function that allows you to add items to the end of a slice.
@@ -932,16 +931,16 @@ func (e *Service) GetAsset(ctx context.Context, req *pbspot.GetRequestAsset) (*p
 	return &response, nil
 }
 
-// GetCandles - This function is a method of the service struct and serves to provide a response of candles for a given request. It is
+// GetTicker - This function is a method of the service struct and serves to provide a response of candles for a given request. It is
 // responsible for querying the database for the candle data, and then formatting it into a response struct. It also
 // calculates some statistics based on the requested data and adds them to the response struct.
-func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (*pbspot.ResponseCandles, error) {
+func (e *Service) GetTicker(_ context.Context, req *pbspot.GetRequestTicker) (*pbspot.ResponseTicker, error) {
 
 	// The purpose of this code is to create three variables with zero values: response, limit and maps. The response
-	// variable is of type pbspot.ResponseCandles, the limit variable is of type string, and the maps variable is of type
+	// variable is of type pbspot.ResponseTicker, the limit variable is of type string, and the maps variable is of type
 	// slice of strings.
 	var (
-		response pbspot.ResponseCandles
+		response pbspot.ResponseTicker
 		limit    string
 		maps     []string
 	)
@@ -963,14 +962,14 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 	// formatted string will be appended to the "maps" array containing a timestamp that is less than the "To" value in the
 	// request. This code is likely used to filter a query based on a time range.
 	if req.GetTo() > 0 {
-		maps = append(maps, fmt.Sprintf(`and to_char(ohlc.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') < to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetTo()))
+		maps = append(maps, fmt.Sprintf(`and to_char(o.create_at::timestamp, 'yyyy-mm-dd hh24:mi:ss') < to_char(to_timestamp(%[1]d), 'yyyy-mm-dd hh24:mi:ss')`, req.GetTo()))
 	}
 
 	// This code is used to query the database to return OHLC (open-high-low-close) data. The SQL query is using the
 	// fmt.Sprintf function to substitute the variables (req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "),
 	// help.Resolution(req.GetResolution()), limit) into the query. The query is then executed, and the results are stored
 	// in the rows variable. Finally, the rows variable is closed at the end of the code.
-	rows, err := e.Context.Db.Query(fmt.Sprintf("select extract(epoch from time_bucket('%[4]s', ohlc.create_at))::integer buckettime, first(ohlc.price, ohlc.create_at) as open, last(ohlc.price, ohlc.create_at) as close, first(ohlc.price, ohlc.price) as low, last(ohlc.price, ohlc.price) as high, sum(ohlc.quantity) as volume, avg(ohlc.price) as avg_price, ohlc.base_unit, ohlc.quote_unit from trades as ohlc where ohlc.base_unit = '%[1]s' and ohlc.quote_unit = '%[2]s' %[3]s group by buckettime, ohlc.base_unit, ohlc.quote_unit order by buckettime desc %[5]s", req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "), help.Resolution(req.GetResolution()), limit))
+	rows, err := e.Context.Db.Query(fmt.Sprintf("select extract(epoch from time_bucket('%[4]s', o.create_at))::integer buckettime, first(o.price, o.create_at) as open, last(o.price, o.create_at) as close, first(o.price, o.price) as low, last(o.price, o.price) as high, sum(o.quantity) as volume, avg(o.price) as avg_price, o.base_unit, o.quote_unit from ohlcv as o where o.base_unit = '%[1]s' and o.quote_unit = '%[2]s' %[3]s group by buckettime, o.base_unit, o.quote_unit order by buckettime desc %[5]s", req.GetBaseUnit(), req.GetQuoteUnit(), strings.Join(maps, " "), help.Resolution(req.GetResolution()), limit))
 	if err != nil {
 		return &response, err
 	}
@@ -981,10 +980,10 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 	// deleting the row.
 	for rows.Next() {
 
-		// The purpose of the variable "item" is to store data of type pbspot.Candles. This could be used to store an array of
-		// candles or other data related to pbspot.Candles.
+		// The purpose of the variable "item" is to store data of type pbspot.Ticker. This could be used to store an array of
+		// candles or other data related to pbspot.Ticker.
 		var (
-			item pbspot.Candles
+			item pbspot.Ticker
 		)
 
 		// This code is checking for errors while scanning a row of data from a database. It is assigning the values of the row
@@ -1008,7 +1007,7 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 	// This code is used to fetch and analyze data from a database. It uses the QueryRow() method to retrieve data from the
 	// database and then scan it into the stats variable. The code is specifically used to get the count, volume, low, high,
 	// first and last values from the trades table for a given base unit and quote unit.
-	_ = e.Context.Db.QueryRow(fmt.Sprintf(`select count(*) as count, sum(h24.quantity) as volume, first(h24.price, h24.price) as low, last(h24.price, h24.price) as high, first(h24.price, h24.create_at) as first, last(h24.price, h24.create_at) as last from trades as h24 where h24.create_at > now()::timestamp - '24 hours'::interval and h24.base_unit = '%[1]s' and h24.quote_unit = '%[2]s'`, req.GetBaseUnit(), req.GetQuoteUnit())).Scan(&stats.Count, &stats.Volume, &stats.Low, &stats.High, &stats.First, &stats.Last)
+	_ = e.Context.Db.QueryRow(fmt.Sprintf(`select count(*) as count, sum(h24.quantity) as volume, first(h24.price, h24.price) as low, last(h24.price, h24.price) as high, first(h24.price, h24.create_at) as first, last(h24.price, h24.create_at) as last from ohlcv as h24 where h24.create_at > now()::timestamp - '24 hours'::interval and h24.base_unit = '%[1]s' and h24.quote_unit = '%[2]s'`, req.GetBaseUnit(), req.GetQuoteUnit())).Scan(&stats.Count, &stats.Volume, &stats.Low, &stats.High, &stats.First, &stats.Last)
 
 	// This code checks if the length of the 'response.Fields' array is greater than 1. If so, it assigns the 'Close' value
 	// of the second element in the 'response.Fields' array to the 'Previous' field of the 'stats' object.
@@ -1023,17 +1022,17 @@ func (e *Service) GetCandles(_ context.Context, req *pbspot.GetRequestCandles) (
 	return &response, nil
 }
 
-// GetTransfers - This function is a method of the Service type. It is used to get a list of transfers from a database. It takes a
+// GetTrades - This function is a method of the Service type. It is used to get a list of transfers from a database. It takes a
 // context and a request object as parameters. The request object contains information about the requested transfers,
 // such as the limit, order ID and whether the request should only return transfers for a specific user. The function
 // then queries the database for the requested transfers, and returns a ResponseTransfer object containing the relevant transfers.
-func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransfers) (*pbspot.ResponseTransfer, error) {
+func (e *Service) GetTrades(ctx context.Context, req *pbspot.GetRequestTrades) (*pbspot.ResponseTrade, error) {
 
-	// The purpose of this code is to declare two variables: a variable called "response" of type "pbspot.ResponseTransfer"
+	// The purpose of this code is to declare two variables: a variable called "response" of type "pbspot.ResponseTrade"
 	// and a variable called "maps" of type "string slice". This allows the program to store values in these two variables
 	// and access them throughout the code.
 	var (
-		response pbspot.ResponseTransfer
+		response pbspot.ResponseTrade
 		maps     []string
 	)
 
@@ -1081,7 +1080,7 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 	// This code is used to query the table 'transfers' with the given parameters. It uses a fmt.Sprintf statement to format the
 	// query string with the given parameters, then it uses the e.Context.Db.Query() to execute the query and store the
 	// results into the rows variable. If an error occurs, it returns an error response. Finally, it closes the rows variable.
-	rows, err := e.Context.Db.Query(fmt.Sprintf("select id, user_id, base_unit, quote_unit, price, quantity, assigning, fees, create_at from transfers %s order by id desc limit %d", strings.Join(maps, " "), req.GetLimit()))
+	rows, err := e.Context.Db.Query(fmt.Sprintf("select id, user_id, base_unit, quote_unit, price, quantity, assigning, fees, maker, create_at from trades %s order by id desc limit %d", strings.Join(maps, " "), req.GetLimit()))
 	if err != nil {
 		return &response, err
 	}
@@ -1091,16 +1090,16 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 	// row in the result set. This loop allows you to access the data in each row and process it as needed.
 	for rows.Next() {
 
-		// The purpose of this code is to declare a variable called item, and assign it to a value of type pbspot.Transfer.
+		// The purpose of this code is to declare a variable called item, and assign it to a value of type pbspot.Trade.
 		// This is used in programming to store data in the form of a variable and access it at a later time.
 		var (
-			item pbspot.Transfer
+			item pbspot.Trade
 		)
 
 		// This code is part of a function that retrieves data from a database. The purpose of the if statement is to scan the
 		// rows of the database and assign each row's values to the corresponding variables. If an error occurs while scanning
 		// the rows, the function will return an error.
-		if err = rows.Scan(&item.Id, &item.UserId, &item.BaseUnit, &item.QuoteUnit, &item.Price, &item.Quantity, &item.Assigning, &item.Fees, &item.CreateAt); err != nil {
+		if err = rows.Scan(&item.Id, &item.UserId, &item.BaseUnit, &item.QuoteUnit, &item.Price, &item.Quantity, &item.Assigning, &item.Fees, &item.Maker, &item.CreateAt); err != nil {
 			return &response, err
 		}
 
@@ -1114,104 +1113,6 @@ func (e *Service) GetTransfers(ctx context.Context, req *pbspot.GetRequestTransf
 	// it in a response. The if statement is making sure that the query was successful and that the response is valid.
 	if err = rows.Err(); err != nil {
 		return &response, err
-	}
-
-	return &response, nil
-}
-
-// GetTrades - This function is used to retrieve trades from the database. It takes a GetRequestTrades request as an argument and
-// returns a ResponseTrades. The function uses a switch statement to filter the data based on the assigning field in the
-// GetRequestTrades request. It then checks the count of trades that match the filter and returns them in the
-// ResponseTrades. The limit and page values are used to limit the number of trades returned.
-func (e *Service) GetTrades(_ context.Context, req *pbspot.GetRequestTrades) (*pbspot.ResponseTrades, error) {
-
-	// The purpose of the above code is to declare two variables, response and maps, of the types pbspot.ResponseTrades and
-	// []string respectively. This allows for the response to store information related to trades, such as the trade price
-	// and quantity, and the maps to store an array of strings.
-	var (
-		response pbspot.ResponseTrades
-		maps     []string
-	)
-
-	// The purpose of this code is to check if the value of the "req.GetLimit()" is equal to 0. If it is equal to 0, then
-	// the value of "req.Limit" is set to 30.
-	if req.GetLimit() == 0 {
-		req.Limit = 30
-	}
-
-	// This switch statement is used to conditionally append a string to an array (maps) based on the value of the
-	// req.GetAssigning() function. req.GetAssigning() returns a value that is part of the pbspot.Assigning enumeration,
-	// which can be either BUY or SELL. Depending on what value is returned, the corresponding string is appended to the
-	// array. If neither BUY nor SELL is returned, then a string that includes both BUY and SELL is appended.
-	switch req.GetAssigning() {
-	case proto.Assigning_BUY:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", proto.Assigning_BUY))
-	case proto.Assigning_SELL:
-		maps = append(maps, fmt.Sprintf("where assigning = %d", proto.Assigning_SELL))
-	default:
-		maps = append(maps, fmt.Sprintf("where (assigning = %d or assigning = %d)", proto.Assigning_BUY, proto.Assigning_SELL))
-	}
-
-	// The purpose of this code is to append a string to the maps variable. The string contains a formatted version of the
-	// BaseUnit and QuoteUnit from the req variable. This is likely part of a larger SQL query that is being built.
-	maps = append(maps, fmt.Sprintf("and base_unit = '%v' and quote_unit = '%v'", req.GetBaseUnit(), req.GetQuoteUnit()))
-
-	// This code is used to query a database for the number of trades in a table and then store the result in a variable
-	// called response.Count. The query is made up of a string of SQL code as well as strings.Join() which adds the
-	// information in the maps variable to the query. The Scan() function is then used to store the result of the query in
-	// the response.Count variable.
-	_ = e.Context.Db.QueryRow(fmt.Sprintf("select count(*) as count from trades %s", strings.Join(maps, " "))).Scan(&response.Count)
-
-	// The purpose of this statement is to check if the response object has any elements in it. If the response object has
-	// more than 0 elements, then the code inside the if statement will execute.
-	if response.GetCount() > 0 {
-
-		// This code is used to calculate an offset based on the page and limit provided. The page is usually used to determine
-		// which page of records to return from a database, and the limit is used to determine how many records to return. The
-		// offset is the starting index of the records to return. The code checks if the page is greater than 0, and if so,
-		// subtracts 1 from the page to get the correct offset.
-		offset := req.GetLimit() * req.GetPage()
-		if req.GetPage() > 0 {
-			offset = req.GetLimit() * (req.GetPage() - 1)
-		}
-
-		// This code is used to query the database. It uses the `Db.Query` function to select data from the trades table, with
-		// the given conditions in the `strings.Join(maps, " ")`, limit, and offset. If an error occurs, it returns an error
-		// response. The `defer rows.Close()` statement ensures that the rows will be closed when the function returns.
-		rows, err := e.Context.Db.Query(fmt.Sprintf(`select id, assigning, price, quantity, base_unit, quote_unit, create_at from trades %s order by id desc limit %d offset %d`, strings.Join(maps, " "), req.GetLimit(), offset))
-		if err != nil {
-			return &response, err
-		}
-		defer rows.Close()
-
-		// The for rows.Next() loop is used to iterate over a database query result set. It will loop through each row in the
-		// result set and perform the instructions within the loop. This is a common way to access data from a database.
-		for rows.Next() {
-
-			// The purpose of this code is to declare a variable called item with a type of pbspot.Trade. This allows the item
-			// variable to be used to store any type of data associated with the pbspot.Trade type.
-			var (
-				item pbspot.Trade
-			)
-
-			// This is a line of code used to scan the rows of a database table and assign the columns of each row to variables.
-			// It scans the columns (ID, Assigning, Price, Quantity, BaseUnit, QuoteUnit, and CreateAt) of the row, and assigns
-			// them to the corresponding variables (item.Id, item.Assigning, item.Price, item.Quantity, item.BaseUnit,
-			// item.QuoteUnit, and item.CreateAt). If an error occurs during the scanning process, it will return an error message.
-			if err = rows.Scan(&item.Id, &item.Assigning, &item.Price, &item.Quantity, &item.BaseUnit, &item.QuoteUnit, &item.CreateAt); err != nil {
-				return &response, err
-			}
-
-			// This statement adds an item to the response.Fields slice. The response.Fields slice stores a list of items, and
-			// this statement appends a new item to the end of the list.
-			response.Fields = append(response.Fields, &item)
-		}
-
-		// The purpose of this code is to check for an error when querying a database. If an error is returned, the code will
-		// return a response and an error message.
-		if err = rows.Err(); err != nil {
-			return &response, err
-		}
 	}
 
 	return &response, nil
@@ -1471,9 +1372,9 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 	// This code is used to get the currency of a request. It checks if the currency is available in the request and if it
 	// is not available, it returns an error message (status.Errorf(10029, "the currency requested array by id %v is
 	// currently unavailable", req.GetSymbol())).
-	currency, err := e.getCurrency(req.GetSymbol(), false)
+	currency, err := e.getAsset(req.GetSymbol(), false)
 	if err != nil {
-		return &response, status.Errorf(10029, "the currency requested array by id %v is currently unavailable", req.GetSymbol())
+		return &response, status.Errorf(10029, "the asset requested array by id %v is currently unavailable", req.GetSymbol())
 	}
 
 	// The purpose of the code above is to retrieve a contract from a blockchain given a symbol and chain ID. It does this

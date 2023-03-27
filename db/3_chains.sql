@@ -39,3 +39,5 @@ values  (7, 'MC Gateway', 'https://github.com/', 0, 0, '', 4, 0, 10, 0, 0, '', 1
         (4, 'Bitcoin Chain', 'https://google.com', 0, 0, 'https://www.blockchain.com/btc/tx', 0, 3, 60, 0.0002, 1, 'btc', 18, false),
         (2, 'Ethereum Chain', 'http://127.0.0.1:8545', 0, 5000, 'https://etherscan.io/tx', 1, 3, 10, 0.001, 2, 'eth', 18, false),
         (1, 'Tron Chain', 'http://127.0.0.1:8090', 0, 0, 'https://tronscan.org/#/transaction', 2, 5, 30, 1, 4, 'trx', 6, true);
+
+select pg_catalog.setval('public.chains_id_seq', 6, true);

@@ -1,5 +1,5 @@
 create extension if not exists timescaledb cascade;
-create table if not exists public.trades
+create table if not exists public.ohlcv
 (
     id         serial,
     base_unit  text,
@@ -9,14 +9,14 @@ create table if not exists public.trades
     assigning  integer                  default 0                  not null,
     market     boolean                  default false              not null,
     create_at  timestamp with time zone default CURRENT_TIMESTAMP  not null
-        constraint trades_create_at_key
+        constraint ohlcv_create_at_key
             unique
 );
 
-alter table public.trades
+alter table public.ohlcv
     owner to envoys;
 
-create index if not exists trades_create_at_idx
-    on public.trades (create_at desc);;
+create index if not exists ohlcv_create_at_idx
+    on public.ohlcv (create_at desc);;
 
-select create_hypertable('trades', 'create_at');
+select create_hypertable('ohlcv', 'create_at');

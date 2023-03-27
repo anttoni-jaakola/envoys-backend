@@ -9,7 +9,6 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
 	"github.com/cryptogateway/backend-envoys/server/proto"
-
 	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -103,73 +102,121 @@ func (e *Service) setSecure(ctx context.Context, cleaning bool) error {
 	return nil
 }
 
-// setTrade - This function is used to set a trade in a database. It takes a series of orders (param) as an argument and performs
+// setTrade - The purpose of this code is to set a trade by converting a given value to a decimal number multiplied by a given
+// price, get the sum of a given order, symbol, and value, insert the data into a database, update the "fees_charges"
+// column in the "currencies" table in a database, and publish a particular order to an exchange.
+func (e *Service) setTrade(id int64, symbol string, value, price float64, convert bool) (float64, error) {
+
+	// The purpose of this code is to retrieve an order from a database, given its ID. The variable 'order' will store the
+	// order object that is returned from the getOrder() method.
+	order := e.getOrder(id)
+	order.Value = value
+
+	// This code is used to convert a given value to a decimal number multiplied by a given price. The result is then stored
+	// as a floating point number. This is likely used for some kind of financial calculation or to convert a given value to
+	// a currency amount.
+	if convert {
+		value = decimal.New(value).Mul(price).Float()
+	}
+
+	// This code is attempting to get the sum of a given order, symbol and value. The variables s and f are used to store
+	// the sum and any error encountered, respectively. The if statement checks for any errors that may have occurred and
+	// returns 0 and the error if one is encountered.
+	s, f, maker, err := e.getSum(id, symbol, value)
+	if err != nil {
+		return 0, err
+	}
+
+	// This code is used to calculate the fee for an order based on the assigned type. If the order is assigned to be a
+	// SELL, the fee is calculated by dividing the fee (f) by the price. If the order is assigned to be something else, the
+	// fee is simply set to be f.
+	if order.GetAssigning() == proto.Assigning_SELL {
+		order.Fees = decimal.New(f).Div(price).Float()
+	} else {
+		order.Fees = f
+	}
+
+	// This code is used to insert data into the "transfers" table in a database using the parameters provided in the array
+	// "param". The code first checks for any errors in the insertion process, and if there are any, it will return an error.
+	if _, err := e.Context.Db.Exec(`insert into trades (order_id, assigning, user_id, base_unit, quote_unit, quantity, fees, price, maker) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, order.GetId(), order.GetAssigning(), order.GetUserId(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetValue(), order.GetFees(), price, maker); err != nil {
+		return 0, err
+	}
+
+	// This statement is checking to see if the value of the parameter at index i in the param array is greater than 0. If
+	// it is, then the code within the if statement will be executed. This is likely being used to check if a fee is
+	// associated with the parameter at index i.
+	if f > 0 {
+
+		// This code is updating the "fees_charges" column in the "currencies" table in a database. The "symbol" and
+		// "fee" are parameters that are passed into the statement. If an error occurs during the
+		// execution of the statement, the function will return the error.
+		if _, err := e.Context.Db.Exec("update assets set fees_charges = fees_charges + $2 where symbol = $1;", symbol, f); err != nil {
+			return 0, err
+		}
+	}
+
+	// The purpose of the code snippet is to publish a particular order to an exchange with the routing key "order/status".
+	// The if statement checks for any errors encountered while publishing the order, and returns an error if one occurs.
+	if err := e.Context.Publish(e.getOrder(order.GetId()), "exchange", "order/status"); err != nil {
+		return 0, err
+	}
+
+	return s, nil
+}
+
+// getSum - The purpose of this code is to calculate the final value of a given value after subtracting fees. It queries the
+// database for the corresponding currency's fees_trade and fees_discount columns, and checks the status of an order
+// based on an id. If the order is a maker order, the discount is subtracted from the fees. Finally, the actual value
+// after subtracting fees and the rounded value after subtracting fees are returned.
+func (e *Service) getSum(id int64, symbol string, value float64) (b, f float64, m bool, err error) {
+
+	// The purpose of this code is to declare three variables of different types: d is a float64, m is a boolean, and s is a
+	// proto.Status. This can be used to assign values to these variables and use them in your program.
+	var (
+		d float64
+		s proto.Status
+	)
+
+	// This code is used to query a database for a particular record associated with the given symbol. It then scans the
+	// result and stores the values of the fees_trade and fees_discount columns in the variables fees and discount
+	// respectively. If an error occurs during the query, it returns the balance and fees variables.
+	if err := e.Context.Db.QueryRow("select fees_trade, fees_discount from assets where symbol = $1", symbol).Scan(&f, &d); err != nil {
+		return b, f, m, err
+	}
+
+	// The purpose of this code is to query a database for the status of an order based on the id and store the result in a
+	// variable. If there is an error with the query, an error is returned.
+	if err := e.Context.Db.QueryRow("select status from orders where id = $1;", id).Scan(&s); err != nil {
+		return b, f, m, err
+	}
+
+	// This if statement assigns the boolean value true to the variable m if the variable s is equal to the constant
+	// proto.Status_PENDING. This can be used to evaluate a condition or determine if a specific value is present in a given set.
+	if s == proto.Status_PENDING {
+		m = true
+	}
+
+	// This code is checking if the variable "maker" is true, and if it is, it is subtracting the value of "discount" from
+	// "fees" and storing the result in "fees" as a float. This is likely being done to calculate a discounted fee for a maker order.
+	if m {
+		f = decimal.New(f).Sub(d).Float()
+	}
+
+	// This code is used to calculate the final value of a given value after subtracting fees. The two return values
+	// represent the actual value after subtracting fees and the rounded value after subtracting fees.
+	return decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(f).Float()).Div(100).Float()).Float(), decimal.New(value).Sub(decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(f).Float()).Div(100).Float()).Float()).Float(), m, nil
+}
+
+// setTicker - This function is used to set a trade in a database. It takes a series of orders (param) as an argument and performs
 // various operations including inserting data into the database, calculating fees, and publishing order status and trade candles.
-func (e *Service) setTrade(param ...*pbspot.Order) error {
+func (e *Service) setTicker(order *pbspot.Order) error {
 
-	// This is a conditional statement that is used to check the value of the parameter at the index of 0. If the value of
-	// the parameter at index 0 is equal to 0, then the function will return nil.
-	if param[0].GetValue() == 0 {
-		return nil
-	}
-
-	// This code is used to insert a new row of data into the trades table of a database. The values for the new row are
-	// taken from the param[0] variable. If the insertion fails, an error is returned.
-	if _, err := e.Context.Db.Exec(`insert into trades (assigning, base_unit, quote_unit, price, quantity) values ($1, $2, $3, $4, $5)`, param[0].GetAssigning(), param[0].GetBaseUnit(), param[0].GetQuoteUnit(), param[0].GetPrice(), param[0].GetValue()); err != nil {
+	// This piece of code is inserting data into a database table. The purpose of this code is to add a new row to the
+	// "ohlcv" table, based on the values stored in the params array. The five columns in the table are assigning,
+	// base_unit, quote_unit, price, and quantity, and each of these is being populated with the corresponding value from
+	// the params array. The code then checks for any errors that may have occurred while executing the query and returns if any are found.
+	if _, err := e.Context.Db.Exec(`insert into ohlcv (assigning, base_unit, quote_unit, price, quantity) values ($1, $2, $3, $4, $5)`, order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetValue()); e.Context.Debug(err) {
 		return err
-	}
-
-	// The purpose of this "for" loop is to loop through a sequence of numbers (in this case, 0 and 1) and execute a certain
-	// set of instructions a certain number of times (in this case, twice).
-	for i := 0; i < 2; i++ {
-
-		// This code is used to set the Quantity of the parameter at index i in the param array. It first sets the Quantity to
-		// the value of the parameter at index 0 of the array. If the GetEqual method of the parameter at index i returns true,
-		// the Quantity is then set to the value of the parameter at index 1 of the array.
-		param[i].Quantity = param[0].GetValue()
-		if param[i].Header.GetEqual() {
-			param[i].Quantity = param[1].GetValue()
-		}
-
-		// This code is checking if param[i].Param.GetMaker() is true and if it is, it is setting the price of param[i] to the
-		// price of param[0]. This is likely setting the price to a predetermined value, or to a reference point to determine a price.
-		param[i].Price = param[i].GetPrice()
-		if param[i].Header.GetMaker() {
-			param[i].Price = param[0].GetPrice()
-		}
-
-		// This code is used to insert data into the "transfers" table in a database using the parameters provided in the array
-		// "param". The code first checks for any errors in the insertion process, and if there are any, it will return an error.
-		if _, err := e.Context.Db.Exec(`insert into transfers (order_id, assigning, user_id, base_unit, quote_unit, price, quantity, fees) values ($1, $2, $3, $4, $5, $6, $7, $8)`, param[i].GetId(), param[i].GetAssigning(), param[i].GetUserId(), param[i].GetBaseUnit(), param[i].GetQuoteUnit(), param[i].GetPrice(), param[i].GetQuantity(), e.getFees(param[i].GetQuoteUnit(), param[i].Header.GetMaker())); err != nil {
-			return err
-		}
-
-		// This statement is checking to see if the value of the parameter at index i in the param array is greater than 0. If
-		// it is, then the code within the if statement will be executed. This is likely being used to check if a fee is
-		// associated with the parameter at index i.
-		if param[i].Header.GetFees() > 0 {
-
-			// The purpose of this code is to determine the symbol to use in a calculation. It is using a parameter from the param
-			// array to decide which symbol to use. If the parameter has a "turn" parameter set to true, the code sets the symbol
-			// to the base unit, otherwise it sets the symbol to the quote unit.
-			symbol := param[0].GetQuoteUnit()
-			if param[i].Header.GetTurn() {
-				symbol = param[0].GetBaseUnit()
-			}
-
-			// This code is updating the "fees_charges" column in the "currencies" table in a database. The "symbol" and
-			// "param[i].Param.GetFees()" are parameters that are passed into the statement. If an error occurs during the
-			// execution of the statement, the function will return the error.
-			if _, err := e.Context.Db.Exec("update currencies set fees_charges = fees_charges + $2 where symbol = $1;", symbol, param[i].Header.GetFees()); err != nil {
-				return err
-			}
-		}
-
-		// The purpose of the code snippet is to publish a particular order to an exchange with the routing key "order/status".
-		// The if statement checks for any errors encountered while publishing the order, and returns an error if one occurs.
-		if err := e.Context.Publish(e.getOrder(param[i].GetId()), "exchange", "order/status"); err != nil {
-			return err
-		}
 	}
 
 	// The for loop is used to iterate through each element in the Depth() array. The underscore is used to assign the index
@@ -178,19 +225,19 @@ func (e *Service) setTrade(param ...*pbspot.Order) error {
 	for _, interval := range help.Depth() {
 
 		// This code is used to retrieve two candles with a given resolution from a spot exchange. The purpose of the migrate,
-		// err := e.GetCandles() line is to make a request to the spot exchange using the BaseUnit, QuoteUnit, Limit, and
+		// err := e.GetTicker() line is to make a request to the spot exchange using the BaseUnit, QuoteUnit, Limit, and
 		// Resolution parameters provided. The if err != nil { return err } line is used to check if there was an error with
 		// the request and return that error if necessary.
-		migrate, err := e.GetCandles(context.Background(), &pbspot.GetRequestCandles{BaseUnit: param[0].GetBaseUnit(), QuoteUnit: param[1].GetQuoteUnit(), Limit: 2, Resolution: interval})
+		migrate, err := e.GetTicker(context.Background(), &pbspot.GetRequestTicker{BaseUnit: order.GetBaseUnit(), QuoteUnit: order.GetQuoteUnit(), Limit: 2, Resolution: interval})
 		if err != nil {
 			return err
 		}
 
 		// This code is used to publish a message to an exchange on a specific topic. The message is "migrate" and the topic is
-		// "trade/candles:interval". The purpose of this code is to send a message to the exchange,
+		// "trade/ticker:interval". The purpose of this code is to send a message to the exchange,
 		// action based on the message. The if statement is used to check for any errors that may occur during the publishing
 		// of the message. If an error is encountered, it will be returned.
-		if err := e.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/candles:%v", interval)); err != nil {
+		if err := e.Context.Publish(migrate, "exchange", fmt.Sprintf("trade/ticker:%v", interval)); err != nil {
 			return err
 		}
 	}
@@ -219,7 +266,7 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 	// The purpose of this code is to query the database for a specific asset with a given symbol and userId. The query is
 	// then stored in a row variable and an error is checked for. If there is an error, it will be returned. Finally, the
 	// row is closed when the code is finished.
-	row, err := e.Context.Db.Query(`select id from assets where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, proto.Type_SPOT)
+	row, err := e.Context.Db.Query(`select id from balances where symbol = $1 and user_id = $2 and type = $3`, symbol, userId, proto.Type_SPOT)
 	if err != nil {
 		return err
 	}
@@ -231,7 +278,7 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 
 		// This code is inserting values into a database table called "assets" with the specific columns "user_id" and
 		// "symbol". The purpose of this code is to save the values of userId and symbol into the table for future reference.
-		if _, err = e.Context.Db.Exec("insert into assets (user_id, symbol) values ($1, $2)", userId, symbol); err != nil {
+		if _, err = e.Context.Db.Exec("insert into balances (user_id, symbol) values ($1, $2)", userId, symbol); err != nil {
 			return err
 		}
 
@@ -248,14 +295,6 @@ func (e *Service) setAsset(symbol string, userId int64, error bool) error {
 	return nil
 }
 
-// getAsset - This function is used to determine if an asset exists for a given user. It takes two arguments, a symbol and a userId,
-// and returns a boolean indicating whether the asset exists. The function executes a SQL query to the database to
-// check if the asset exists, and then returns the boolean result.
-func (e *Service) getAsset(symbol string, userId int64) (exist bool) {
-	_ = e.Context.Db.QueryRow("select exists(select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3)::bool", symbol, userId, proto.Type_SPOT).Scan(&exist)
-	return exist
-}
-
 // setBalance - This function is used to update the balance of a user in a database. Depending on the cross parameter, either the
 // balance is increased (pbspot.Balance_PLUS) or decreased (pbspot.Balance_MINUS) by a given quantity. The balance is
 // updated in the assets table of the database, using a query. Finally, an error is returned if an error occurred during the update.
@@ -267,7 +306,7 @@ func (e *Service) setBalance(symbol string, userId int64, quantity float64, cros
 		// The code above is an if statement that is used to update the balance of an asset with a given symbol and user_id in
 		// a database. The statement executes an update query, passing in the values of symbol, quantity, and userId as
 		// parameters to the query. If the query fails to execute, the if statement will return an error.
-		if _, err := e.Context.Db.Exec("update assets set balance = balance + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_SPOT); err != nil {
+		if _, err := e.Context.Db.Exec("update balances set value = value + $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_SPOT); err != nil {
 			return err
 		}
 		break
@@ -276,7 +315,7 @@ func (e *Service) setBalance(symbol string, userId int64, quantity float64, cros
 		// This code is used to update the balance of a user's assets in a database. The code updates the user's balance by
 		// subtracting the quantity given. The values being used to update the balance are stored in variables, and are passed
 		// into the code as parameters ($1, $2, and $3). The code also checks for errors and returns an error if one is found.
-		if _, err := e.Context.Db.Exec("update assets set balance = balance - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_SPOT); err != nil {
+		if _, err := e.Context.Db.Exec("update balances set value = value - $2 where symbol = $1 and user_id = $3 and type = $4;", symbol, quantity, userId, proto.Type_SPOT); err != nil {
 			return err
 		}
 		break
@@ -364,60 +403,6 @@ func (e *Service) setTransaction(transaction *pbspot.Transaction) (*pbspot.Trans
 	return nil, nil
 }
 
-// getFees - This function is used to calculate the fees for a given symbol and whether the user is a maker or not. It first
-// queries the currency table in the database to get the fees_trade and fees_discount information for the given symbol.
-// It then sets the fees to the fees_trade value. If the user is a maker, it subtracts the fees_discount from the
-// fees_trade to get the correct fees value. Finally, it returns the fees.
-func (e *Service) getFees(symbol string, maker bool) (fees float64) {
-
-	var (
-		discount float64
-	)
-
-	// This code is checking the database for a currency with the given symbol and assigning the fees_trade and
-	// fees_discount values to the fees and discount variables. If an error occurs while querying the database, the code
-	// returns the fees variable.
-	if err := e.Context.Db.QueryRow("select fees_trade, fees_discount from currencies where symbol = $1", symbol).Scan(&fees, &discount); err != nil {
-		return fees
-	}
-
-	// This code is used to subtract a discount from the fees. If the maker variable is true, then the fees are adjusted by
-	// subtracting the discount from them.
-	if maker {
-		fees = decimal.New(fees).Sub(discount).Float()
-	}
-
-	return fees
-}
-
-// getSum - This function is used to calculate the balance and fees for a trade. It takes the symbol for the currency, the value
-// of the trade, and a boolean to indicate if the trade is a maker or taker. It then queries the database to get the fees
-// and discounts associated with the trade, and applies the discount if the trade is a maker. Finally, it calculates the
-// fees from the current amount and returns the new balance including fees.
-func (e *Service) getSum(symbol string, value float64, maker bool) (balance, fees float64) {
-
-	var (
-		discount float64
-	)
-
-	// This code is used to query a database for a particular record associated with the given symbol. It then scans the
-	// result and stores the values of the fees_trade and fees_discount columns in the variables fees and discount
-	// respectively. If an error occurs during the query, it returns the balance and fees variables.
-	if err := e.Context.Db.QueryRow("select fees_trade, fees_discount from currencies where symbol = $1", symbol).Scan(&fees, &discount); err != nil {
-		return balance, fees
-	}
-
-	// This code is checking if the variable "maker" is true, and if it is, it is subtracting the value of "discount" from
-	// "fees" and storing the result in "fees" as a float. This is likely being done to calculate a discounted fee for a maker order.
-	if maker {
-		fees = decimal.New(fees).Sub(discount).Float()
-	}
-
-	// This code is used to calculate the final value of a given value after subtracting fees. The two return values
-	// represent the actual value after subtracting fees and the rounded value after subtracting fees.
-	return decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(fees).Float()).Div(100).Float()).Float(), decimal.New(value).Sub(decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(fees).Float()).Div(100).Float()).Float()).Float()
-}
-
 // getAddress - This function is used to get the address associated with a userId, symbol, platform and protocol. It does this by
 // querying the assets and wallets tables in the database for a matching userId, symbol, platform, and protocol, and
 // returns the address associated with the query if one is found.
@@ -426,7 +411,7 @@ func (e *Service) getAddress(userId int64, symbol string, platform pbspot.Platfo
 	// This statement is used to query a database to get an address associated with a user, platform, protocol, and symbol.
 	// The purpose of using `coalesce` is to return a blank string if the address is null. The purpose of using `QueryRow`
 	// is to limit the query to a single row. The purpose of using `Scan` is to store the result of the query into the `address` variable.
-	_ = e.Context.Db.QueryRow("select coalesce(w.address, '') from assets a inner join wallets w on w.platform = $1 and w.protocol = $2 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $3 and a.user_id = $4 and a.type = $5", platform, protocol, symbol, userId, proto.Type_SPOT).Scan(&address)
+	_ = e.Context.Db.QueryRow("select coalesce(w.address, '') from balances a inner join wallets w on w.platform = $1 and w.protocol = $2 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $3 and a.user_id = $4 and a.type = $5", platform, protocol, symbol, userId, proto.Type_SPOT).Scan(&address)
 	return address
 }
 
@@ -511,7 +496,7 @@ func (e *Service) getBalance(symbol string, userId int64) (balance float64) {
 
 	// This line of code is used to retrieve the balance from the assets table in a database. It takes in two parameters
 	// (symbol and userId) and uses them to query the database. The result is then stored in the variable balance.
-	_ = e.Context.Db.QueryRow("select balance as balance from assets where symbol = $1 and user_id = $2 and type = $3", symbol, userId, proto.Type_SPOT).Scan(&balance)
+	_ = e.Context.Db.QueryRow("select value as balance from balances where symbol = $1 and user_id = $2 and type = $3", symbol, userId, proto.Type_SPOT).Scan(&balance)
 	return balance
 }
 
@@ -523,7 +508,7 @@ func (e *Service) getRange(symbol string, value float64) (min, max float64, ok b
 	// This if statement is used to query a database for a row containing the min_trade and max_trade columns for the
 	// currency with the symbol given as an argument. If the query is successful, the values for min_trade and max_trade are
 	// stored in the variables min and max. If the query fails, an error is returned and the function returns min, max, and ok.
-	if err := e.Context.Db.QueryRow("select min_trade, max_trade from currencies where symbol = $1", symbol).Scan(&min, &max); err != nil {
+	if err := e.Context.Db.QueryRow("select min_trade, max_trade from assets where symbol = $1", symbol).Scan(&min, &max); err != nil {
 		return min, max, ok
 	}
 
@@ -556,14 +541,14 @@ func (e *Service) getUnit(symbol string) (*pbspot.Pair, error) {
 	return &response, nil
 }
 
-// getCurrency - This function is used to retrieve currency information from a database. It takes a currency symbol and a status
+// getAsset - This function is used to retrieve asset information from a database. It takes a currency symbol and a status
 // boolean as arguments. It then queries the database to retrieve information about the currency and stores it in the
-// 'response' variable. It then checks for the existence of the currency icon and stores the result in the 'icon' field
+// 'response' variable. It then checks for the existence of the asset icon and stores the result in the 'icon' field
 // of the 'response' variable. Finally, it returns the currency and an error value, if any.
-func (e *Service) getCurrency(symbol string, status bool) (*pbspot.Currency, error) {
+func (e *Service) getAsset(symbol string, status bool) (*pbspot.Asset, error) {
 
 	var (
-		response pbspot.Currency
+		response pbspot.Asset
 		maps     []string
 		storage  []string
 		chains   []byte
@@ -578,7 +563,7 @@ func (e *Service) getCurrency(symbol string, status bool) (*pbspot.Currency, err
 	// This code is performing a query of a database table called "currencies" and scanning the results into a response
 	// object. The query is using the symbol parameter to filter the results and strings.Join(maps, " ") to join any
 	// additional parameters. If the query fails, an error is returned.
-	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at, chains from currencies where symbol = '%v' %s", symbol, strings.Join(maps, " "))).Scan(
+	if err := e.Context.Db.QueryRow(fmt.Sprintf("select id, name, symbol, min_withdraw, max_withdraw, min_trade, max_trade, fees_trade, fees_discount, fees_charges, fees_costs, marker, status, type, create_at, chains from assets where symbol = '%v' %s", symbol, strings.Join(maps, " "))).Scan(
 		&response.Id,
 		&response.Name,
 		&response.Symbol,
@@ -794,7 +779,7 @@ func (e *Service) getRatio(base, quote string) (ratio float64, ok bool) {
 	// This code is part of a function that is attempting to get the ratio of two different currencies. The code is
 	// attempting to get two candles from the e (which is an exchange) with the given base and quote units. If an error is
 	// encountered, the function will return the ratio and ok.
-	migrate, err := e.GetCandles(context.Background(), &pbspot.GetRequestCandles{BaseUnit: base, QuoteUnit: quote, Limit: 2})
+	migrate, err := e.GetTicker(context.Background(), &pbspot.GetRequestTicker{BaseUnit: base, QuoteUnit: quote, Limit: 2})
 	if err != nil {
 		return ratio, ok
 	}
@@ -903,15 +888,15 @@ func (e *Service) setReserveUnlock(userId int64, symbol string, platform pbspot.
 // e.getCurrency function. If they do, it will return true, otherwise it will return false.
 func (e *Service) getStatus(base, quote string) bool {
 
-	// The purpose of this code is to check if an error is returned when the function "getCurrency" is called with the
+	// The purpose of this code is to check if an error is returned when the function "getAsset" is called with the
 	// parameters "base" and "true", and if so, return "false".
-	if _, err := e.getCurrency(base, true); err != nil {
+	if _, err := e.getAsset(base, true); err != nil {
 		return false
 	}
 
-	// The code snippet is checking if an error occurs when calling the function e.getCurrency() with arguments quote and
+	// The code snippet is checking if an error occurs when calling the function e.getAsset() with arguments quote and
 	// true. If an error occurs, it will return false.
-	if _, err := e.getCurrency(quote, true); err != nil {
+	if _, err := e.getAsset(quote, true); err != nil {
 		return false
 	}
 

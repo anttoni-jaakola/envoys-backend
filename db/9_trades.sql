@@ -1,11 +1,11 @@
-create table if not exists public.transfers
+create table if not exists public.trades
 (
     id         serial
-        constraint transfers_pk
+        constraint trades_pk
             primary key
-        constraint transfers_id_key
+        constraint trades_id_key
             unique
-        constraint transfers_id_key1
+        constraint trades_id_key1
             unique,
     user_id    integer,
     order_id   integer,
@@ -15,14 +15,15 @@ create table if not exists public.transfers
     quantity   numeric(32, 18),
     assigning  integer,
     fees       double precision,
+    maker      boolean                  default false             not null,
     create_at  timestamp with time zone default CURRENT_TIMESTAMP not null
 );
 
-alter table public.transfers
+alter table public.trades
     owner to envoys;
 
-alter table public.transfers
+alter table public.trades
     add unique (id);
 
-create unique index if not exists transfers_id_uindex
-    on public.transfers (id);
+create unique index if not exists trades_id_uindex
+    on public.trades (id);
