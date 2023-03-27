@@ -1,4 +1,3 @@
-****
 ## Install to server
 `./install.sh`
 ****
