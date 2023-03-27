@@ -178,7 +178,7 @@ func Master(option *assets.Context) {
 			grpc.MaxConcurrentStreams(math.MaxUint32),
 		}
 
-		// The purpose of srv := grpc.NewServer(opts...) is to create a new grpc server with the given options. This server can
+		// The purpose is to create a new grpc server with the given options. This server can
 		// then be used to handle incoming requests from clients.
 		srv := grpc.NewServer(opts...)
 
