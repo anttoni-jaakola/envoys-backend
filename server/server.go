@@ -181,10 +181,6 @@ func Master(option *assets.Context) {
 		// The purpose is to create a new grpc server with the given options. This server can
 		// then be used to handle incoming requests from clients.
 		srv := grpc.NewServer(opts...)
-
-		// This code registers four different API servers with their respective services.
-		// The purpose of this is to enable communication between the server and clients calling the API.
-		// The "option" parameter is likely a context or configuration that each service requires in order to communicate with the server.
 		pbindex.RegisterApiServer(srv, &index.Service{Context: option})
 		pbauth.RegisterApiServer(srv, &auth.Service{Context: option})
 		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
