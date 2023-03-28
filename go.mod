@@ -32,23 +32,10 @@ require (
 )
 
 require (
-	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/go-ole/go-ole v1.2.1 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
-	github.com/markcheno/go-quote v0.0.0-20220624214117-555891babbf1 // indirect
-	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70 // indirect
-	github.com/pdevty/googlefinance-client-go v0.0.0-20170428091157-b6650dc4bbf4 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/svarlamov/goyhfin v0.0.0-20161220065822-c7565afb5e91 // indirect
-	github.com/tiloso/googlefinance v0.0.0-20141127135705-d7d9f52bc381 // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (
