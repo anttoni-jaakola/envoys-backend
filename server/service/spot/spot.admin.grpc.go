@@ -779,7 +779,7 @@ func (e *Service) GetPairsRule(ctx context.Context, req *pbspot.GetRequestPairsR
 		for rows.Next() {
 
 			var (
-				item pbspot.Pair
+				item proto.Pair
 			)
 
 			// This code is used to scan a row from a database query and assign the values to variables. The if statement checks

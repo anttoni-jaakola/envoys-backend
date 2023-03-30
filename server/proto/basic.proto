@@ -79,3 +79,88 @@ enum Status {
   REJECTED = 8;
   BLOCKED = 9;
 }
+
+// The purpose of this message is to define the structure of an Order object. The message includes details such as the
+// order ID, user ID, base and quote unit, creation time, price, value, quantity, fees, count and the assigning, trading
+// and status of the order. This message will be used to create Order objects with the given attributes.
+message Order {
+  int64 id = 1;
+  int64 user_id = 2;
+  string base_unit = 3;
+  string quote_unit = 4;
+  double price = 5;
+  double value = 6;
+  double quantity = 7;
+  double fees = 8;
+  int32 count = 9;
+  string create_at = 10;
+  Assigning assigning = 11;
+  Trading trading = 12;
+  Status status = 13;
+}
+
+// The message Pair is a data structure used to store information about a currency pair. It stores the currency pair's
+// ID, symbol, base unit, quote unit, icon, price, ratio, base decimal, quote decimal, status, and graph clearance. This
+// data structure is used to provide information about the currency pair to other applications or services.
+message Pair {
+  int64 id = 1;
+  string symbol = 2;
+  string base_unit = 3;
+  string quote_unit = 4;
+  string icon = 5;
+  double price = 6;
+  double ratio = 7;
+  double base_decimal = 8;
+  double quote_decimal = 9;
+  bool status = 10;
+  bool graph_clear = 11;
+}
+
+// The message Ticker is a protocol buffer that is used to store and exchange information about a given ticker. This
+// includes information such as the ticker's unique identifier, the time, the base unit and quote unit, the high, low,
+// open, close, price, volume, ask price, and bid price. This information can then be used to analyze trends in the
+// market, track prices, and make predictions.
+message Ticker {
+  int64 id = 1;
+  int64 time = 2;
+  string base_unit = 3;
+  string quote_unit = 4;
+  double high = 5;
+  double low = 6;
+  double open = 7;
+  double close = 8;
+  double price = 9;
+  double volume = 10;
+  double ask_price = 11;
+  double bid_price = 12;
+}
+
+// The purpose of this message Stats is to provide a structure for storing statistics about a particular topic. The
+// variables high, low, last, first, previous, volume, and count hold specific values that represent different aspects
+// of the topic's statistical information. For example, high might represent the highest value of the topic, low might
+// represent the lowest value, and so on. The structure allows for efficient storage and retrieval of the statistical data.
+message Stats {
+  double high = 1;
+  double low = 2;
+  double last = 3;
+  double first = 5;
+  double previous = 4;
+  double volume = 6;
+  int32 count = 7;
+}
+
+// This message is used to define the fields of a Trade. It establishes the type of data that each field can contain
+// (i.e. int64, string, double, bool). The purpose of this message is to provide a standard format for communication
+// between different systems. By doing so, it allows for more efficient and accurate data exchange.
+message Trade {
+  int64 id = 1;
+  int64 user_id = 2;
+  string base_unit = 3;
+  string quote_unit = 4;
+  string create_at = 5;
+  double price = 6;
+  double quantity = 7;
+  double fees = 8;
+  bool maker = 9;
+  basic.Assigning assigning = 10;
+}

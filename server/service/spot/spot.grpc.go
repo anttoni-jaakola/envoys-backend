@@ -279,11 +279,11 @@ func (e *Service) GetPairs(_ context.Context, req *pbspot.GetRequestPairs) (*pbs
 	// through each row of the result set and do something with the data from each row.
 	for rows.Next() {
 
-		// The purpose of the declaration above is to create a variable called "pair" of type "pbspot.Pair". This variable will
+		// The purpose of the declaration above is to create a variable called "pair" of type "proto.Pair". This variable will
 		// be used to store a pair of values, such as two strings, two numbers, or two objects. This is often used in
 		// programming to store related data in a single object.
 		var (
-			pair pbspot.Pair
+			pair proto.Pair
 		)
 
 		// This is an if statement which is used to assign the scanned rows from the database to the corresponding variables.
@@ -353,10 +353,10 @@ func (e *Service) GetPair(_ context.Context, req *pbspot.GetRequestPair) (*pbspo
 	// statement will be executed. The purpose of row.Next() is to advance the row pointer to the next row in the result set.
 	if row.Next() {
 
-		// The purpose of this code is to declare a variable called 'pair' of type 'pbspot.Pair'. This variable can then be
-		// used to store values of type 'pbspot.Pair'.
+		// The purpose of this code is to declare a variable called 'pair' of type 'proto.Pair'. This variable can then be
+		// used to store values of type 'proto.Pair'.
 		var (
-			pair pbspot.Pair
+			pair proto.Pair
 		)
 
 		// This code is part of a larger program which likely retrieves data from a database. The purpose of this code is to
@@ -391,7 +391,7 @@ func (e *Service) SetOrder(ctx context.Context, req *pbspot.SetRequestOrder) (*p
 	// Declaring the variables allows them to be used in the code.
 	var (
 		response pbspot.ResponseOrder
-		order    pbspot.Order
+		order    proto.Order
 	)
 
 	// This code snippet checks if the request is authenticated by calling the Auth() method on the Context object. If the
@@ -642,10 +642,10 @@ func (e *Service) GetOrders(ctx context.Context, req *pbspot.GetRequestOrders) (
 		// execute until the rows.Next() returns false.
 		for rows.Next() {
 
-			// The purpose of the above code is to declare a variable called item with the type pbspot.Order. This allows the
-			// program to create an object of type pbspot.Order and assign it to the item variable.
+			// The purpose of the above code is to declare a variable called item with the type proto.Order. This allows the
+			// program to create an object of type proto.Order and assign it to the item variable.
 			var (
-				item pbspot.Order
+				item proto.Order
 			)
 
 			// This code is scanning the rows returned from a database query and assigning the values to the variables in the item
@@ -980,10 +980,10 @@ func (e *Service) GetTicker(_ context.Context, req *pbspot.GetRequestTicker) (*p
 	// deleting the row.
 	for rows.Next() {
 
-		// The purpose of the variable "item" is to store data of type pbspot.Ticker. This could be used to store an array of
-		// candles or other data related to pbspot.Ticker.
+		// The purpose of the variable "item" is to store data of type proto.Ticker. This could be used to store an array of
+		// candles or other data related to proto.Ticker.
 		var (
-			item pbspot.Ticker
+			item proto.Ticker
 		)
 
 		// This code is checking for errors while scanning a row of data from a database. It is assigning the values of the row
@@ -1001,7 +1001,7 @@ func (e *Service) GetTicker(_ context.Context, req *pbspot.GetRequestTicker) (*p
 	// The purpose of the following code is to declare a variable called stats of the type pbspot.Stats. This variable will
 	// be used to store information related to the pbspot.Stats data type.
 	var (
-		stats pbspot.Stats
+		stats proto.Stats
 	)
 
 	// This code is used to fetch and analyze data from a database. It uses the QueryRow() method to retrieve data from the
@@ -1090,10 +1090,10 @@ func (e *Service) GetTrades(ctx context.Context, req *pbspot.GetRequestTrades) (
 	// row in the result set. This loop allows you to access the data in each row and process it as needed.
 	for rows.Next() {
 
-		// The purpose of this code is to declare a variable called item, and assign it to a value of type pbspot.Trade.
+		// The purpose of this code is to declare a variable called item, and assign it to a value of type proto.Trade.
 		// This is used in programming to store data in the form of a variable and access it at a later time.
 		var (
-			item pbspot.Trade
+			item proto.Trade
 		)
 
 		// This code is part of a function that retrieves data from a database. The purpose of the if statement is to scan the
@@ -1595,10 +1595,10 @@ func (e *Service) CancelOrder(ctx context.Context, req *pbspot.CancelRequestOrde
 	if row.Next() {
 
 		// The purpose of the 'var' statement is to declare a new variable, in this case "item", which is of type
-		// "pbspot.Order". This allows the program to use the variable "item" to store values of type "pbspot.Order", such as
+		// "proto.Order". This allows the program to use the variable "item" to store values of type "proto.Order", such as
 		// orders placed on an online store.
 		var (
-			item pbspot.Order
+			item proto.Order
 		)
 
 		// This code is used to scan the row of a database table and assign the values to the relevant variables. The if

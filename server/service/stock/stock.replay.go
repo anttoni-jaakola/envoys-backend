@@ -3,15 +3,12 @@ package stock
 import (
 	"context"
 	"fmt"
-	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/svarlamov/goyhfin"
 	"strings"
 
 	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
-	"github.com/davecgh/go-spew/spew"
 	"google.golang.org/grpc/status"
 	"time"
 )
@@ -40,10 +37,10 @@ func (s *Service) price() {
 			// to iterate through each row in the result set and perform an action on it.
 			for rows.Next() {
 
-				// This code creates two variables, pair and price, of the types pbspot.Pair and float64 respectively. This allows
+				// This code creates two variables, pair and price, of the types proto.Pair and float64 respectively. This allows
 				// the program to store and use data of these two types.
 				var (
-					pair  pbspot.Pair
+					pair  proto.Pair
 					price float64
 				)
 
@@ -204,8 +201,8 @@ func (s *Service) market() {
 // trade - This function is used to replay a trade init. It takes an order and a side (BID or ASK) as parameters. It then queries
 // the database for orders with the same base unit, quote unit and user ID, and with a status of "PENDING". It then
 // iterates through the results and checks if the order's price is higher than the item's price for a BID position and
-// lower for an ASK position. If this is the case, it calls the replayTradeProcess() function. Finally, it logs any matches or failed matches.
-func (s *Service) trade(order *pbstock.Order, side proto.Side) {
+// lower for an ASK position. If this is the case, it calls the process() function. Finally, it logs any matches or failed matches.
+func (s *Service) trade(order *proto.Order, side proto.Side) {
 
 	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
 	// error and returning.
@@ -227,10 +224,10 @@ func (s *Service) trade(order *pbstock.Order, side proto.Side) {
 	// the iterator to the next row in the result set, returning false when there are no more rows to iterate over.
 	for rows.Next() {
 
-		// The purpose of this line of code is to declare a variable named 'item' of type 'pbstock.Order'. This will allow the
-		// programmer to use the 'item' variable to store data of type 'pbstock.Order' in the program.
+		// The purpose of this line of code is to declare a variable named 'item' of type 'proto.Order'. This will allow the
+		// programmer to use the 'item' variable to store data of type 'proto.Order' in the program.
 		var (
-			item pbstock.Order
+			item proto.Order
 		)
 
 		// This code is attempting to scan the rows of a database table, assigning each column value to a variable (item.Id,
@@ -274,7 +271,7 @@ func (s *Service) trade(order *pbstock.Order, side proto.Side) {
 				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
 				// trade process associated with them. The order and item parameters contain the necessary information needed to
 				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				s.process(order, &item)
+				s.process(proto.Side_BID, order, &item)
 
 			} else {
 				s.Context.Logger.Infof("[BID]: no matches found: (item [%v]) >= (order [%v])", order.GetPrice(), item.GetPrice())
@@ -293,7 +290,7 @@ func (s *Service) trade(order *pbstock.Order, side proto.Side) {
 				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
 				// trade process associated with them. The order and item parameters contain the necessary information needed to
 				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				s.process(order, &item)
+				s.process(proto.Side_ASK, order, &item)
 
 			} else {
 				s.Context.Logger.Infof("[ASK]: no matches found: (order [%v]) <= (item [%v])", order.GetPrice(), item.GetPrice())
@@ -318,12 +315,12 @@ func (s *Service) trade(order *pbstock.Order, side proto.Side) {
 // process - This function is used to replay a trade process. It updates two orders with different amounts to determine the result
 // of a trade. It updates the order status in the database with pending in to filled, updates the balance by adding the
 // amount of the order to the balance, and sends a mail. In addition, it logs information about the trade.
-func (s *Service) process(params ...*pbstock.Order) {
+func (s *Service) process(side proto.Side, params ...*proto.Order) {
 
-	// The purpose of this code is to declare and initialize a set of four variables. The first three variables are "value",
-	// "equal", and "instance", and they are all declared as type float64, bool, and int, respectively. The last variable is
-	// "migrate", and is declared as type query.Migrate, and is initialized with a Context set to e.Context.
+	// The purpose of the following code is to declare three variables: price (of type float64), value (of type float64),
+	// and instance (of type int). These variables can then be used in the program.
 	var (
+		price    float64
 		value    float64
 		instance int
 	)
@@ -337,7 +334,16 @@ func (s *Service) process(params ...*pbstock.Order) {
 		instance = 0
 	}
 
-	spew.Dump(params[instance].GetValue())
+	// This switch statement is used to determine the price based on the side (bid or ask) of an order. The switch statement
+	// checks for the side of the order and assigns the price accordingly, using the params array. If the side is BID, it
+	// will assign the price from the second element in the params array. If the side is ASK, it will assign the price from
+	// the first element in the params array.
+	switch side {
+	case proto.Side_BID:
+		price = params[1].GetPrice()
+	case proto.Side_ASK:
+		price = params[0].GetPrice()
+	}
 
 	// This code is used to update an order status from pending to filled when the order is completed. It also updates the
 	// quantity of the orders and sets the necessary parameters for the order. Finally, it logs the parameters of the order.
@@ -369,34 +375,54 @@ func (s *Service) process(params ...*pbstock.Order) {
 		switch params[1].GetAssigning() {
 		case proto.Assigning_BUY:
 
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := s.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), decimal.New(params[instance].GetValue()).Mul(params[1].GetPrice()).Float(), proto.Balance_PLUS); err != nil {
+			// Order trades logs.
+			quantity, err := s.setTrade(params[0].GetId(), params[instance].GetValue(), price, true)
+			if s.Context.Debug(err) {
 				return
 			}
 
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := s.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), params[instance].GetValue(), proto.Balance_PLUS); err != nil {
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := s.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); s.Context.Debug(err) {
+				return
+			}
+
+			// Order trades logs.
+			quantity, err = s.setTrade(params[1].GetId(), params[instance].GetValue(), price, false)
+			if s.Context.Debug(err) {
+				return
+			}
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := s.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); s.Context.Debug(err) {
 				return
 			}
 
 			break
 		case proto.Assigning_SELL:
 
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := s.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), params[instance].GetValue(), proto.Balance_PLUS); err != nil {
+			// Order trades logs.
+			quantity, err := s.setTrade(params[0].GetId(), params[instance].GetValue(), price, false)
+			if s.Context.Debug(err) {
 				return
 			}
 
 			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error,
-			// the function will return without doing anything.
-			if err := s.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), decimal.New(params[instance].GetValue()).Mul(params[0].GetPrice()).Float(), proto.Balance_PLUS); err != nil {
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := s.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
+				return
+			}
+
+			// Order trades logs.
+			quantity, err = s.setTrade(params[1].GetId(), params[instance].GetValue(), price, true)
+			if s.Context.Debug(err) {
+				return
+			}
+
+			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
+			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
+			if err := s.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, proto.Balance_PLUS); err != nil {
 				return
 			}
 
@@ -404,9 +430,9 @@ func (s *Service) process(params ...*pbstock.Order) {
 		}
 	}
 
-	// The purpose of this code is to check for an error when the setTrade method is called with the given parameters. If
-	// there is an error, it will return without continuing with the code.
-	if err := s.setTrade(params[0], params[1]); err != nil {
+	// The purpose of this code is to set a ticker with the given parameters and check for errors. If an error is
+	// encountered, the code will trigger the debug function of the context and return.
+	if err := s.setTicker(params[0]); s.Context.Debug(err) {
 		return
 	}
 }

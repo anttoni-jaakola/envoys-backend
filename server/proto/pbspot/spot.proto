@@ -455,7 +455,7 @@ message Asset {
     double max_trade = 13;
     double volume = 14;
     repeated Chain chains = 15;
-    repeated Pair pairs = 16;
+    repeated basic.Pair pairs = 16;
     repeated int64 chains_ids = 17;
     bool marker = 18;
     bool icon = 19;
@@ -483,65 +483,6 @@ message Chain {
     Platform platform = 16;
     Contract contract = 17;
     Tag tag = 18;
-}
-
-// Pair message structure.
-message Pair {
-    int64 id = 1;
-    string symbol = 2;
-    string base_unit = 3;
-    string quote_unit = 4;
-    string icon = 5;
-    double price = 6;
-    double ratio = 7;
-    double base_decimal = 8;
-    double quote_decimal = 9;
-    bool status = 10;
-    bool graph_clear = 11;
-}
-
-// Ticker message structure.
-message Ticker {
-    int64 id = 1;
-    int64 time = 2;
-    string base_unit = 3;
-    string quote_unit = 4;
-    double high = 5;
-    double low = 6;
-    double open = 7;
-    double close = 8;
-    double price = 9;
-    double volume = 10;
-    double ask_price = 11;
-    double bid_price = 12;
-}
-
-// Graph stats message structure.
-message Stats {
-    double high = 1;
-    double low = 2;
-    double last = 3;
-    double first = 5;
-    double previous = 4;
-    double volume = 6;
-    int32 count = 7;
-}
-
-// Order message structure.
-message Order {
-    int64 id = 1;
-    int64 user_id = 2;
-    string base_unit = 3;
-    string quote_unit = 4;
-    string create_at = 5;
-    double price = 6;
-    double value = 7;
-    double quantity = 8;
-    double fees = 9;
-    int32 count = 10;
-    basic.Assigning assigning = 11;
-    basic.Trading trading = 12;
-    basic.Status status = 13;
 }
 
 // This message provides a structure for a transaction on a blockchain network. It defines the transaction's internal ID,
@@ -584,20 +525,6 @@ message Analysis {
     double buy_ratio = 5;
     double sel_ratio = 6;
     repeated double ticker = 7;
-}
-
-// Trade message structure.
-message Trade {
-    int64 id = 1;
-    int64 user_id = 2;
-    string base_unit = 3;
-    string quote_unit = 4;
-    string create_at = 5;
-    double price = 6;
-    double quantity = 7;
-    double fees = 8;
-    bool maker = 9;
-    basic.Assigning assigning = 10;
 }
 
 // Balance message structure.
@@ -726,13 +653,13 @@ message GetRequestPairRule {
 }
 message SetRequestPairRule {
     int64 id = 1;
-    Pair pair = 2;
+    basic.Pair pair = 2;
 }
 message DeleteRequestPairRule {
     int64 id = 1;
 }
 message ResponsePair {
-    repeated Pair fields = 1;
+    repeated basic.Pair fields = 1;
     int32 count = 2;
     bool success = 3;
 }
@@ -785,7 +712,7 @@ message CancelRequestOrder {
     int64 id = 1;
 }
 message ResponseOrder {
-    repeated Order fields = 1;
+    repeated basic.Order fields = 1;
     double volume = 2;
     int32 count = 3;
     bool success = 4;
@@ -801,8 +728,8 @@ message GetRequestTicker {
     string resolution = 6;
 }
 message ResponseTicker {
-    repeated Ticker fields = 1;
-    Stats stats = 2;
+    repeated basic.Ticker fields = 1;
+    basic.Stats stats = 2;
 }
 
 // Trade structure.
@@ -813,7 +740,7 @@ message GetRequestTrades {
     basic.Assigning assigning = 4;
 }
 message ResponseTrade {
-    repeated Trade fields = 1;
+    repeated basic.Trade fields = 1;
 }
 
 // Transaction structure.

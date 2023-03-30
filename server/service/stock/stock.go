@@ -118,9 +118,9 @@ func (s *Service) getBalance(symbol string, userId int64) (balance float64) {
 	return balance
 }
 
-// setOrder - This function is used to set an order in the database. It takes in a pointer to a pbstock.Order which contains the
+// setOrder - This function is used to set an order in the database. It takes in a pointer to a proto.Order which contains the
 // order's details, and inserts the data into the 'orders' table. It then returns the id of the newly created order and any potential errors.
-func (s *Service) setOrder(order *pbstock.Order) (id int64, err error) {
+func (s *Service) setOrder(order *proto.Order) (id int64, err error) {
 
 	// This code snippet is used to get an agent using the given authentication credentials. If there is an error when
 	// trying to get the agent, the code snippet will return an error to the user.
@@ -172,31 +172,81 @@ func (s *Service) getQuantity(assigning proto.Assigning, quantity, price float64
 	}
 }
 
-// setTrade - This function is used to set a trade in a database. It takes a series of orders (param) as an argument and performs
+// setTrade - The purpose of this code is to set a trade, which includes retrieving an order from a database, converting a given
+// value to a decimal number multiplied by a given price, getting the sum of a specified ID, inserting data into the
+// "trades" table in a database, and publishing a particular order to an exchange with the routing key "order/status". If
+// any errors are encountered along the way, the function will return an error.
+func (s *Service) setTrade(id int64, value, price float64, convert bool) (float64, error) {
+
+	// The purpose of this code is to retrieve an order from a database, given its ID. The variable 'order' will store the
+	// order object that is returned from the getOrder() method.
+	order := s.getOrder(id)
+	order.Value = value
+
+	// This code is used to convert a given value to a decimal number multiplied by a given price. The result is then stored
+	// as a floating point number. This is likely used for some kind of financial calculation or to convert a given value to
+	// a currency amount.
+	if convert {
+		value = decimal.New(value).Mul(price).Float()
+	}
+
+	// This code is used to get the sum of the specified ID from the 's' variable. If there is an error in the process, the
+	// function returns 0 and the error.
+	maker, err := s.getMaker(id)
+	if err != nil {
+		return 0, err
+	}
+
+	// This code is used to insert data into the "transfers" table in a database using the parameters provided in the array
+	// "param". The code first checks for any errors in the insertion process, and if there are any, it will return an error.
+	if _, err := s.Context.Db.Exec(`insert into trades (order_id, assigning, user_id, base_unit, quote_unit, quantity, fees, price, maker) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, order.GetId(), order.GetAssigning(), order.GetUserId(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetValue(), order.GetFees(), price, maker); err != nil {
+		return 0, err
+	}
+
+	// The purpose of the code snippet is to publish a particular order to an exchange with the routing key "order/status".
+	// The if statement checks for any errors encountered while publishing the order, and returns an error if one occurs.
+	if err := s.Context.Publish(s.getOrder(order.GetId()), "exchange", "order/status"); err != nil {
+		return 0, err
+	}
+
+	return value, nil
+}
+
+// getMaker - The purpose of this code is to query a database for the status of an order based on the id and store the result in a
+// variable. If there is an error with the query, an error is returned. Additionally, it assigns the boolean value true
+// to the variable m if the variable t is equal to the constant proto.Status_PENDING, which can be used to evaluate a
+// condition or determine if a specific value is present in a given set.
+func (s *Service) getMaker(id int64) (m bool, err error) {
+
+	var (
+		t proto.Status
+	)
+
+	// The purpose of this code is to query a database for the status of an order based on the id and store the result in a
+	// variable. If there is an error with the query, an error is returned.
+	if err := s.Context.Db.QueryRow("select status from orders where id = $1;", id).Scan(&t); err != nil {
+		return m, err
+	}
+
+	// This if statement assigns the boolean value true to the variable m if the variable s is equal to the constant
+	// proto.Status_PENDING. This can be used to evaluate a condition or determine if a specific value is present in a given set.
+	if t == proto.Status_PENDING {
+		m = true
+	}
+
+	return m, nil
+}
+
+// setTicker - This function is used to set a trade in a database. It takes a series of orders (param) as an argument and performs
 // various operations including inserting data into the database, calculating fees, and publishing order status and trade candles.
-func (s *Service) setTrade(param ...*pbstock.Order) error {
+func (s *Service) setTicker(order *proto.Order) error {
 
-	// This is a conditional statement that is used to check the value of the parameter at the index of 0. If the value of
-	// the parameter at index 0 is equal to 0, then the function will return nil.
-	if param[0].GetValue() == 0 {
-		return nil
-	}
-
-	// This code is used to insert a new row of data into the trades table of a database. The values for the new row are
-	// taken from the param[0] variable. If the insertion fails, an error is returned.
-	if _, err := s.Context.Db.Exec(`insert into ohlcv (assigning, base_unit, quote_unit, price, quantity) values ($1, $2, $3, $4, $5)`, param[0].GetAssigning(), param[0].GetBaseUnit(), param[0].GetQuoteUnit(), param[0].GetPrice(), param[0].GetValue()); err != nil {
+	// This piece of code is inserting data into a database table. The purpose of this code is to add a new row to the
+	// "ohlcv" table, based on the values stored in the params array. The five columns in the table are assigning,
+	// base_unit, quote_unit, price, and quantity, and each of these is being populated with the corresponding value from
+	// the params array. The code then checks for any errors that may have occurred while executing the query and returns if any are found.
+	if _, err := s.Context.Db.Exec(`insert into ohlcv (assigning, base_unit, quote_unit, price, quantity) values ($1, $2, $3, $4, $5)`, order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetValue()); s.Context.Debug(err) {
 		return err
-	}
-
-	// The purpose of this "for" loop is to loop through a sequence of numbers (in this case, 0 and 1) and execute a certain
-	// set of instructions a certain number of times (in this case, twice).
-	for i := 0; i < 2; i++ {
-
-		// The purpose of the code snippet is to publish a particular order to an exchange with the routing key "order/status".
-		// The if statement checks for any errors encountered while publishing the order, and returns an error if one occurs.
-		if err := s.Context.Publish(s.getOrder(param[i].GetId()), "exchange", "order/status"); err != nil {
-			return err
-		}
 	}
 
 	// The for loop is used to iterate through each element in the Depth() array. The underscore is used to assign the index
@@ -208,7 +258,7 @@ func (s *Service) setTrade(param ...*pbstock.Order) error {
 		// err := e.GetTicker() line is to make a request to the spot exchange using the BaseUnit, QuoteUnit, Limit, and
 		// Resolution parameters provided. The if err != nil { return err } line is used to check if there was an error with
 		// the request and return that error if necessary.
-		migrate, err := s.GetTicker(context.Background(), &pbstock.GetRequestTicker{BaseUnit: param[0].GetBaseUnit(), QuoteUnit: param[1].GetQuoteUnit(), Limit: 2, Resolution: interval})
+		migrate, err := s.GetTicker(context.Background(), &pbstock.GetRequestTicker{BaseUnit: order.GetBaseUnit(), QuoteUnit: order.GetQuoteUnit(), Limit: 2, Resolution: interval})
 		if err != nil {
 			return err
 		}
@@ -226,12 +276,12 @@ func (s *Service) setTrade(param ...*pbstock.Order) error {
 }
 
 // getOrder - This function is used to retrieve an order from a database by its ID. It takes an int64 (id) as a parameter and
-// returns a pointer to a "pbstock.Order" type. It uses the "QueryRow" method of the database to scan the selected row
+// returns a pointer to a "proto.Order" type. It uses the "QueryRow" method of the database to scan the selected row
 // into the "order" variable and then returns the pointer to the order.
-func (s *Service) getOrder(id int64) *pbstock.Order {
+func (s *Service) getOrder(id int64) *proto.Order {
 
 	var (
-		order pbstock.Order
+		order proto.Order
 	)
 
 	// This code is used to query a database for a single row of data matching the specified criteria (in this case, the "id

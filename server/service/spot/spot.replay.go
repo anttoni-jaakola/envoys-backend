@@ -41,10 +41,10 @@ func (e *Service) price() {
 			// to iterate through each row in the result set and perform an action on it.
 			for rows.Next() {
 
-				// This code creates two variables, pair and price, of the types pbspot.Pair and float64 respectively. This allows
+				// This code creates two variables, pair and price, of the types proto.Pair and float64 respectively. This allows
 				// the program to store and use data of these two types.
 				var (
-					pair  pbspot.Pair
+					pair  proto.Pair
 					price float64
 				)
 
@@ -138,10 +138,10 @@ func (e *Service) market() {
 			// loading them all into memory at once.
 			for rows.Next() {
 
-				// This is a variable declaration statement. The variable 'pair' is being declared as type 'pbspot.Pair'. This allows
+				// This is a variable declaration statement. The variable 'pair' is being declared as type 'proto.Pair'. This allows
 				// the variable to store a pair of values (e.g. two integers, two strings, two objects, etc.).
 				var (
-					pair pbspot.Pair
+					pair proto.Pair
 				)
 
 				// This code is checking for an error when scanning the rows of a database table. The if statement scans the rows of
@@ -246,7 +246,7 @@ func (e *Service) chain() {
 // the database for orders with the same base unit, quote unit and user ID, and with a status of "PENDING". It then
 // iterates through the results and checks if the order's price is higher than the item's price for a BID position and
 // lower for an ASK position. If this is the case, it calls the replayTradeProcess() function. Finally, it logs any matches or failed matches.
-func (e *Service) trade(order *pbspot.Order, side proto.Side) {
+func (e *Service) trade(order *proto.Order, side proto.Side) {
 
 	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
 	// error and returning.
@@ -268,10 +268,10 @@ func (e *Service) trade(order *pbspot.Order, side proto.Side) {
 	// the iterator to the next row in the result set, returning false when there are no more rows to iterate over.
 	for rows.Next() {
 
-		// The purpose of this line of code is to declare a variable named 'item' of type 'pbspot.Order'. This will allow the
-		// programmer to use the 'item' variable to store data of type 'pbspot.Order' in the program.
+		// The purpose of this line of code is to declare a variable named 'item' of type 'proto.Order'. This will allow the
+		// programmer to use the 'item' variable to store data of type 'proto.Order' in the program.
 		var (
-			item pbspot.Order
+			item proto.Order
 		)
 
 		// This code is attempting to scan the rows of a database table, assigning each column value to a variable (item.Id,
@@ -359,13 +359,13 @@ func (e *Service) trade(order *pbspot.Order, side proto.Side) {
 // process - This function is used to replay a trade process. It updates two orders with different amounts to determine the result
 // of a trade. It updates the order status in the database with pending in to filled, updates the balance by adding the
 // amount of the order to the balance, and sends a mail. In addition, it logs information about the trade.
-func (e *Service) process(side proto.Side, params ...*pbspot.Order) {
+func (e *Service) process(side proto.Side, params ...*proto.Order) {
 
 	// The purpose of this code is to declare two variables, instance and migrate. The variable instance is declared as an
 	// integer, and migrate is declared as a query.Migrate object with the Context field set to the value of the variable e.Context.
 	var (
-		instance int
 		price    float64
+		instance int
 		migrate  = query.Migrate{
 			Context: e.Context,
 		}
@@ -418,7 +418,7 @@ func (e *Service) process(side proto.Side, params ...*pbspot.Order) {
 					return
 				}
 
-				go migrate.SendMail(params[i].GetUserId(), "order_filled", params[i].GetId(), e.getQuantity(params[i].GetAssigning(), params[i].GetQuantity(), params[i].GetPrice(), false), params[i].GetBaseUnit(), params[i].GetQuoteUnit(), params[i].GetAssigning())
+				go migrate.SendMail(params[i].GetUserId(), "order_filled", params[i].GetId(), e.getQuantity(params[i].GetAssigning(), params[i].GetQuantity(), price, false), params[i].GetBaseUnit(), params[i].GetQuoteUnit(), params[i].GetAssigning())
 			}
 		}
 

@@ -209,7 +209,7 @@ func (e *Service) getSum(id int64, symbol string, value float64) (b, f float64, 
 
 // setTicker - This function is used to set a trade in a database. It takes a series of orders (param) as an argument and performs
 // various operations including inserting data into the database, calculating fees, and publishing order status and trade candles.
-func (e *Service) setTicker(order *pbspot.Order) error {
+func (e *Service) setTicker(order *proto.Order) error {
 
 	// This piece of code is inserting data into a database table. The purpose of this code is to add a new row to the
 	// "ohlcv" table, based on the values stored in the params array. The five columns in the table are assigning,
@@ -245,9 +245,9 @@ func (e *Service) setTicker(order *pbspot.Order) error {
 	return nil
 }
 
-// setOrder - This function is used to set an order in the database. It takes in a pointer to a pbspot.Order which contains the
+// setOrder - This function is used to set an order in the database. It takes in a pointer to a proto.Order which contains the
 // order's details, and inserts the data into the 'orders' table. It then returns the id of the newly created order and any potential errors.
-func (e *Service) setOrder(order *pbspot.Order) (id int64, err error) {
+func (e *Service) setOrder(order *proto.Order) (id int64, err error) {
 
 	if err := e.Context.Db.QueryRow("insert into orders (assigning, base_unit, quote_unit, price, value, quantity, user_id, trading) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id", order.GetAssigning(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetValue(), order.GetUserId(), order.GetTrading()).Scan(&id); err != nil {
 		return id, err
@@ -475,12 +475,12 @@ func (e *Service) getVolume(base, quote string, assign proto.Assigning) (volume 
 }
 
 // getOrder - This function is used to retrieve an order from a database by its ID. It takes an int64 (id) as a parameter and
-// returns a pointer to a "pbspot.Order" type. It uses the "QueryRow" method of the database to scan the selected row
+// returns a pointer to a "proto.Order" type. It uses the "QueryRow" method of the database to scan the selected row
 // into the "order" variable and then returns the pointer to the order.
-func (e *Service) getOrder(id int64) *pbspot.Order {
+func (e *Service) getOrder(id int64) *proto.Order {
 
 	var (
-		order pbspot.Order
+		order proto.Order
 	)
 
 	// This code is used to query a database for a single row of data matching the specified criteria (in this case, the "id
@@ -525,10 +525,10 @@ func (e *Service) getRange(symbol string, value float64) (min, max float64, ok b
 // contains the given symbol as either the base_unit or the quote_unit, and scans the row for the id, price, base_unit,
 // quote_unit, and status of the unit. If successful, it returns the response and nil for the error, otherwise it returns
 // an empty response and the error.
-func (e *Service) getUnit(symbol string) (*pbspot.Pair, error) {
+func (e *Service) getUnit(symbol string) (*proto.Pair, error) {
 
 	var (
-		response pbspot.Pair
+		response proto.Pair
 	)
 
 	// This code is part of a function which queries a database for a row that matches the given symbol. The if statement is
@@ -685,13 +685,13 @@ func (e *Service) getChain(id int64, status bool) (*pbspot.Chain, error) {
 }
 
 // getPair - This function is used to get a specific pair from the database, based on the id and status passed as arguments. The
-// function returns a pointer to a 'pbspot.Pair' struct and an error if any. It prepares a query to select the specified
+// function returns a pointer to a 'proto.Pair' struct and an error if any. It prepares a query to select the specified
 // pair from the database, based on the given id and status. It then scans the results and stores them in the struct, and
 // finally returns the struct and an error if any.
-func (e *Service) getPair(id int64, status bool) (*pbspot.Pair, error) {
+func (e *Service) getPair(id int64, status bool) (*proto.Pair, error) {
 
 	var (
-		chain pbspot.Pair
+		chain proto.Pair
 		maps  []string
 	)
 

@@ -4,7 +4,6 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/server/proto"
 
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"google.golang.org/grpc/status"
 	"strconv"
 )
@@ -106,7 +105,7 @@ func (e *Service) helperInternalAsset(address string) error {
 // before it is submitted, such as checking the price is not 0, checking the user has enough funds to cover the order,
 // and ensuring the quantity of the order is within the predetermined range. If any of these checks fail, an error is
 // returned. Otherwise, the order is accepted and the quantity is returned.
-func (e *Service) helperOrder(order *pbspot.Order) (summary float64, err error) {
+func (e *Service) helperOrder(order *proto.Order) (summary float64, err error) {
 
 	// This code checks if the order's price is 0, and if it is, it returns an error message (65790) with the impossible
 	// price that is being requested. This helps to identify errors in the order's price and allows for more accurate

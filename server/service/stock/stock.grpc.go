@@ -1245,10 +1245,10 @@ func (s *Service) GetTicker(_ context.Context, req *pbstock.GetRequestTicker) (*
 	// deleting the row.
 	for rows.Next() {
 
-		// The purpose of the variable "item" is to store data of type pbstock.Ticker. This could be used to store an array of
-		// candles or other data related to pbstock.Ticker.
+		// The purpose of the variable "item" is to store data of type proto.Ticker. This could be used to store an array of
+		// candles or other data related to proto.Ticker.
 		var (
-			item pbstock.Ticker
+			item proto.Ticker
 		)
 
 		// This code is checking for errors while scanning a row of data from a database. It is assigning the values of the row
@@ -1263,10 +1263,10 @@ func (s *Service) GetTicker(_ context.Context, req *pbstock.GetRequestTicker) (*
 		response.Fields = append(response.Fields, &item)
 	}
 
-	// The purpose of the following code is to declare a variable called stats of the type pbspot.Stats. This variable will
-	// be used to store information related to the pbspot.Stats data type.
+	// The purpose of the following code is to declare a variable called stats of the type proto.Stats. This variable will
+	// be used to store information related to the proto.Stats data type.
 	var (
-		stats pbstock.Stats
+		stats proto.Stats
 	)
 
 	// This code is used to fetch and analyze data from a database. It uses the QueryRow() method to retrieve data from the
@@ -1288,13 +1288,12 @@ func (s *Service) GetTicker(_ context.Context, req *pbstock.GetRequestTicker) (*
 }
 
 // GetPair - The purpose of this code is to query a database for a specific pair of stocks, scan the row of the database, and add
-// the item to an array in the response object. It checks for an error when scanning, and returns the error if one is
-// found.
+// the item to an array in the response object. It checks for an error when scanning, and returns the error if one is found.
 func (s *Service) GetPair(_ context.Context, req *pbstock.GetRequestPair) (*pbstock.ResponsePair, error) {
 
 	var (
 		response pbstock.ResponsePair
-		item     pbstock.Pair
+		item     proto.Pair
 	)
 
 	row, err := s.Context.Db.Query(`select id, name, symbol, zone, base_decimal, quote_decimal, status from stocks where symbol = $1 and zone = $2`, req.GetBaseUnit(), req.GetQuoteUnit())
@@ -1309,10 +1308,9 @@ func (s *Service) GetPair(_ context.Context, req *pbstock.GetRequestPair) (*pbst
 
 		// This code is checking for an error when scanning the row of a database. If an error is found, the code will return
 		// an error response and the error itself.
-		if err := row.Scan(&item.Id, &item.Name, &item.BaseUnit, &item.QuoteUnit, &item.BaseDecimal, &item.QuoteDecimal, &item.Status); err != nil {
+		if err := row.Scan(&item.Id, &item.Symbol, &item.BaseUnit, &item.QuoteUnit, &item.BaseDecimal, &item.QuoteDecimal, &item.Status); err != nil {
 			return &response, err
 		}
-		item.Symbol = fmt.Sprintf("%v/%v", item.BaseUnit, &item.QuoteUnit)
 	}
 
 	// This code is appending an item to the Fields array in the response object. The purpose of this code is to add an
@@ -1341,15 +1339,14 @@ func (s *Service) GetPairs(_ context.Context, _ *pbstock.GetRequestPairs) (*pbst
 	for row.Next() {
 
 		var (
-			item pbstock.Pair
+			item proto.Pair
 		)
 
 		// This code is checking for an error when scanning the row of a database. If an error is found, the code will return
 		// an error response and the error itself.
-		if err := row.Scan(&item.Id, &item.Name, &item.Price, &item.BaseUnit, &item.QuoteUnit, &item.BaseDecimal, &item.QuoteDecimal, &item.Status); err != nil {
+		if err := row.Scan(&item.Id, &item.Symbol, &item.Price, &item.BaseUnit, &item.QuoteUnit, &item.BaseDecimal, &item.QuoteDecimal, &item.Status); err != nil {
 			return &response, err
 		}
-		item.Symbol = fmt.Sprintf("%v/%v", item.BaseUnit, &item.QuoteUnit)
 
 		// The purpose of this code snippet is to check if the exchange (e) has the ratio of the given pair (pair). If so, the
 		// ratio is assigned to the pair. The if statement checks is the ratio is returned by the getRatio() function, and if
@@ -1382,11 +1379,11 @@ func (s *Service) GetPrice(_ context.Context, req *pbstock.GetRequestPrice) (*pb
 
 func (s *Service) SetOrder(ctx context.Context, req *pbstock.SetRequestOrder) (*pbstock.ResponseOrder, error) {
 
-	// The purpose of this code is to declare two variables of type pbstock.ResponseOrder and pbstock.Order respectively.
+	// The purpose of this code is to declare two variables of type pbstock.ResponseOrder and proto.Order respectively.
 	// Declaring the variables allows them to be used in the code.
 	var (
 		response pbstock.ResponseOrder
-		order    pbstock.Order
+		order    proto.Order
 	)
 
 	// This code snippet checks if the request is authenticated by calling the Auth() method on the Context object. If the
@@ -1627,10 +1624,10 @@ func (s *Service) GetOrders(ctx context.Context, req *pbstock.GetRequestOrders) 
 		// execute until the rows.Next() returns false.
 		for rows.Next() {
 
-			// The purpose of the above code is to declare a variable called item with the type pbstock.Order. This allows the
-			// program to create an object of type pbstock.Order and assign it to the item variable.
+			// The purpose of the above code is to declare a variable called item with the type proto.Order. This allows the
+			// program to create an object of type proto.Order and assign it to the item variable.
 			var (
-				item pbstock.Order
+				item proto.Order
 			)
 
 			// This code is scanning the rows returned from a database query and assigning the values to the variables in the item
