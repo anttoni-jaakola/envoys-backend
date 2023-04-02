@@ -12,6 +12,6 @@
 
 | Type       | Supported          |
 |------------|--------------------|
-| 0 - Cex    | Yes                |
+| 0 - Spot   | Yes                |
 | 1 - Stock  | Yes                |
 | 2 - Margin | No                 |

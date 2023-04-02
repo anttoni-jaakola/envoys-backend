@@ -49,7 +49,7 @@ type Migrate struct {
 // Rules - This function is used to check if a user has a certain role in a specific context. It takes an id, name and tag as
 // parameters and returns a boolean. It first queries the database to retrieve the user's rules from the accounts table.
 // It then unmasrshals the rules into a types.Rules structure. The tag parameter is used to determine which roles to
-// check - either the Default or Cex roles. Finally, it uses the help.IndexOf() function to check if the role is in the
+// check - either the Default or Spot roles. Finally, it uses the help.IndexOf() function to check if the role is in the
 // array of roles. If so, it returns true, otherwise it returns false.
 func (m *Migrate) Rules(id int64, name string, tag int) bool {
 
@@ -79,7 +79,7 @@ func (m *Migrate) Rules(id int64, name string, tag int) bool {
 	}
 
 	// This switch tag is used to assign different roles to a given set of rules. The switch statement checks the value of
-	// the tag and depending on its value, it assigns the roles in the rules to either the Default or the Cex roles.
+	// the tag and depending on its value, it assigns the roles in the rules to either the Default or the Spot roles.
 	switch tag {
 	case RoleDefault:
 		roles = rules.Default
