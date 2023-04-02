@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package pb.ads;
+
+option go_package = "server/proto/v2/pbads";
+
+import "google/api/annotations.proto";
+import "server/types/types.proto";
+
+service Api {
+  rpc GetAdvertisements (GetRequestAdvertisements) returns (ResponseAdvertising) {
+    option (google.api.http) = {
+      post: "/v2/ads-shot/get-advertisements",
+      body: "*"
+    };
+  }
+  rpc GetAdvertising (GetRequestAdvertising) returns (ResponseAdvertising) {
+    option (google.api.http) = {
+      post: "/v2/ads-shot/get-advertising",
+      body: "*"
+    };
+  }
+}
+
+// Advertising message structure.
+message GetRequestAdvertisements {
+  bool random = 1;
+  int64 limit = 2;
+  int64 page = 3;
+  string pattern = 4;
+}
+message GetRequestAdvertising {
+  int64 id = 1;
+}
+message ResponseAdvertising {
+  repeated types.Advertising fields = 1;
+  int32 count = 2;
+  bool success = 3;
+}

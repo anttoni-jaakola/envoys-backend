@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"github.com/pkg/errors"
 	"math/big"
 	"os/exec"
@@ -69,7 +68,7 @@ type Transaction struct {
 // query array, a private key, a network, a success boolean and a stop boolean.
 type Params struct {
 	rpc      string
-	platform pbspot.Platform
+	platform string
 	response map[string]interface{}
 	query    []string
 	private  *ecdsa.PrivateKey
@@ -82,7 +81,7 @@ type Params struct {
 // Dial - The purpose of the code is to test the connection to the blockchain and then create a Params struct using the given
 // parameters and return a pointer to the struct along with a nil error. This allows the code to make use of the struct
 // while also ensuring that the operation was successful.
-func Dial(rpc string, platform pbspot.Platform) (*Params, error) {
+func Dial(rpc, platform string) (*Params, error) {
 
 	// The code is used to test if the connection to the blockchain is successful. The help.Ping() function is used to test
 	// the connection and the ok variable stores the result of the function. If ok is false, an error message is returned

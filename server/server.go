@@ -3,20 +3,28 @@ package server
 import (
 	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/server/gateway"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbads"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbauth"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbkyc"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
-	"github.com/cryptogateway/backend-envoys/server/service/account"
-	"github.com/cryptogateway/backend-envoys/server/service/ads"
-	"github.com/cryptogateway/backend-envoys/server/service/auth"
-	"github.com/cryptogateway/backend-envoys/server/service/index"
-	"github.com/cryptogateway/backend-envoys/server/service/kyc"
-	"github.com/cryptogateway/backend-envoys/server/service/spot"
-	"github.com/cryptogateway/backend-envoys/server/service/stock"
+	admin_pbaccount "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbaccount"
+	admin_pbads "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbads"
+	admin_pbspot "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbads"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbauth"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbohlcv"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbstock"
+	admin_account "github.com/cryptogateway/backend-envoys/server/service/v1/admin.account"
+	admin_ads "github.com/cryptogateway/backend-envoys/server/service/v1/admin.ads"
+	admin_spot "github.com/cryptogateway/backend-envoys/server/service/v1/admin.spot"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/ads"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/auth"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/index"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/kyc"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/ohlcv"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/spot"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/stock"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -181,22 +189,25 @@ func Master(option *assets.Context) {
 		// The purpose is to create a new grpc server with the given options. This server can
 		// then be used to handle incoming requests from clients.
 		srv := grpc.NewServer(opts...)
+
+		_spot := spot.Service{Context: option}
+		_spot.Initialization()
+		pbspot.RegisterApiServer(srv, &_spot)
+
+		_stock := stock.Service{Context: option}
+		_stock.Initialization()
+		pbstock.RegisterApiServer(srv, &_stock)
+
 		pbindex.RegisterApiServer(srv, &index.Service{Context: option})
 		pbauth.RegisterApiServer(srv, &auth.Service{Context: option})
 		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
 		pbads.RegisterApiServer(srv, &ads.Service{Context: option})
 		pbkyc.RegisterApiServer(srv, &kyc.Service{Context: option})
+		pbohlcv.RegisterApiServer(srv, &ohlcv.Service{Context: option})
 
-		var (
-			spotService  = &spot.Service{Context: option}
-			stockService = &stock.Service{Context: option}
-		)
-
-		go spotService.Initialization()
-		go stockService.Initialization()
-
-		pbspot.RegisterApiServer(srv, spotService)
-		pbstock.RegisterApiServer(srv, stockService)
+		admin_pbaccount.RegisterApiServer(srv, &admin_account.Service{Context: option})
+		admin_pbads.RegisterApiServer(srv, &admin_ads.Service{Context: option})
+		admin_pbspot.RegisterApiServer(srv, &admin_spot.Service{Context: option})
 
 		// Reflection.Register is a method that registers a service with a gRPC server. This method is used to create a service
 		// endpoint to allow clients to communicate with the server. The method sets up a connection between the server and the

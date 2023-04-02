@@ -7,8 +7,8 @@ create table if not exists public.balances
             unique,
     user_id integer,
     symbol  varchar,
-    value   numeric(32, 18) default 0.000000000000000000 not null,
-    type    integer         default 0                    not null
+    value   numeric(32, 18) default 0.000000000000000000      not null,
+    type    varchar         default 'spot'::character varying not null
 );
 
 alter table public.balances

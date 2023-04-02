@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package pb.index;
+
+option go_package = "server/proto/v2/pbindex";
+
+import "google/api/annotations.proto";
+
+service Api {
+  rpc GetStatistic (GetRequestStatistic) returns (ResponseStatistic) {
+    option (google.api.http) = {
+      get: "/v2/index/get-statistic"
+    };
+  }
+  rpc GetMarkets (GetRequestMarkets) returns (ResponseMarket) {
+    option (google.api.http) = {
+      post: "/v2/index/get-markets",
+      body: "*"
+    };
+  }
+}
+
+// Statistic message structure.
+message Statistic {
+  message Account {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Chain {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Currency {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Pair {
+    int32 disable = 1;
+    int32 enable = 2;
+  }
+  message Transaction {
+    int32 filled = 1;
+    int32 pending = 2;
+  }
+  message Order {
+    int32 buy = 1;
+    int32 sell = 2;
+  }
+  Account accounts = 1;
+  Chain chains = 2;
+  Currency currencies = 3;
+  Pair pairs = 4;
+  Transaction transactions = 5;
+  Order orders = 6;
+  message Reserve {
+    string symbol = 1;
+    double value = 2;
+    double value_charged = 3;
+    double value_charged_convert = 4;
+    double value_costs = 5;
+  }
+  repeated Reserve reserves = 7;
+}
+
+// Market message structure.
+message Market {
+  int64 id = 1;
+  string symbol = 2;
+  string base_unit = 3;
+  string quote_unit = 4;
+  double price = 5;
+  double ratio = 6;
+  repeated double ticker = 7;
+  double low = 8;
+  double high = 9;
+  double volume = 10;
+  bool status = 11;
+}
+
+// Statistic structure.
+message GetRequestStatistic {}
+message ResponseStatistic {
+  Statistic fields = 1;
+}
+
+// Markets structure.
+message GetRequestMarkets {
+  int64 limit = 1;
+  int64 page = 2;
+  string search = 3;
+}
+message ResponseMarket {
+  repeated Market fields = 1;
+  int32 count = 2;
+}

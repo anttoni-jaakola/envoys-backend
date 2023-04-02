@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package admin.pbads;
+
+option go_package = "server/proto/v1/admin.pbads";
+
+import "google/api/annotations.proto";
+import "server/types/types.proto";
+
+service Api {
+  rpc SetAdvertising (SetRequestAdvertisements) returns (ResponseAdvertising) {
+    option (google.api.http) = {
+      post: "/v1/admin/ads-shot/set-advertising",
+      body: "*"
+    };
+  }
+  rpc DeleteAdvertising (DeleteRequestAdvertising) returns (ResponseAdvertising) {
+    option (google.api.http) = {
+      post: "/v1/admin/ads-shot/delete-advertising",
+      body: "*"
+    };
+  }
+}
+
+message SetRequestAdvertisements {
+  int64 id = 1;
+  bytes image = 2;
+  types.Advertising advertising = 3;
+}
+message DeleteRequestAdvertising {
+  int64 id = 1;
+}
+message ResponseAdvertising {
+  repeated types.Advertising fields = 1;
+  int32 count = 2;
+  bool success = 3;
+}

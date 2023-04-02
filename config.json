@@ -1,12 +1,13 @@
 {
-  "Issuer": "Envoys Exchange",
+  "Issuer": "Crypto Exchange",
   "Development": true,
   "Timezones": "Etc/UTC",
   "StoragePath": "/home/paymex/go/src/github.com/cryptogateway/backend-envoys",
   "PostgresConnect": "postgres://envoys:6QUBYF5wegdWaf4PR@localhost/envoys?sslmode=disable",
   "Secrets": [
     "yx5ySJ;5_H~3Cd6e!%jh7)&8GyER57",
-    "ngrk!nM;4(vyB8V9;&25LE5(U6M^2h"
+    "ngrk!nM;4(vyB8V9;&25LE5(U6M^2h",
+    "xWLnnVmLvzwkVdOysaER7rAOshv2J5"
   ],
 
   "Kyc": {

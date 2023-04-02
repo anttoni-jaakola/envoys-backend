@@ -1,10 +1,10 @@
 create table if not exists public.agents
 (
     id        serial,
-    type      integer                  default 0                     not null,
+    type      varchar                  default 'agent'::character varying   not null,
     user_id   integer,
-    status    integer                  default 2                     not null,
-    name      varchar                  default ''::character varying not null,
+    status    varchar                  default 'pending'::character varying not null,
+    name      varchar                  default ''::character varying        not null,
     broker_id integer,
     create_at timestamp with time zone default CURRENT_TIMESTAMP
 );

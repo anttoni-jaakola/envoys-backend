@@ -2,7 +2,6 @@ package keypair
 
 import (
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
 	"testing"
 )
 
@@ -13,7 +12,7 @@ func TestCrossChain_New(t *testing.T) {
 	type args struct {
 		secret   string
 		bytea    []byte
-		platform pbspot.Platform
+		platform pbcex.Platform
 	}
 	tests := []struct {
 		name    string
@@ -27,21 +26,21 @@ func TestCrossChain_New(t *testing.T) {
 			name: t.Name(),
 			args: args{
 				secret:   "test",
-				platform: pbspot.Platform_ETHEREUM,
+				platform: pbcex.Platform_ETHEREUM,
 			},
 		},
 		{
 			name: t.Name(),
 			args: args{
 				secret:   "test",
-				platform: pbspot.Platform_TRON,
+				platform: pbcex.Platform_TRON,
 			},
 		},
 		{
 			name: t.Name(),
 			args: args{
 				secret:   "test",
-				platform: pbspot.Platform_BITCOIN,
+				platform: pbcex.Platform_BITCOIN,
 			},
 		},
 	}

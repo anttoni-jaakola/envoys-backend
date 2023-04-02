@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbkyc"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
 	"github.com/pkg/errors"
 	"net/http"
 )

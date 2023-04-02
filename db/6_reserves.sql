@@ -7,11 +7,11 @@ create table if not exists public.reserves
     user_id  integer,
     address  varchar,
     symbol   varchar,
-    platform integer,
-    protocol integer,
-    value    numeric(32, 18) default 0.000000000000000000 not null,
-    reverse  numeric(32, 18) default 0.000000000000000000 not null,
-    lock     boolean         default false                not null
+    platform varchar         default 'ethereum'::character varying not null,
+    protocol varchar         default 'erc20'::character varying    not null,
+    value    numeric(32, 18) default 0.000000000000000000          not null,
+    reverse  numeric(32, 18) default 0.000000000000000000          not null,
+    lock     boolean         default false                         not null
 );
 
 alter table public.reserves

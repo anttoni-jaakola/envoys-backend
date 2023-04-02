@@ -5,13 +5,17 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbads"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbauth"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbindex"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbkyc"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbstock"
+	admin_pbaccount "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbaccount"
+	admin_pbads "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbads"
+	admin_pbspot "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbads"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbauth"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbohlcv"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbstock"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/http2"
 	"google.golang.org/grpc"
@@ -351,13 +355,19 @@ func (o *Options) gateway(ctx context.Context, connect *grpc.ClientConn, opts []
 	// have occurred during the registration process. If an error occurs, the loop will return an error and the registration
 	// process will be terminated.
 	for _, f := range []func(context.Context, *runtime.ServeMux, *grpc.ClientConn) error{
+		// V2 - Public apis
 		pbindex.RegisterApiHandler,
 		pbauth.RegisterApiHandler,
 		pbaccount.RegisterApiHandler,
 		pbspot.RegisterApiHandler,
-		pbstock.RegisterApiHandler,
 		pbads.RegisterApiHandler,
+		pbstock.RegisterApiHandler,
 		pbkyc.RegisterApiHandler,
+		pbohlcv.RegisterApiHandler,
+		// V1 - Admin apis.
+		admin_pbaccount.RegisterApiHandler,
+		admin_pbspot.RegisterApiHandler,
+		admin_pbads.RegisterApiHandler,
 	} {
 		if err := f(ctx, route, connect); err != nil {
 			return nil, err

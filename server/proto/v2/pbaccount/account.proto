@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package pb.account;
+
+option go_package = "server/proto/v2/pbaccount";
+
+import "google/api/annotations.proto";
+import "server/types/types.proto";
+
+service Api {
+    rpc GetUser (GetRequestUser) returns (ResponseUser) {
+        option (google.api.http) = {
+            post: "/v2/account/get-user",
+            body: "*"
+        };
+    }
+    rpc SetUser (SetRequestUser) returns (ResponseUser) {
+        option (google.api.http) = {
+            post: "/v2/account/set-user",
+            body: "*"
+        };
+    }
+    rpc GetActions (GetRequestActions) returns (ResponseActions) {
+        option (google.api.http) = {
+            post: "/v2/account/get-actions",
+            body: "*"
+        };
+    }
+    rpc SetFactor (SetRequestFactor) returns (ResponseFactor) {
+        option (google.api.http) = {
+            post: "/v2/account/set-factor",
+            body: "*"
+        };
+    }
+    // Get secure 2fa.
+    rpc GetFactor (GetRequestFactor) returns (ResponseFactor) {
+        option (google.api.http) = {
+            post: "/v2/account/get-factor",
+            body: "*"
+        };
+    }
+}
+
+// User structure.
+message GetRequestUser {}
+message SetRequestUser {
+    int64 id = 1;
+    string sample = 2;
+    string old_password = 3;
+    string new_password = 4;
+    types.User user = 5;
+}
+
+// Factor structure.
+message SetRequestFactor {
+    string secret = 1;
+    string code = 2;
+}
+message GetRequestFactor {}
+message ResponseFactor {
+    string secret = 1;
+    string url = 2;
+}
+
+// Actions structure.
+message GetRequestActions {
+    int64 page = 1;
+    int64 limit = 2;
+}
+message ResponseActions {
+    repeated types.Action fields = 1;
+    int32 count = 2;
+}
+
+// User structure.
+message ResponseUser {
+    repeated types.User fields = 1;
+    int32 count = 2;
+}

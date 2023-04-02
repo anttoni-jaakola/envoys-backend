@@ -3,7 +3,7 @@ package blockchain
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/pkg/errors"
 	"strings"
 )
@@ -23,9 +23,9 @@ func (p *Params) LogByTx(id string) (log *Log, err error) {
 	// the platform is Tron, it will execute the `gettransactioninfobyid` API call. If the platform is neither Ethereum nor
 	// Tron, it will return an error.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 		p.query = []string{"-X", "POST", "-H", "Content-Type:application/json", "-H", "Accept:application/json", "-d", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["%s"],"id":1}`, id), p.rpc}
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/gettransactioninfobyid", p.rpc), "-d", fmt.Sprintf(`{"value": "%v"}`, id)}
 	default:
 		return log, errors.New("method not found!...")
@@ -56,7 +56,7 @@ func (p *Params) log() (log *Log, err error) {
 	// the corresponding case statement will be executed. This allows you to execute different code depending on the value
 	// of p.platform.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		// This code is checking if the response from p has a key "result" and if it is a map[string]interface{}.
 		// If both conditions are true, it will assign the value at "result" to the variable result and assign true to the variable ok.
@@ -104,7 +104,7 @@ func (p *Params) log() (log *Log, err error) {
 			}
 		}
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// This code is checking whether an error has occurred, and if so, creating a new error with the error message. It is
 		// used to handle errors that have occurred during an operation and report them to the user.

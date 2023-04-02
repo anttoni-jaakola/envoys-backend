@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/pkg/errors"
 	"strings"
 )
@@ -24,9 +24,9 @@ func (p *Params) BlockByNumber(number int64) (block *Block, err error) {
 	// eth_getBlockByNumber request, whereas if the platform is Tron, the query will include parameters for a getblockbynum
 	// request. The default case will return an error if the platform is not supported.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 		p.query = []string{"-X", "POST", "-H", "Content-Type:application/json", "-H", "Accept: application/json", "-d", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x%x", true],"id":1}`, number), p.rpc}
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 		p.query = []string{"-X", "POST", fmt.Sprintf("%v/wallet/getblockbynum", p.rpc), "-d", fmt.Sprintf(`{"num": %d}`, number)}
 	default:
 		return block, errors.New("method not found!...")
@@ -56,7 +56,7 @@ func (p *Params) block() (block *Block, err error) {
 	// The switch statement is used here to determine what platform the p object is using. If the p object is using the
 	// Ethereum platform, then the code within the case statement will be executed.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		// The if statement is a type assertion that checks if the value stored in the response["result"] key of the p map is
 		// an interface containing a map[string]interface{}. If the assertion succeeds, the variable result will be set to the
@@ -105,7 +105,7 @@ func (p *Params) block() (block *Block, err error) {
 			return block, errors.New("block not found!...")
 		}
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// The purpose of this code is to check for an error in the response map "p.response". If the error is present, the
 		// code will return a block and an error with the err.(string) value.
@@ -243,9 +243,9 @@ func (p *Params) Status(tx string) (success bool) {
 	// sets the query to the appropriate RPC call, and for Tron, it creates a JSON request with the transaction id and sets
 	// the query to the appropriate RPC call.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 		p.query = []string{"-X", "POST", "-H", "Content-Type:application/json", "-H", "Accept:application/json", "-d", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["%s"],"id":1}`, tx), p.rpc}
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// This is an example of a struct that is used to define a request object in the JSON format. The struct contains one
 		// field, "Value" and has the type string, with the tag "json:"value". The Value field is set to the value of the

@@ -8,10 +8,10 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/address"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
+	core "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
 	"math/big"
@@ -39,13 +39,13 @@ func (p *Params) Network(id int64) {
 func (p *Params) gasUsed(c bool) uint64 {
 	switch p.platform {
 
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 		if c {
 			return 65000
 		} else {
 			return 21000
 		}
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 		return 10000000
 	}
 
@@ -72,7 +72,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 	// The switch statement is a control structure used to execute different blocks of code depending on the value of a
 	// variable. In this example, the variable being tested is "p.platform", and depending on its value, a different block of code will be executed.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		// This code is attempting to get the gas price from the 'p' object. If there is an error, the hash and error are returned.
 		gasPrice, err := p.gasPrice()
@@ -99,7 +99,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 			// This code is creating and signing a new Ethereum transaction with the given parameters. The parameters include the
 			// address to send the transaction to, the amount of gas to use, the gas price to use, and the transaction data. Once
 			// the transaction is created and signed, it is sent for processing.
-			transfer, err := types.SignNewTx(p.private, types.NewEIP155Signer(p.network), &types.LegacyTx{
+			transfer, err := core.SignNewTx(p.private, core.NewEIP155Signer(p.network), &core.LegacyTx{
 				Nonce:    nonce.Uint64(),
 				To:       &to,
 				Value:    big.NewInt(0),
@@ -140,7 +140,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 			// a new EIP155 signer (types.NewEIP155Signer(p.network)), and setting up the nonce, the address to transfer to (to),
 			// the amount to transfer (tx.Value), the amount of gas to pay (tx.Gas) and the gas price to pay (gasPrice). If an
 			// error occurs during the signing process, the code returns the hash and an error.
-			transfer, err := types.SignNewTx(p.private, types.NewEIP155Signer(p.network), &types.LegacyTx{
+			transfer, err := core.SignNewTx(p.private, core.NewEIP155Signer(p.network), &core.LegacyTx{
 				Nonce:    nonce.Uint64(),
 				To:       &to,
 				Value:    tx.Value,
@@ -172,7 +172,7 @@ func (p *Params) Transfer(tx *Transfer) (hash string, err error) {
 
 		p.stop = true
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// This if statement checks the length of the tx.Contract value. If it is greater than 0, the code within the statement
 		// will be executed. This statement is used to determine if there is any data in the tx.Contract value, and if so,
@@ -405,7 +405,7 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 	// This switch statement is used to evaluate the value of the p.platform variable and take the appropriate action based
 	// on the value of the variable. This is a common way to control the flow of a program based on the value of a variable.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		var (
 			marshal []byte
@@ -463,7 +463,7 @@ func (p *Params) EstimateGas(tx *Transfer) (fee int64, err error) {
 
 		p.query = []string{"-X", "POST", "-H", "Content-Type:application/json", "-H", "Accept: application/json", "-d", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_estimateGas","params":[%v],"id":1}`, string(marshal)), p.rpc}
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// This if statement checks the length of the tx.Contract value. If it is greater than 0, the code within the statement
 		// will be executed. This statement is used to determine if there is any data in the tx.Contract value, and if so,
@@ -690,7 +690,7 @@ func (p *Params) buildTransaction() (txID string, err error) {
 	// case label, and executes statements associated with that case label. In this example, the switch statement is
 	// evaluating the value of the expression p.platform. Depending on the value of p.platform, different statements will be executed.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		// This code checks whether the "result" key exists in the map p.response. If it does, it assigns the value of the key
 		// to the variable result and assigns true to the variable ok. The if statement then evaluates whether ok is true. If
@@ -712,7 +712,7 @@ func (p *Params) buildTransaction() (txID string, err error) {
 			return txID, nil
 		}
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// The purpose of this code is to check if there is an "Error" key in the "response" map of the object "p". If so, it
 		// will return the transaction ID (txID) and an error object that contains the description of the error.
@@ -782,11 +782,11 @@ func (p *Params) Transaction() error {
 	// case label, and executes statements associated with that case label. In this example, the switch statement is
 	// evaluating the value of the expression p.platform. Depending on the value of p.platform, different statements will be executed.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		p.query = []string{"-X", "POST", "-H", "Content-Type:application/json", "-H", "Accept: application/json", "-d", fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_sendRawTransaction","params":["%v"],"id":1}`, p.response["transaction"]), p.rpc}
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// The code is checking if the key "transaction" exists in the map "p.response", and if it does, assign the value of
 		// that key to the variable "transaction" and set the variable "ok" to true.
@@ -858,7 +858,7 @@ func (p *Params) Data(to string, amount []byte) (data []byte, err error) {
 	// case label, and executes statements associated with that case label. In this example, the switch statement is
 	// evaluating the value of the expression p.platform. Depending on the value of p.platform, different statements will be executed.
 	switch p.platform {
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		// This code is decoding a hexadecimal string. To decode variable is set to the result of the hex.DecodeString()
 		// function, which decodes the string passed to it into its byte representation. The strings.TrimPrefix() function is
@@ -880,7 +880,7 @@ func (p *Params) Data(to string, amount []byte) (data []byte, err error) {
 		data = append(data, common.LeftPadBytes(decode, 32)...)
 		data = append(data, common.LeftPadBytes(amount, 32)...)
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// This code is used to decode an address string into a byte slice. The address.New(to, true).Hex(true)[2:] is used to
 		// get the hex-encoded address from the two variable. The hex.DecodeString() is then used to decode the hex-encoded

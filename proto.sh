@@ -1,8 +1,5 @@
 #!/bin/bash
 
-swagger="static/swagger"
-[ ! -d "$swagger" ] && mkdir -p "$swagger"
-
 grpc_path="$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway"
 if ! [ -f $grpc_path ]; then
     grpc_path=$(find $GOPATH/pkg/mod/github.com/grpc-ecosystem -name "grpc-gateway@*" -type d |  head -n 1)
@@ -22,21 +19,15 @@ if [ "$findedGOPATH" == "false" ]; then
     PATH="$PATH:$GOPATH/bin"
 fi
 
-for d in $(find server/proto -name '*.proto') ; do
+for d in $(find server -name '*.proto') ; do
 
     [ -L "${d%/}" ] && continue
 
     googleapis="$grpc_path/third_party/googleapis"
     protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"
-    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:./static/swagger "$d"
+    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:. "$d"
     echo "$d - BUILD SUCCESS!"
 done
 
-for d in $(find static/swagger/server/proto -name '*.json') ; do
-    [ -L "${d%/}" ] && continue
-    cp -r "$d" static/swagger
-done
-
-rm -r static/swagger/server
-cp -r github.com/cryptogateway/backend-envoys/server/proto/* server/proto/
+cp -r github.com/cryptogateway/backend-envoys/server/types/* server/types/
 rm -r github.com

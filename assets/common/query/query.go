@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
-	"github.com/cryptogateway/backend-envoys/server/proto"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/disintegration/imaging"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/status"
@@ -49,8 +48,8 @@ type Migrate struct {
 
 // Rules - This function is used to check if a user has a certain role in a specific context. It takes an id, name and tag as
 // parameters and returns a boolean. It first queries the database to retrieve the user's rules from the accounts table.
-// It then unmasrshals the rules into a pbaccount.Rules structure. The tag parameter is used to determine which roles to
-// check - either the Default or Spot roles. Finally, it uses the help.IndexOf() function to check if the role is in the
+// It then unmasrshals the rules into a types.Rules structure. The tag parameter is used to determine which roles to
+// check - either the Default or Cex roles. Finally, it uses the help.IndexOf() function to check if the role is in the
 // array of roles. If so, it returns true, otherwise it returns false.
 func (m *Migrate) Rules(id int64, name string, tag int) bool {
 
@@ -60,7 +59,7 @@ func (m *Migrate) Rules(id int64, name string, tag int) bool {
 	var (
 		response Query
 		roles    []string
-		rules    pbaccount.Rules
+		rules    types.Rules
 	)
 
 	// This code is used to query a database for a row in the "accounts" table that matches a given 'id'. If a matching row
@@ -80,7 +79,7 @@ func (m *Migrate) Rules(id int64, name string, tag int) bool {
 	}
 
 	// This switch tag is used to assign different roles to a given set of rules. The switch statement checks the value of
-	// the tag and depending on its value, it assigns the roles in the rules to either the Default or the Spot roles.
+	// the tag and depending on its value, it assigns the roles in the rules to either the Default or the Cex roles.
 	switch tag {
 	case RoleDefault:
 		roles = rules.Default
@@ -250,15 +249,15 @@ func (m *Migrate) SendMail(userId int64, name string, params ...interface{}) {
 
 		// This code is part of a switch statement which checks the value of the 4th parameter in the 'params' array and then
 		// executes different code depending on the value. In this case, the code checks whether the 4th parameter is of type
-		// 'proto.Assigning' and, if it is, then checks whether the value is 'proto.Assigning_BUY' or
-		// 'proto.Assigning_SELL'. Depending on the result, the code either sets the 'Symbol' property of the 'response'
+		// 'types.Assigning' and, if it is, then checks whether the value is 'types.AssigningBuy' or
+		// 'types.AssigningSell'. Depending on the result, the code either sets the 'Symbol' property of the 'response'
 		// object to the uppercase version of the 3rd parameter in the 'params' array, or the uppercase version of the 2nd
 		// parameter in the 'params' array. This code is used to ensure that the 'Symbol' property of the 'response' object is
 		// set correctly depending on the value of the 4th parameter in the 'params' array.
-		switch params[4].(proto.Assigning) {
-		case proto.Assigning_BUY:
+		switch params[4].(string) {
+		case types.AssigningBuy:
 			response.Symbol = strings.ToUpper(params[3].(string))
-		case proto.Assigning_SELL:
+		case types.AssigningSell:
 			response.Symbol = strings.ToUpper(params[2].(string))
 		}
 
@@ -269,13 +268,13 @@ func (m *Migrate) SendMail(userId int64, name string, params ...interface{}) {
 		response.Text = fmt.Sprintf("You've successfully withdrawn %v <b>%s</b>.", params[0].(float64), strings.ToUpper(params[1].(string)))
 		break
 	case "login":
-		response.Subject = "You just logged in Envoys"
+		response.Subject = "You just logged in Paymex"
 		break
 	case "news":
-		response.Subject = "Latest news from Envoys"
+		response.Subject = "Latest news from Paymex"
 		break
 	case "secure":
-		response.Subject = "Secure code Envoys"
+		response.Subject = "Secure code Paymex"
 		response.Text = fmt.Sprintf("Your secret code <b>%v</b>, do not give it to anyone", params[0].(string))
 		break
 	case "new_password":

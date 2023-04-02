@@ -1,0 +1,332 @@
+syntax = "proto3";
+
+package admin.pbspot;
+
+option go_package = "server/proto/v1/admin.pbspot";
+
+import "google/api/annotations.proto";
+import "server/types/types.proto";
+
+service Api {
+    rpc GetMarketPrice (GetRequestPrice) returns (ResponsePrice) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-market-price",
+            body: "*"
+        };
+    }
+    rpc SetAsset (SetRequestAsset) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/set-asset",
+            body: "*"
+        };
+    }
+    rpc GetAsset (GetRequestAsset) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-asset",
+            body: "*"
+        };
+    }
+    rpc GetAssets (GetRequestAssets) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-assets",
+            body: "*"
+        };
+    }
+    rpc DeleteAsset (DeleteRequestAsset) returns (ResponseAsset) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/delete-asset",
+            body: "*"
+        };
+    }
+    rpc GetChains (GetRequestChains) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-chains",
+            body: "*"
+        };
+    }
+    rpc GetChain (GetRequestChain) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-chain",
+            body: "*"
+        };
+    }
+    rpc SetChain (SetRequestChain) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/set-chain",
+            body: "*"
+        };
+    }
+    rpc DeleteChain (DeleteRequestChain) returns (ResponseChain) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/delete-chain",
+            body: "*"
+        };
+    }
+    rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-pairs",
+            body: "*"
+        };
+    }
+    rpc GetPair (GetRequestPair) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-pair",
+            body: "*"
+        };
+    }
+    rpc SetPair (SetRequestPair) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/set-pair",
+            body: "*"
+        };
+    }
+    rpc DeletePair (DeleteRequestPair) returns (ResponsePair) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/delete-pair",
+            body: "*"
+        };
+    }
+    rpc GetContracts (GetRequestContracts) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-contracts",
+            body: "*"
+        };
+    }
+    rpc GetContract (GetRequestContract) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-contract",
+            body: "*"
+        };
+    }
+    rpc SetContract (SetRequestContract) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/set-contract",
+            body: "*"
+        };
+    }
+    rpc DeleteContract (DeleteRequestContract) returns (ResponseContract) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/delete-contract",
+            body: "*"
+        };
+    }
+    rpc GetTransactions (GetRequestTransactions) returns (ResponseTransaction) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-transactions",
+            body: "*"
+        };
+    }
+    rpc GetBalances (GetRequestBalances) returns (ResponseBalance) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-balances",
+            body: "*"
+        };
+    }
+    rpc GetReserves (GetRequestReserves) returns (ResponseReserve) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-reserves",
+            body: "*"
+        };
+    }
+    rpc SetReserveUnlock (SetRequestReserveUnlock) returns (ResponseReserve) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/set-reserve-unlock",
+            body: "*"
+        };
+    }
+    rpc GetRepayments (GetRequestRepayments) returns (ResponseRepayment) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/get-repayments",
+            body: "*"
+        };
+    }
+    rpc SetRepayments (SetRequestRepayment) returns (ResponseRepayment) {
+        option (google.api.http) = {
+            post: "/v1/admin/spot/set-repayment",
+            body: "*"
+        };
+    }
+}
+
+// Balance structure.
+message Balance {
+    int64 id = 1;
+    double value = 2;
+    string symbol = 3;
+}
+message GetRequestBalances {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
+message ResponseBalance {
+    repeated Balance fields = 1;
+    int32 count = 2;
+}
+
+// Price structure.
+message GetRequestPrice {
+    string base_unit = 1;
+    string quote_unit = 2;
+}
+message ResponsePrice {
+    double price = 1;
+}
+
+// Contract structure.
+message GetRequestContracts {
+    int64 limit = 1;
+    int64 page = 2;
+    string search = 3;
+}
+message GetRequestContract {
+    int64 id = 1;
+}
+message SetRequestContract {
+    int64 id = 1;
+    types.Contract contract = 2;
+}
+message DeleteRequestContract {
+    int64 id = 1;
+}
+message ResponseContract {
+    repeated types.Contract fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}
+
+// Chain structure.
+message GetRequestChains {
+    int64 limit = 1;
+    int64 page = 2;
+}
+message GetRequestChain {
+    int64 id = 1;
+}
+message SetRequestChain {
+    int64 id = 1;
+    types.Chain chain = 2;
+}
+message DeleteRequestChain {
+    int64 id = 1;
+}
+message ResponseChain {
+    repeated types.Chain fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}
+
+// Assets structure.
+message GetRequestAssets {
+    string search = 1;
+    int64 limit = 2;
+    int64 page = 3;
+}
+message GetRequestAsset {
+    string symbol = 1;
+}
+message SetRequestAsset {
+    string symbol = 1;
+    bytes image = 2;
+    types.Asset asset = 3;
+}
+message DeleteRequestAsset {
+    string symbol = 1;
+}
+message ResponseAsset {
+    repeated types.Asset fields = 1;
+    string address = 2;
+    bool success = 3;
+    int32 count = 4;
+}
+
+// Pair structure.
+message GetRequestPairs {
+    int64 limit = 1;
+    int64 page = 2;
+    string search = 3;
+}
+message GetRequestPair {
+    int64 id = 1;
+}
+message SetRequestPair {
+    int64 id = 1;
+    types.Pair pair = 2;
+}
+message DeleteRequestPair {
+    int64 id = 1;
+}
+message ResponsePair {
+    repeated types.Pair fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}
+
+// Transaction structure.
+message GetRequestTransactions {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+    string symbol = 4;
+    string search = 5;
+    string assignment = 6;
+}
+message ResponseTransaction {
+    repeated types.Transaction fields = 1;
+    int32 count = 2;
+}
+
+// Reserve structures.
+message Reserve {
+    int64 id = 1;
+    int64 user_id = 2;
+    string address = 3;
+    string symbol = 4;
+    double value = 5;
+    double reverse = 6;
+    bool lock = 7;
+    string protocol = 8;
+    string platform = 9;
+}
+message GetRequestReserves {
+    int64 id = 1;
+    int64 limit = 2;
+    int64 page = 3;
+    string search = 5;
+}
+message SetRequestReserveUnlock {
+    string id = 1;
+}
+message ResponseReserve {
+    repeated Reserve fields = 1;
+    int32 count = 2;
+}
+
+// Repayments structures.
+message Repayment {
+    int64 id = 1;
+    int64 chain_id = 2;
+    double value = 3;
+    double fees = 4;
+    string symbol = 5;
+    string parent_symbol = 6;
+    string create_at = 7;
+    bool repayment = 8;
+    string protocol = 9;
+    string platform = 10;
+    string allocation = 11;
+    string status = 12;
+}
+message GetRequestRepayments {
+    int64 limit = 1;
+    int64 page = 2;
+    string status = 3;
+}
+message SetRequestRepayment {
+    string id = 1;
+}
+message ResponseRepayment {
+    repeated Repayment fields = 1;
+    int32 count = 2;
+    bool success = 3;
+}

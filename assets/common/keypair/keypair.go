@@ -6,7 +6,7 @@ import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
@@ -25,7 +25,7 @@ type CrossChain struct {
 // It takes in a secret string, an array of bytes and a platform as parameters and returns the address, private key and
 // any errors that may occur. It uses the BIP39 standard to generate the seed and then applies the seed to the chosen
 // platform to generate the address and private key.
-func (s *CrossChain) New(secret string, bytea []byte, platform pbspot.Platform) (a, p string, err error) {
+func (s *CrossChain) New(secret string, bytea []byte, platform string) (a, p string, err error) {
 
 	// This is an if statement that checks the length of the variable bytea. If the length is equal to 0, then a certain
 	// action is taken. This is used to ensure that an empty variable doesn't cause an error.
@@ -50,7 +50,7 @@ func (s *CrossChain) New(secret string, bytea []byte, platform pbspot.Platform) 
 	// different commands for different platforms, allowing the code to run in multiple environments.
 	switch platform {
 
-	case pbspot.Platform_BITCOIN:
+	case types.PlatformBitcoin:
 
 		// This code is checking for an error when calling a function called "master" with the given parameters. If there is an
 		// error, it returns an error instead of the values "a" and "p".
@@ -73,7 +73,7 @@ func (s *CrossChain) New(secret string, bytea []byte, platform pbspot.Platform) 
 
 		return address.String(), hexutil.Encode(privateKeyBytes), nil
 
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 
 		// This code snippet is part of a function that is attempting to generate a master seed for an application. The
 		// private, err := s.master(seed, 44, 60, 0, 0, 0) line is used to call the master function with the seed and other
@@ -91,7 +91,7 @@ func (s *CrossChain) New(secret string, bytea []byte, platform pbspot.Platform) 
 
 		return strings.ToLower(crypto.PubkeyToAddress(private.PublicKey).String()), hexutil.Encode(privateKeyBytes), nil
 
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 
 		// This code is used to generate a master key from a given seed. The private variable is set to the result of the
 		// s.master() function, which takes 6 parameters as input - seed, 44, 195, 0, 0, 0. If an error occurs, the function

@@ -12,9 +12,6 @@
 
 | Type       | Supported          |
 |------------|--------------------|
-| 0 - Spot   | Yes                |
-| 1 - Stock  | In developing      |
+| 0 - Cex    | Yes                |
+| 1 - Stock  | Yes                |
 | 2 - Margin | No                 |
-
-## Create new service
-`./service.sh [name]`

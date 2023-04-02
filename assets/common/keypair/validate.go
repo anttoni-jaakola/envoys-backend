@@ -1,7 +1,7 @@
 package keypair
 
 import (
-	"github.com/cryptogateway/backend-envoys/server/proto/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"google.golang.org/grpc/status"
 	"regexp"
 )
@@ -18,7 +18,7 @@ var (
 // ValidateCryptoAddress - This function is used to validate a cryptocurrency address depending on the platform (Bitcoin, Ethereum, or Tron). It
 // checks to see if the address given matches the regular expression of the platform provided. If there is no match, it
 // returns an error.
-func ValidateCryptoAddress(address string, platform pbspot.Platform) error {
+func ValidateCryptoAddress(address string, platform string) error {
 	var regex string
 
 	// This code is setting up a switch statement to assign a regular expression (regex) to a given cryptocurrency platform.
@@ -26,11 +26,11 @@ func ValidateCryptoAddress(address string, platform pbspot.Platform) error {
 	// Tron, the regex variable will be assigned to the tronRegex, and so on. If the platform is not one of the available
 	// options, the switch statement will return an error.
 	switch platform {
-	case pbspot.Platform_BITCOIN:
+	case types.PlatformBitcoin:
 		regex = bitcoinRegex
-	case pbspot.Platform_TRON:
+	case types.PlatformTron:
 		regex = tronRegex
-	case pbspot.Platform_ETHEREUM:
+	case types.PlatformEthereum:
 		regex = ethereumRegex
 	default:
 		return status.Errorf(10789, "cryptocurrency not available: %s ", platform)

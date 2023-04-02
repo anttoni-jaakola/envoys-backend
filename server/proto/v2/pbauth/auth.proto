@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package pb.auth;
+
+option go_package = "server/proto/v2/pbauth";
+
+import "google/api/annotations.proto";
+
+service Api {
+    rpc ActionSignup (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/action-signup",
+            body: "*"
+        };
+    }
+    rpc ActionSignin (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/action-signin",
+            body: "*"
+        };
+    }
+    rpc ActionReset (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/action-reset",
+            body: "*"
+        };
+    }
+    rpc SetLogout (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/set-logout",
+            body: "*"
+        };
+    }
+    rpc GetRefresh (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/get-refresh",
+            body: "*"
+        };
+    }
+    rpc GetSecure (Request) returns (Response) {
+        option (google.api.http) = {
+            post: "/v2/auth/get-secure",
+            body: "*"
+        };
+    }
+}
+
+enum Signup {
+    ActionSignupAccount = 0;
+    ActionSignupCode = 1;
+    ActionSignupConfirm = 2;
+}
+
+enum Signin {
+    ActionSigninAccount = 0;
+    ActionSigninCode = 1;
+    ActionSigninConfirm = 2;
+}
+
+enum Reset {
+    ActionResetAccount = 0;
+    ActionResetCode = 1;
+    ActionResetConfirm = 2;
+    ActionResetPassword = 3;
+}
+
+message Request {
+    string email = 1;
+    string name = 2;
+    string password = 3;
+    string email_code = 4;
+    string factor_code = 5;
+    string refresh = 6;
+    Signup signup = 7;
+    Signin signin = 8;
+    Reset reset = 9;
+}
+
+message Response {
+    int64 id = 1;
+    string access_token = 2;
+    string refresh_token = 3;
+    message Session {
+        string access_token = 1;
+        int64 subject = 2;
+    }
+    bool factor_secure = 4;
+}

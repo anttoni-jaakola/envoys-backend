@@ -6,7 +6,7 @@ create table if not exists public.withdraws
     symbol    varchar,
     user_id   integer,
     broker_id integer,
-    status    integer                  default 2                     not null,
+    status    varchar                  default 'pending'::character varying not null,
     create_at timestamp with time zone default CURRENT_TIMESTAMP
 );
 

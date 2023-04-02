@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package admin.pbaccount;
+
+option go_package = "server/proto/v1/admin.pbaccount";
+
+import "google/api/annotations.proto";
+import "server/types/types.proto";
+
+service Api {
+    rpc GetAccounts (GetRequestUsers) returns (ResponseUser) {
+        option (google.api.http) = {
+            post: "/v1/admin/account/get-accounts",
+            body: "*"
+        };
+    }
+    rpc GetAccount (GetRequestUser) returns (ResponseUser) {
+        option (google.api.http) = {
+            post: "/v1/admin/account/get-account",
+            body: "*"
+        };
+    }
+    rpc SetAccount (SetRequestUser) returns (ResponseUser) {
+        option (google.api.http) = {
+            post: "/v1/admin/account/set-account",
+            body: "*"
+        };
+    }
+}
+
+message GetRequestUser {
+    int64 id = 1;
+}
+message GetRequestUsers {
+    int64 id = 1;
+    int64 page = 2;
+    int64 limit = 3;
+    string search = 4;
+}
+message SetRequestUser {
+    int64 id = 1;
+    string sample = 2;
+    string old_password = 3;
+    string new_password = 4;
+    types.User user = 5;
+}
+
+// Factor structure.
+message SetRequestFactor {
+    string secret = 1;
+    string code = 2;
+}
+message GetRequestFactor {}
+message ResponseFactor {
+    string secret = 1;
+    string url = 2;
+}
+
+// User structure.
+message ResponseUser {
+    repeated types.User fields = 1;
+    int32 count = 2;
+}

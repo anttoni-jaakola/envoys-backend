@@ -13,7 +13,7 @@ create table if not exists public.trades
     quote_unit varchar,
     price      numeric(20, 8),
     quantity   numeric(32, 18),
-    assigning  integer,
+    assigning  varchar                  default 'buy'::character varying not null,
     fees       double precision,
     maker      boolean                  default false             not null,
     create_at  timestamp with time zone default CURRENT_TIMESTAMP not null
