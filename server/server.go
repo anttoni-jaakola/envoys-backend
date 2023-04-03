@@ -41,11 +41,11 @@ import (
 	"time"
 )
 
-// Master - The purpose of this function is to create a gRPC server with certain options and to define a gateway for it. It sets
+// Register - The purpose of this function is to create a gRPC server with certain options and to define a gateway for it. It sets
 // up a channel to listen on, creates TLS credentials, adds an interceptor for all, creates an array of gRPC options with
 // the credentials, registers the handler object, runs a spot service, registers reflection, serves and listens, and sets
 // up a gateway. It also uses Logrus entry and grpcctxtags for pre-definition of certain fields by the user.
-func Master(option *assets.Context) {
+func Register(option *assets.Context) {
 
 	// MuxOptions is a variable that is used to store a collection of runtime.ServeMuxOption values. Runtime.ServeMuxOption
 	// is an interface that allows customization of the ServeMux when creating a new server. It is used to configure various
@@ -190,13 +190,13 @@ func Master(option *assets.Context) {
 		// then be used to handle incoming requests from clients.
 		srv := grpc.NewServer(opts...)
 
-		_spot := spot.Service{Context: option}
-		_spot.Initialization()
-		pbspot.RegisterApiServer(srv, &_spot)
+		serviceSpot := spot.Service{Context: option}
+		serviceSpot.Initialization()
+		pbspot.RegisterApiServer(srv, &serviceSpot)
 
-		_stock := stock.Service{Context: option}
-		_stock.Initialization()
-		pbstock.RegisterApiServer(srv, &_stock)
+		serviceStock := stock.Service{Context: option}
+		serviceStock.Initialization()
+		pbstock.RegisterApiServer(srv, &serviceStock)
 
 		pbindex.RegisterApiServer(srv, &index.Service{Context: option})
 		pbauth.RegisterApiServer(srv, &auth.Service{Context: option})

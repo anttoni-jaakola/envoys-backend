@@ -387,36 +387,9 @@ func (app *Context) Debug(expr interface{}) bool {
 // If the config.json file is found at either path, the path is returned. If the file is not found, it throws a panic.
 func (app *Context) ConfigPath() (path string) {
 
-	// The purpose of this code is to get the current working directory of the operating system and store it in the variable
-	// dir. The os.Getwd() function is used to do this and it returns a string representing the path of the current working
-	// directory and an error value. If there is an error, it will be handled by the if statement which will cause the program to panic.
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
 	// The purpose of the line of code is to define the path of a file named config.json. This file can contain
 	// configuration information to be used in the program.
-	path = "./config.json"
-
-	// The purpose of this code is to set the log level to debug when the app is in development mode.
-	// This will enable the app to output more detailed information when it is running in development mode, which is useful for debugging and troubleshooting.
-	if app.Development {
-
-		// The purpose of the root variable is to store the base path of a directory. In this case, the value of the root
-		// variable is "/backend-envoys/", which is the base path of a directory named "backend-envoys". This variable can be
-		// used to access files and directories within the "backend-envoys" directory.
-		root := "/backend-envoys/"
-
-		// This code is used to find the path to the file named "config.json" in the directory "dir". The "root" variable is
-		// used to determine the start of the path. The strings.Index() function is used to find the index of the root string
-		// in the directory string. If the index is not -1 (which it should not be), the fmt.Sprintf() function is used to
-		// determine the path by taking the substring of the directory up to the index of the root plus the length of the root minus one.
-		index := strings.Index(dir, root)
-		if index != -1 {
-			path = fmt.Sprintf("%v/%v", dir[:index+len(root)-1], "config.json")
-		}
-	}
+	path = fmt.Sprintf("%v/%v", app.StoragePath, "config.json")
 
 	// This code is intended to check for the existence of a path and panic in case it doesn't exist. The first if statement
 	// checks is a path exists and returns it if it does. The else if statement checks if the error is specifically
