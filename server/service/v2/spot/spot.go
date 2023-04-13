@@ -17,10 +17,10 @@ type Service struct {
 	block     map[int64]int64
 }
 
-// Initialization - The code initializes a Service object and runs six concurrent functions: price(), market(), chain(), deposit(), withdraw(), and reward().
+// Initialization - The code initializes a Service object and runs six concurrent functions: deposit(), withdrawal(), and reward().
 func (e *Service) Initialization() {
 	go e.deposit()
-	go e.withdraw()
+	go e.withdrawal()
 	go e.reward()
 }
 

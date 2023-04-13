@@ -108,11 +108,11 @@ func (e *Service) deposit() {
 	}
 }
 
-// withdraw - This function is used to replay pending withdraw transactions. It checks for transactions with a status of pending, a
+// withdrawal - This function is used to replay pending withdraw transactions. It checks for transactions with a status of pending, a
 // transaction type of withdraws, and a financial type of crypto in the database. It then loops through these
 // transactions and attempts to transfer the funds. It also handles cases where there are fees to be paid, by attempting
 // to transfer funds from a reserve asset with the same platform, symbol, and protocol. It is repeated every 10 seconds.
-func (e *Service) withdraw() {
+func (e *Service) withdrawal() {
 
 	// The purpose of this code is to handle a panic and recover gracefully. To defer keyword will execute the following
 	// code whenever the function it is contained in ends, even if the function ends in error. The recover() function is

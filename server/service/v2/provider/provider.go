@@ -21,7 +21,7 @@ type Service struct {
 	Context *assets.Context
 }
 
-// Initialization - The code initializes a Service object and runs six concurrent functions: price(), market(), chain(), deposit(), withdraw(), and reward().
+// Initialization - The code initializes a Service object and runs six concurrent functions: chain(), price(), market().
 func (a *Service) Initialization() {
 	go a.chain()
 	go a.price()
