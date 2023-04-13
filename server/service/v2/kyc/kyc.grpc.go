@@ -30,7 +30,7 @@ func (s *Service) SetCanceled(ctx context.Context, _ *pbkyc.SetRequestCanceled) 
 	// This code is updating the KYC (Know Your Customer) table in a database. The code is updating the secret, type, and
 	// process fields of the KYC table, where the user_id field matches the one given in the parameters. The purpose of
 	// this code is to update the KYC table with new values for the given user_id.
-	if _, err := s.Context.Db.Exec(`update kyc set secret = $2, level = $3, process = $4 where user_id = $1`, auth, "", 0, false); err != nil {
+	if _, err := s.Context.Db.Exec(`update kyc set secret = $2, level = $3, process = $4 where user_id = $1`, auth, "", "level_0", false); err != nil {
 		return &response, err
 	}
 	response.Success = true
