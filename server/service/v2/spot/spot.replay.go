@@ -4,71 +4,11 @@ import (
 	"context"
 	"github.com/cryptogateway/backend-envoys/assets/blockchain"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
-	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/provider"
 	"github.com/cryptogateway/backend-envoys/server/types"
 	"time"
 )
-
-// chain - This function is used to replay the status of chains stored in a database. It loads at a specific time interval and
-// queries the database for chains that have been stored. It then uses the 'help.Ping' function to check whether each
-// chain is available or not. If the chain is not available, its status is set to false, and then updated in the database.
-func (e *Service) chain() {
-
-	// The code is creating a new ticker that will fire every minute (time.Minute * 1). The for loop will continually
-	// execute until the ticker is stopped or the program exits. This code is useful for creating a repeating task at a
-	// regular interval. For example, if you wanted to perform a task every minute, you could use this code to do so.
-	ticker := time.NewTicker(time.Second * 1)
-	for range ticker.C {
-
-		func() {
-
-			// This code snippet is querying a database table to retrieve data. The purpose of this code is to query the "chains"
-			// table in the database and retrieve the columns "id", "rpc", and "status". The variable "rows" will store the result
-			// of the query. The variable "err" is used to catch any errors that may occur during the query. If an error is
-			// caught, the code will print the error and return. The code also uses "defer rows.Close()" to ensure that the rows
-			// are closed after the query is finished.
-			rows, err := e.Context.Db.Query(`select id, rpc, status from chains`)
-			if e.Context.Debug(err) {
-				return
-			}
-			defer rows.Close()
-
-			// The for loop is used to iterate over the rows in the result set of a query. The .Next() method is used to move the
-			// cursor to the next row in the result set. Each iteration of the loop will assign the values in the row to the
-			// variables given in the query.
-			for rows.Next() {
-
-				// This variable declaration is creating a variable named "item", which is of type "types.Chain". This is a way of
-				// creating a new variable and assigning it a data type.
-				var (
-					item types.Chain
-				)
-
-				// This code is likely part of a loop that is iterating through the rows of a database query. The purpose of the if
-				// statement is to scan each row, store the values in the item object, and check for any errors. If an error is
-				// detected, the loop will continue to the next row.
-				if err = rows.Scan(&item.Id, &item.Rpc, &item.Status); e.Context.Debug(err) {
-					continue
-				}
-
-				// The purpose of this code is to check if a remote procedure call (RPC) is functioning correctly. The help.Ping()
-				// method is used to ping the RPC, and if the ping is unsuccessful, the item's status is set to false.
-				if ok := help.Ping(item.Rpc); !ok {
-					item.Status = false
-				}
-
-				// This code is updating the status of an item in a database. The if statement is used to check for errors when
-				// executing the update query, and the "continue" keyword is used to skip any further processing if an error is
-				// encountered.
-				if _, err := e.Context.Db.Exec("update chains set status = $2 where id = $1;", item.GetId(), item.GetStatus()); e.Context.Debug(err) {
-					continue
-				}
-			}
-		}()
-	}
-}
 
 // deposit - The purpose of this code is to replay deposits on different chains. It retrieves details of the chain from the
 // database and depending on the platform (Ethereum or Tron) it calls the depositEthereum or depositTron functions. After

@@ -23,6 +23,7 @@ type Service struct {
 
 // Initialization - The code initializes a Service object and runs six concurrent functions: price(), market(), chain(), deposit(), withdraw(), and reward().
 func (a *Service) Initialization() {
+	go a.chain()
 	go a.price()
 	go a.market()
 }
