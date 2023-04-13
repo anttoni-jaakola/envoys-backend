@@ -13,7 +13,7 @@ import (
 // authentication, and whether the user has the necessary rights to set the rule. It then checks the title and text
 // lengths, and inserts or updates the record in the database. Finally, it uploads the image associated with the
 // advertisement and sets the response status to true.
-func (s *Service) SetAdvertising(ctx context.Context, req *admin_pbads.SetRequestAdvertisements) (*admin_pbads.ResponseAdvertising, error) {
+func (s *Service) SetAdvertising(ctx context.Context, req *admin_pbads.SetRequestAdvertising) (*admin_pbads.ResponseAdvertising, error) {
 
 	// The purpose of the above code is to declare two variables in the same statement. The first variable, response, is of
 	// type admin_pbads.ResponseAdvertising. The second variable, migrate, is of type query.Migrate and has a Context field set to s.Context.

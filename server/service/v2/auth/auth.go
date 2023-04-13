@@ -80,9 +80,9 @@ func (a *Service) ReplayToken(subject int64) (*pbauth.Response, error) {
 	return &response, err
 }
 
-// This function sets a 6-character code for a given email address and sends an email containing that code for
+// writeCode - This function sets a 6-character code for a given email address and sends an email containing that code for
 // verification. The GO statement at the end allows the code to be sent asynchronously.
-func (a *Service) setCode(email string) (code interface{}, err error) {
+func (a *Service) writeCode(email string) (code interface{}, err error) {
 
 	// The purpose of the code is to initialize two variables: migrate and q. The first variable, migrate, is set to an
 	// instance of the Migrate type from the query package with the context set to the value of the a.Context variable. The

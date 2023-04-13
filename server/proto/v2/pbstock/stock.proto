@@ -5,8 +5,6 @@ package pb.stock;
 option go_package = "server/proto/v2/pbstock";
 
 import "google/api/annotations.proto";
-import "server/types/types.proto";
-
 service Api {
   rpc SetAgent (SetRequestAgent) returns (ResponseAgent) {
     option (google.api.http) = {
@@ -56,138 +54,41 @@ service Api {
       body: "*"
     };
   }
-  rpc GetAssets (GetRequestAssets) returns (ResponseAsset) {
+  rpc SetTransfer (SetRequestTransfer) returns (ResponseTransfer) {
     option (google.api.http) = {
-      post: "/v2/stock/get-assets",
+      post: "/v2/stock/set-transfer",
       body: "*"
     };
   }
-  rpc GetAsset (GetRequestAsset) returns (ResponseAsset) {
+  rpc GetTransfers (GetRequestTransfers) returns (ResponseTransfer) {
     option (google.api.http) = {
-      post: "/v2/stock/get-asset",
+      post: "/v2/stock/get-transfers",
       body: "*"
     };
   }
-  rpc SetAsset (SetRequestAsset) returns (ResponseAsset) {
+  rpc CancelTransfer (CancelRequestTransfer) returns (ResponseTransfer) {
     option (google.api.http) = {
-      post: "/v2/stock/set-asset",
+      post: "/v2/stock/cancel-transfer",
       body: "*"
     };
   }
-  rpc SetWithdraw (SetRequestWithdraw) returns (ResponseWithdraw) {
+  rpc SetAction (SetRequestAction) returns (ResponseAction) {
     option (google.api.http) = {
-      post: "/v2/stock/set-withdraw",
-      body: "*"
-    };
-  }
-  rpc GetWithdraws (GetRequestWithdraws) returns (ResponseWithdraw) {
-    option (google.api.http) = {
-      post: "/v2/stock/get-withdraws",
-      body: "*"
-    };
-  }
-  rpc CancelWithdraw (CancelRequestWithdraw) returns (ResponseWithdraw) {
-    option (google.api.http) = {
-      post: "/v2/stock/cancel-withdraw",
-      body: "*"
-    };
-  }
-  rpc SetBrokerAsset (SetRequestBrokerAsset) returns (ResponseBrokerAsset) {
-    option (google.api.http) = {
-      post: "/v2/stock/broker/set-asset",
-      body: "*"
-    };
-  }
-  rpc GetPair (GetRequestPair) returns (ResponsePair) {
-    option (google.api.http) = {
-      post: "/v2/stock/get-pair",
-      body: "*"
-    };
-  }
-  rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
-    option (google.api.http) = {
-      post: "/v2/stock/get-pairs",
-      body: "*"
-    };
-  }
-  rpc GetPrice (GetRequestPrice) returns (ResponsePrice) {
-    option (google.api.http) = {
-      get: "/v2/stock/get-price"
-    };
-  }
-  rpc SetOrder (SetRequestOrder) returns (ResponseOrder) {
-    option (google.api.http) = {
-      post: "/v2/stock/set-order",
-      body: "*"
-    };
-  }
-  rpc CancelOrder (CancelRequestOrder) returns (ResponseOrder) {
-    option (google.api.http) = {
-      post: "/v2/stock/cancel-order",
-      body: "*"
-    };
-  }
-  rpc GetOrders (GetRequestOrders) returns (ResponseOrder) {
-    option (google.api.http) = {
-      post: "/v2/stock/get-orders",
+      post: "/v2/stock/broker/set-action",
       body: "*"
     };
   }
 }
 
-message SetRequestOrder {
-  double price = 1;
-  double quantity = 2;
-  string base_unit = 3;
-  string quote_unit = 4;
-  string trading = 5;
-  string assigning = 6;
-}
-message GetRequestOrders {
-  bool owner = 1;
-  int64 user_id = 2;
-  int64 limit = 3;
-  int64 page = 4;
-  string base_unit = 5;
-  string quote_unit = 6;
-  string assigning = 7;
-  string status = 8;
-}
-message CancelRequestOrder {
-  int64 id = 1;
-}
-message ResponseOrder {
-  repeated types.Order fields = 1;
-  double volume = 2;
-  int32 count = 3;
-  bool success = 4;
-}
-message GetRequestPrice{
-  string base_unit = 1;
-  string quote_unit = 2;
-}
-message ResponsePrice {
-  double price = 1;
-}
-message GetRequestPair {
-  string base_unit = 1;
-  string quote_unit = 2;
-}
-message GetRequestPairs {
-  string symbol = 1;
-}
-message ResponsePair {
-  repeated types.Pair fields = 1;
-}
-message SetRequestBrokerAsset {
+message SetRequestAction {
   string symbol = 1;
   double quantity = 2;
   bool unshift = 3;
 }
-message ResponseBrokerAsset {
+message ResponseAction {
   bool success = 1;
 }
-message Withdraw {
+message Transfer {
   int64 id = 1;
   int64 user_id = 2;
   int64 broker_id = 3;
@@ -197,50 +98,24 @@ message Withdraw {
   string status = 7;
   string create_at = 8;
 }
-message SetRequestWithdraw {
+message SetRequestTransfer {
   string symbol = 1;
   double quantity = 2;
 }
-message GetRequestWithdraws {
+message GetRequestTransfers {
   bool unshift = 1;
   string symbol = 2;
   int64 limit = 3;
   int64 page = 4;
 }
-message CancelRequestWithdraw {
+message CancelRequestTransfer {
   int64 id = 1;
   bool unshift = 2;
 }
-message ResponseWithdraw {
-  repeated Withdraw fields = 1;
+message ResponseTransfer {
+  repeated Transfer fields = 1;
   int32 count = 2;
   bool success = 3;
-}
-message Asset {
-  int64 id = 1;
-  string name = 2;
-  string symbol = 3;
-  string zone = 4;
-  double price = 5;
-  double balance = 6;
-  double volume = 7;
-  bool status = 8;
-  bool exist = 9;
-  string group = 10;
-  string type = 11;
-  string agent_status = 12;
-}
-message GetRequestAssets {
-  bool fiat = 1;
-}
-message GetRequestAsset {
-  string symbol = 1;
-}
-message SetRequestAsset {
-  string symbol = 1;
-}
-message ResponseAsset {
-  repeated Asset fields = 1;
 }
 message SetRequestAgentBlocked {
   int64 id = 1;

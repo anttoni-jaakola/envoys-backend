@@ -107,7 +107,7 @@ func (a *Service) ActionSignup(ctx context.Context, req *pbauth.Request) (*pbaut
 
 		// This code is used to set a code for the given email address. If there is an error while setting the code, the error
 		// is returned and the process is stopped.
-		code, err := a.setCode(req.GetEmail())
+		code, err := a.writeCode(req.GetEmail())
 		if err != nil {
 			return &response, err
 		}
@@ -217,7 +217,7 @@ func (a *Service) ActionSignin(ctx context.Context, req *pbauth.Request) (*pbaut
 
 		// This code is setting a code for a given request. The "setCode" function is called with the email from the request,
 		// and if an error is returned, the error is handled and the response is returned.
-		code, err := a.setCode(req.GetEmail())
+		code, err := a.writeCode(req.GetEmail())
 		if err != nil {
 			return &response, err
 		}
@@ -404,7 +404,7 @@ func (a *Service) ActionReset(ctx context.Context, req *pbauth.Request) (*pbauth
 
 		// This code is setting a code based on the email provided in the request (req.GetEmail()) and checking for an error.
 		// If an error is found, it is returned with the response and the context error is triggered.
-		code, err := a.setCode(req.GetEmail())
+		code, err := a.writeCode(req.GetEmail())
 		if err != nil {
 			return &response, err
 		}

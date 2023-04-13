@@ -8,7 +8,7 @@ import "google/api/annotations.proto";
 import "server/types/types.proto";
 
 service Api {
-  rpc SetAdvertising (SetRequestAdvertisements) returns (ResponseAdvertising) {
+  rpc SetAdvertising (SetRequestAdvertising) returns (ResponseAdvertising) {
     option (google.api.http) = {
       post: "/v1/admin/ads-shot/set-advertising",
       body: "*"
@@ -22,7 +22,7 @@ service Api {
   }
 }
 
-message SetRequestAdvertisements {
+message SetRequestAdvertising {
   int64 id = 1;
   bytes image = 2;
   types.Advertising advertising = 3;

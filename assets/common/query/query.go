@@ -23,10 +23,11 @@ import (
 
 // The purpose of this code is to define two constants, RoleDefault and RoleSpot, with numerical values of 0 and 1,
 // respectively. These constants could be used to assign roles to different users in a program or system. For example,
-// RoleDefault might refer to a normal user, while RoleSpot could refer to an administrator or moderator.
+// RoleDefault might refer to a normal user, while RoleSpot, RoleMarket could refer to an administrator or moderator.
 const (
 	RoleDefault = 0
 	RoleSpot    = 1
+	RoleMarket  = 2
 )
 
 // Query -This type Query struct is used to store data related to a query which might be sent to a database. It contains fields
@@ -85,6 +86,8 @@ func (m *Migrate) Rules(id int64, name string, tag int) bool {
 		roles = rules.Default
 	case RoleSpot:
 		roles = rules.Spot
+	case RoleMarket:
+		roles = rules.Market
 	}
 
 	// The purpose of this code is to check if a given name is present in a list of roles. The help.IndexOf() function is
@@ -268,13 +271,13 @@ func (m *Migrate) SendMail(userId int64, name string, params ...interface{}) {
 		response.Text = fmt.Sprintf("You've successfully withdrawn %v <b>%s</b>.", params[0].(float64), strings.ToUpper(params[1].(string)))
 		break
 	case "login":
-		response.Subject = "You just logged in Paymex"
+		response.Subject = "You just logged in Envoys"
 		break
 	case "news":
-		response.Subject = "Latest news from Paymex"
+		response.Subject = "Latest news from Envoys"
 		break
 	case "secure":
-		response.Subject = "Secure code Paymex"
+		response.Subject = "Secure code Envoys"
 		response.Text = fmt.Sprintf("Your secret code <b>%v</b>, do not give it to anyone", params[0].(string))
 		break
 	case "new_password":

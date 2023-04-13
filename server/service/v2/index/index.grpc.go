@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
-	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbohlcv"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
 	"github.com/cryptogateway/backend-envoys/server/types"
 	"strings"
 )
@@ -143,8 +143,8 @@ func (i *Service) GetMarkets(ctx context.Context, req *pbindex.GetRequestMarkets
 		maps     []string
 	)
 
-	//The purpose of this code is to create a new API client for the pbohlcv package using the existing gRPC client in the context.
-	migrate := pbohlcv.NewApiClient(i.Context.GrpcClient)
+	//The purpose of this code is to create a new API client for the pbprovider package using the existing gRPC client in the context.
+	migrate := pbprovider.NewApiClient(i.Context.GrpcClient)
 
 	// This if statement serves to set a default value of 30 for the req.Limit variable if the req.GetLimit() method returns
 	// a value of 0. This default value may be used in cases where the user has not specified a value for the req.Limit
@@ -200,16 +200,16 @@ func (i *Service) GetMarkets(ctx context.Context, req *pbindex.GetRequestMarkets
 			}
 
 			// This code is attempting to get the current price of a currency pair (pair) and set the pair.Ratio value to that
-			// price. If there is an error encountered while getting the price (i.getPrice(pair.GetBaseUnit(),
+			// price. If there is an error encountered while getting the price (i.queryPrice(pair.GetBaseUnit(),
 			// pair.GetQuoteUnit())), the function will return an error.
-			item.Ratio, err = i.getPrice(item.GetBaseUnit(), item.GetQuoteUnit())
+			item.Ratio, err = i.queryPrice(item.GetBaseUnit(), item.GetQuoteUnit())
 			if err != nil {
 				return &response, err
 			}
 
 			// This code is retrieving the latest 50 candles for a specific trading pair. The request is sent to the spot exchange
 			// and if the request is successful, the candles are returned. If there is an error, it is returned with the err variable.
-			ticker, err := migrate.GetTicker(ctx, &pbohlcv.GetRequest{
+			ticker, err := migrate.GetTicker(ctx, &pbprovider.GetRequestTicker{
 				Limit:     50,
 				BaseUnit:  item.GetBaseUnit(),
 				QuoteUnit: item.GetQuoteUnit(),

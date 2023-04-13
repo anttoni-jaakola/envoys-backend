@@ -2,16 +2,12 @@ package kyc
 
 import (
 	"context"
-	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/assets/common/kycaid"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
 	"strconv"
+	"strings"
 )
-
-type Service struct {
-	Context *assets.Context
-}
 
 // SetCanceled The purpose of this code is to update a KYC (Know Your Customer) table in a database in order to set the secret, type,
 // and process fields for a given user_id. It also ensures that only authorized users can access the requested resource
@@ -34,7 +30,7 @@ func (s *Service) SetCanceled(ctx context.Context, _ *pbkyc.SetRequestCanceled) 
 	// This code is updating the KYC (Know Your Customer) table in a database. The code is updating the secret, type, and
 	// process fields of the KYC table, where the user_id field matches the one given in the parameters. The purpose of
 	// this code is to update the KYC table with new values for the given user_id.
-	if _, err := s.Context.Db.Exec(`update kyc set secret = $2, type = $3, process = $4 where user_id = $1`, auth, "", 0, false); err != nil {
+	if _, err := s.Context.Db.Exec(`update kyc set secret = $2, level = $3, process = $4 where user_id = $1`, auth, "", 0, false); err != nil {
 		return &response, err
 	}
 	response.Success = true
@@ -59,7 +55,7 @@ func (s *Service) GetStatus(_ context.Context, req *pbkyc.GetRequestStatus) (*pb
 	// result of the query. The code will check for any errors that occur when querying the database. If an error occurs,
 	// the code will return with an error message. The defer statement will ensure that the row is closed when the function
 	// is finished executing.
-	row, err := s.Context.Db.Query(`select process, secure, type from kyc where user_id = $1`, req.GetId())
+	row, err := s.Context.Db.Query(`select process, secure, level from kyc where user_id = $1`, req.GetId())
 	if err != nil {
 		return &response, err
 	}
@@ -74,7 +70,7 @@ func (s *Service) GetStatus(_ context.Context, req *pbkyc.GetRequestStatus) (*pb
 		// This code is part of an if statement that is used to scan the results of a database query into two variables,
 		// response.Process and response.Secure and response.Type. If the scan is successful, it will return the response and continue. If the
 		// scan fails, it will return the response and an error.
-		if err = row.Scan(&response.Process, &response.Secure, &response.Type); err != nil {
+		if err = row.Scan(&response.Process, &response.Secure, &response.Level); err != nil {
 			return &response, err
 		}
 	}
@@ -98,9 +94,9 @@ func (s *Service) GetPrivilege(_ context.Context, _ *pbkyc.GetRequestPrivilege) 
 	// types of KYC forms: standard, premium, and corporate. The factor for each type of form is retrieved from the
 	// Context.Kyc.Forms object.
 	multiplication := make(map[string]int32)
-	multiplication["standard"] = s.Context.Kyc.Forms.S.Multiplication
-	multiplication["premium"] = s.Context.Kyc.Forms.P.Multiplication
-	multiplication["corporate"] = s.Context.Kyc.Forms.C.Multiplication
+	multiplication["level_1"] = s.Context.Kyc.Forms.S.Multiplication
+	multiplication["level_2"] = s.Context.Kyc.Forms.P.Multiplication
+	multiplication["level_3"] = s.Context.Kyc.Forms.C.Multiplication
 
 	response.Multiplication = multiplication
 
@@ -142,7 +138,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 	// KYC process using the user's email and setting the type as "PERSON". If there is an error, it will return an error
 	// response and an error message.
 	applicants, err := s.Context.KycProvider.CreateApplicants(map[string]string{
-		"type":                 req.GetForm().String(),
+		"type":                 strings.ToUpper(req.GetForm()),
 		"email":                user.GetEmail(),
 		"company_name":         "You company name",
 		"registration_country": "UA",
@@ -172,7 +168,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		// This code is updating the KYC (Know Your Customer) table in a database. The code is updating the secret, type, and
 		// process fields of the KYC table, where the user_id field matches the one given in the parameters. The purpose of
 		// this code is to update the KYC table with new values for the given user_id.
-		if _, err := s.Context.Db.Exec(`update kyc set secret = $2, type = $3, process = $4 where user_id = $1`, auth, applicants.GetApplicantId(), req.GetType(), true); err != nil {
+		if _, err := s.Context.Db.Exec(`update kyc set secret = $2, level = $3, process = $4 where user_id = $1`, auth, applicants.GetApplicantId(), req.GetLevel(), true); err != nil {
 			return &response, err
 		}
 
@@ -182,7 +178,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		// applicants.GetApplicantId(), req.GetType(), and true, and inserting them into the kyc table. The purpose of the 'if'
 		// statement is to check for errors that may occur during the insertion of data. If an error is encountered, the
 		// function will return an error response.
-		if _, err = s.Context.Db.Exec("insert into kyc (user_id, secret, type, process) values ($1, $2, $3, $4)", auth, applicants.GetApplicantId(), req.GetType(), true); err != nil {
+		if _, err = s.Context.Db.Exec("insert into kyc (user_id, secret, level, process) values ($1, $2, $3, $4)", auth, applicants.GetApplicantId(), req.GetLevel(), true); err != nil {
 			return &response, err
 		}
 	}
@@ -194,7 +190,7 @@ func (s *Service) SetProcess(ctx context.Context, req *pbkyc.SetRequestProcess) 
 		"applicant_id":          applicants.GetApplicantId(),
 		"external_applicant_id": strconv.FormatInt(auth, 10),
 		"redirect_url":          s.Context.Kyc.RedirectUrl,
-	}, req.GetType())
+	}, req.GetLevel())
 	if err != nil {
 		return &response, err
 	}
@@ -236,7 +232,7 @@ func (s *Service) SetCallback(_ context.Context, req *pbkyc.SetRequestCallback) 
 				return &response, err
 			}
 
-			response.Type = "completed"
+			response.Status = "completed"
 		}
 
 		// This code is checking if the profile and document verifications have been completed. If they have not been verified,
@@ -248,7 +244,7 @@ func (s *Service) SetCallback(_ context.Context, req *pbkyc.SetRequestCallback) 
 				return &response, err
 			}
 
-			response.Type = "error"
+			response.Status = "error"
 
 			// This code checks if the length of the request's GetVerifications().Profile.GetComment() is greater than 0. If it
 			// is, then the response.Messages array is appended with the contents of the request's
@@ -266,7 +262,7 @@ func (s *Service) SetCallback(_ context.Context, req *pbkyc.SetRequestCallback) 
 		}
 
 	} else {
-		response.Type = "pending"
+		response.Status = "pending"
 	}
 
 	// This code is used to publish a response to an exchange on the topic "account/kyc-verify". If there is an error while
@@ -297,5 +293,5 @@ func (s *Service) GetApplicant(_ context.Context, req *pbkyc.GetRequestApplicant
 		return response, err
 	}
 
-	return response, nil
+	return response, nil //6145b9660cb3844d6818adf134cf7dc03655
 }

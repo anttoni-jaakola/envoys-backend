@@ -1,13 +1,17 @@
 package account
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
+	"github.com/cryptogateway/backend-envoys/assets/common/query"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"google.golang.org/grpc/status"
 	"hash"
 	"strings"
@@ -19,11 +23,18 @@ type Service struct {
 	Context *assets.Context
 }
 
-// setPassword - This function sets a new password for a user given their ID, old password, and new password. It first checks if the
+// Modify - struct is a type of struct used to store two slices of bytes. The purpose of this struct is to store data
+// related to modifications, such as sample data and rules for the modifications. This data can then be used for various
+// purposes, such as for making changes to a system or for providing input to a program.
+type Modify struct {
+	Sample, Rules []byte
+}
+
+// writePassword - This function sets a new password for a user given their ID, old password, and new password. It first checks if the
 // new password is at least 8 characters long and is not the same as the old one. It then uses a database query to check
 // if the given ID and old password match. If it does, it updates the database with the new password. If it doesn't, it
 // returns an error.
-func (a *Service) setPassword(id int64, oldPassword, newPassword string) error {
+func (a *Service) writePassword(id int64, oldPassword, newPassword string) error {
 
 	// The purpose of this code is to create a slice of two hash.Hash elements. The make function is used to create a new
 	// slice with the given length and capacity. The hash.Hash elements will contain the information needed to create a hash.
@@ -87,7 +98,7 @@ func (a *Service) setPassword(id int64, oldPassword, newPassword string) error {
 // of a specific account identified by the id int64 parameter. It will check if the index string parameter is in the
 // column array and if it is, it will either remove or add the index to the sample field of the account. It will then
 // return an error if any of the operations fail.
-func (a *Service) setSample(id int64, index string) error {
+func (a *Service) writeSample(id int64, index string) error {
 
 	// The purpose of this code is to create three variables, response, column, and query, for use in a program. The first
 	// variable, response, is a pbaccount.ResponseUser type. The second variable, column, is an array of strings containing
@@ -133,4 +144,119 @@ func (a *Service) setSample(id int64, index string) error {
 	}
 
 	return nil
+}
+
+// WriteSecure - This function is used to set a secure code for a user's account. The context and a boolean parameter are passed in to
+// the function to determine the action that should be taken. If the boolean is false, the function will generate a
+// six-character key code and use it to migrate sample posts to the user's account. If the boolean is true, the code is
+// set to an empty string. Finally, the code is stored in the user's account in the database.
+func (a *Service) WriteSecure(ctx context.Context, cleaning bool) error {
+
+	// This code snippet is used to authenticate a user. It attempts to get the user's authentication credentials from the
+	// context, and returns an error if it fails to do so. If authentication succeeds, the code will continue to execute.
+	auth, err := a.Context.Auth(ctx)
+	if err != nil {
+		return err
+	}
+
+	// The purpose of this code is to obtain a key code from the help package and assign it to the variable code. If an
+	// error is encountered, it will return the error.
+	code := help.NewCode(6, true)
+
+	// This is a logical comparison statement. It is evaluating the boolean value of the variable "cleaning". If "cleaning"
+	// is false, then the code block following the statement will execute.
+	if !cleaning {
+
+		// The purpose of the code snippet is to create a new Migrate object from the query package, and assign the Context of
+		// the environment to it. This Migrates object can then be used to migrate data from one database to another.
+		var (
+			migrate = query.Migrate{
+				Context: a.Context,
+			}
+		)
+
+		// The purpose of this line of code is to email the user using the SMTP authentication credentials (auth),
+		// using a secure protocol (Secure), and including a code (code) as part of the email.
+		go migrate.SendMail(auth, "secure", code)
+
+	} else {
+		code = ""
+	}
+
+	// Updates the 'email_code' of the account with the given 'auth' id in the.
+	if _, err = a.Context.Db.Exec("update accounts set email_code = $2 where id = $1;", auth, code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// QuerySecure - This function is used to get a secure string from the database, based on the user's authentication information. It
+// takes the context as an argument and uses it to obtain the user's authentication information. Then it queries the
+// database for the "email_code" associated with the user's account and returns it.
+func (a *Service) QuerySecure(ctx context.Context) (secure string, err error) {
+
+	// This code snippet is used to authenticate a user. It attempts to get the user's authentication credentials from the
+	// context, and returns an error if it fails to do so. If authentication succeeds, the code will continue to execute.
+	auth, err := a.Context.Auth(ctx)
+	if err != nil {
+		return secure, err
+	}
+
+	if err := a.Context.Db.QueryRow("select email_code from accounts where id = $1", auth).Scan(&secure); err != nil {
+		return secure, err
+	}
+
+	return secure, nil
+}
+
+// QueryUser - This function is used to query a user from a database given an ID. It scans the database for the requested user, and
+// then uses JSON unmarshalling to convert the data from the database into the appropriate fields in the response object.
+// It returns the response object, containing the requested user's information, or an error if one occurs.
+func (a *Service) QueryUser(id int64) (*types.User, error) {
+
+	// The purpose of the above code is to declare two variables. The first variable, response, is a User type from the
+	// types package. The second variable, q, is a Modify type. These two variables can then be used in the code
+	// following this declaration.
+	var (
+		response types.User
+		q        Modify
+	)
+
+	// This code is used to query the database for a specific row using the "id" variable. It then assigns the retrieved row
+	// values to the response struct, which holds the values to be returned to the user. If an error occurs during the
+	// query, it is returned to the user instead.
+	if err := a.Context.Db.QueryRow("select id, name, email, status, sample, rules, factor_secure, factor_secret from accounts where id = $1", id).Scan(&response.Id, &response.Name, &response.Email, &response.Status, &q.Sample, &q.Rules, &response.FactorSecure, &response.FactorSecret); err != nil {
+		return &response, err
+	}
+
+	// This code is using the json.Unmarshal function to convert a JSON object into a variable of type response.Sample. If
+	// there is an error during the conversion, it returns the response variable and the error.
+	if err := json.Unmarshal(q.Sample, &response.Sample); err != nil {
+		return &response, err
+	}
+
+	// This code is trying to convert a JSON object stored in the variable "q.Rules" into a response.Rules object. If there
+	// is an error while trying to do this, the code returns the response object and the error.
+	if err := json.Unmarshal(q.Rules, &response.Rules); err != nil {
+		return &response, err
+	}
+
+	return &response, nil
+}
+
+// QueryEntropy - This function is used to retrieve the entropy (a random string of characters) associated with a specific user account
+// from a database. It takes in a user ID as an argument and returns the associated entropy and an error if one occurs.
+// It first queries the database to check if the user ID and status (true) match an account in the database. If it does,
+// it returns the associated entropy. Otherwise, it returns an error.
+func (a *Service) QueryEntropy(userId int64) (entropy []byte, err error) {
+
+	// This code is attempting to retrieve a value from the database. The specific value is entropy from a row in the
+	// accounts table where the id is equal to the userId and the status is true. If there is an error, the code returns the
+	// entropy value and the error.
+	if err := a.Context.Db.QueryRow("select entropy from accounts where id = $1 and status = $2", userId, true).Scan(&entropy); err != nil {
+		return entropy, err
+	}
+
+	return entropy, nil
 }

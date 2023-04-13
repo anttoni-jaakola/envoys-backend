@@ -3,10 +3,17 @@ package types
 import "github.com/pkg/errors"
 
 const (
-	TypeSpot   = "spot"
-	TypeStock  = "stock"
-	TypeAgent  = "agent"
-	TypeBroker = "broker"
+	TypeZero  = ""
+	TypeSpot  = "spot"
+	TypeStock = "stock"
+	TypeCross = "cross"
+
+	KYCLevel1 = "level_1"
+	KYCLevel2 = "level_2"
+	KYCLevel3 = "level_3"
+
+	UserTypeAgent  = "agent"
+	UserTypeBroker = "broker"
 
 	AssigningBuy    = "buy"
 	AssigningSell   = "sell"
@@ -43,8 +50,7 @@ const (
 	PlatformVisa       = "visa"
 	PlatformMastercard = "mastercard"
 
-	PatternText    = "text"
-	PatternSticker = "sticker"
+	PatternText = "text"
 
 	BalanceMinus = "minus"
 	BalancePlus  = "plus"
@@ -192,6 +198,30 @@ func Status(request string) error {
 	}
 	if _, ok := statuses[request]; !ok {
 		return errors.New("Invalid status")
+	}
+	return nil
+}
+
+func Type(request string) error {
+	types := map[string]bool{
+		TypeSpot:  true,
+		TypeStock: true,
+		TypeCross: true,
+	}
+	if _, ok := types[request]; !ok {
+		return errors.New("Invalid type")
+	}
+	return nil
+}
+
+func Group(request string) error {
+	groups := map[string]bool{
+		GroupAction: true,
+		GroupCrypto: true,
+		GroupFiat:   true,
+	}
+	if _, ok := groups[request]; !ok {
+		return errors.New("Invalid group")
 	}
 	return nil
 }

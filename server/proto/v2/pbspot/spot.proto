@@ -5,216 +5,22 @@ package pb.spot;
 option go_package = "server/proto/v2/pbspot";
 
 import "google/api/annotations.proto";
-import "server/types/types.proto";
-
 service Api {
-    rpc SetAsset (SetRequestAsset) returns (ResponseAsset) {
+    rpc SetWithdraw (SetRequestWithdrawal) returns (ResponseWithdrawal) {
         option (google.api.http) = {
-            post: "/v2/spot/set-asset",
+            post: "/v2/spot/set-withdrawal",
             body: "*"
         };
     }
-    rpc GetAssets (GetRequestAssets) returns (ResponseAsset) {
+    rpc CancelWithdraw (CancelRequestWithdrawal) returns (ResponseWithdrawal) {
         option (google.api.http) = {
-            post: "/v2/spot/get-assets",
-            body: "*"
-        };
-    }
-    rpc GetAsset (GetRequestAsset) returns (ResponseAsset) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-asset",
-            body: "*"
-        };
-    }
-    rpc GetSymbol (GetRequestSymbol) returns (ResponseSymbol) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-symbol",
-            body: "*"
-        };
-    }
-    rpc GetMarkers (GetRequestMarkers) returns (ResponseMarker) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-markers",
-            body: "*"
-        };
-    }
-    rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-pairs",
-            body: "*"
-        };
-    }
-    rpc GetPair (GetRequestPair) returns (ResponsePair) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-pair",
-            body: "*"
-        };
-    }
-    rpc SetOrder (SetRequestOrder) returns (ResponseOrder) {
-        option (google.api.http) = {
-            post: "/v2/spot/set-order",
-            body: "*"
-        };
-    }
-    rpc CancelOrder (CancelRequestOrder) returns (ResponseOrder) {
-        option (google.api.http) = {
-            post: "/v2/spot/cancel-order",
-            body: "*"
-        };
-    }
-    rpc GetOrders (GetRequestOrders) returns (ResponseOrder) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-orders",
-            body: "*"
-        };
-    }
-    rpc GetTrades (GetRequestTrades) returns (ResponseTrade) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-trades",
-            body: "*"
-        };
-    }
-    rpc GetPrice (GetRequestPrice) returns (ResponsePrice) {
-        option (google.api.http) = {
-            get: "/v2/spot/get-price"
-        };
-    }
-    rpc GetTransactions (GetRequestTransactions) returns (ResponseTransaction) {
-        option (google.api.http) = {
-            post: "/v2/spot/get-transactions",
-            body: "*"
-        };
-    }
-    rpc SetWithdraw (SetRequestWithdraw) returns (ResponseWithdraw) {
-        option (google.api.http) = {
-            post: "/v2/spot/set-withdraw",
-            body: "*"
-        };
-    }
-    rpc CancelWithdraw (CancelRequestWithdraw) returns (ResponseWithdraw) {
-        option (google.api.http) = {
-            post: "/v2/spot/cancel-withdraw",
+            post: "/v2/spot/cancel-withdrawal",
             body: "*"
         };
     }
 }
 
-// Price structure.
-message GetRequestPrice {
-    string base_unit = 1;
-    string quote_unit = 2;
-}
-message ResponsePrice {
-    double price = 1;
-}
-
-// Assets structure.
-message GetRequestAssets {
-    int64 id = 1;
-    int64 limit = 2;
-    int64 page = 3;
-}
-message GetRequestAsset {
-    string symbol = 1;
-}
-message SetRequestAsset {
-    string symbol = 1;
-    string platform = 2;
-    string protocol = 3;
-    string group = 4;
-}
-message ResponseAsset {
-    repeated types.Asset fields = 1;
-    string address = 2;
-    bool success = 3;
-    int32 count = 4;
-}
-
-// Pair structure.
-message GetRequestPairs {
-    string symbol = 1;
-}
-message GetRequestPair {
-    string base_unit = 1;
-    string quote_unit = 2;
-}
-message ResponsePair {
-    repeated types.Pair fields = 1;
-    int32 count = 2;
-    bool success = 3;
-}
-
-// Symbol structure.
-message GetRequestSymbol {
-    string base_unit = 1;
-    string quote_unit = 2;
-}
-message ResponseSymbol {
-    bool success = 1;
-}
-
-// Marker structure.
-message GetRequestMarkers {}
-message ResponseMarker {
-    repeated string fields = 1;
-}
-
-// Order structure.
-message SetRequestOrder {
-    double price = 1;
-    double quantity = 2;
-    string base_unit = 3;
-    string quote_unit = 4;
-    string trading = 5;
-    string assigning = 6;
-}
-message GetRequestOrders {
-    bool owner = 1;
-    int64 user_id = 2;
-    int64 limit = 3;
-    int64 page = 4;
-    string base_unit = 5;
-    string quote_unit = 6;
-    string assigning = 7;
-    string status = 8;
-}
-message CancelRequestOrder {
-    int64 id = 1;
-}
-message ResponseOrder {
-    repeated types.Order fields = 1;
-    double volume = 2;
-    int32 count = 3;
-    bool success = 4;
-}
-
-// Trade structure.
-message GetRequestTrades {
-    bool owner = 1;
-    int64 limit = 2;
-    int64 order_id = 3;
-    string assigning = 4;
-}
-message ResponseTrade {
-    repeated types.Trade fields = 1;
-}
-
-// Transaction structure.
-message GetRequestTransactions {
-    int64 id = 1;
-    int64 limit = 2;
-    int64 page = 3;
-    string symbol = 4;
-    string search = 5;
-    string assignment = 6;
-}
-message ResponseTransaction {
-    repeated types.Transaction fields = 1;
-    int32 count = 2;
-}
-
-// Withdraw structure.
-message SetRequestWithdraw {
+message SetRequestWithdrawal {
     int64 id = 1;
     string symbol = 2;
     string address = 3;
@@ -225,9 +31,9 @@ message SetRequestWithdraw {
     bool refresh = 9;
     string platform = 10;
 }
-message CancelRequestWithdraw {
+message CancelRequestWithdrawal {
     int64 id = 1;
 }
-message ResponseWithdraw {
+message ResponseWithdrawal {
     bool success = 1;
 }

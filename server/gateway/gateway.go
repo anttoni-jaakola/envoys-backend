@@ -7,13 +7,14 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets"
 	admin_pbaccount "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbaccount"
 	admin_pbads "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbads"
+	admin_pbmarket "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbmarket"
 	admin_pbspot "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbspot"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbads"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbauth"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
-	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbohlcv"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbspot"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbstock"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -363,11 +364,12 @@ func (o *Options) gateway(ctx context.Context, connect *grpc.ClientConn, opts []
 		pbads.RegisterApiHandler,
 		pbstock.RegisterApiHandler,
 		pbkyc.RegisterApiHandler,
-		pbohlcv.RegisterApiHandler,
+		pbprovider.RegisterApiHandler,
 		// V1 - Admin apis.
 		admin_pbaccount.RegisterApiHandler,
 		admin_pbspot.RegisterApiHandler,
 		admin_pbads.RegisterApiHandler,
+		admin_pbmarket.RegisterApiHandler,
 	} {
 		if err := f(ctx, route, connect); err != nil {
 			return nil, err

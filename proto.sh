@@ -5,7 +5,7 @@ if ! [ -f $grpc_path ]; then
     grpc_path=$(find $GOPATH/pkg/mod/github.com/grpc-ecosystem -name "grpc-gateway@*" -type d |  head -n 1)
 fi
 
-directories=$(echo $PATH | tr ":" "\n")
+directories=$(echo "$PATH" | tr ":" "\n")
 findedGOPATH="false"
 for directory in $directories
 do
@@ -24,8 +24,8 @@ for d in $(find server -name '*.proto') ; do
     [ -L "${d%/}" ] && continue
 
     googleapis="$grpc_path/third_party/googleapis"
-    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"
-    protoc -I=. -I=$googleapis --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:. "$d"
+    protoc -I=. -I="$googleapis" --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. "$d"
+    protoc -I=. -I="$googleapis" --grpc-gateway_out=logtostderr=true:. --go_out=plugins=grpc:. --swagger_out=logtostderr=true:. "$d"
     echo "$d - BUILD SUCCESS!"
 done
 

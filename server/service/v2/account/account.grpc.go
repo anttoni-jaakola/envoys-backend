@@ -32,7 +32,7 @@ func (a *Service) SetUser(ctx context.Context, req *pbaccount.SetRequestUser) (*
 	// This if statement is used to check if the length of the request's sample is greater than 0. If it is, it will attempt
 	// to set the sample with the given authentication, and if an error occurs, it will return an error response.
 	if len(req.GetSample()) > 0 {
-		if err := a.setSample(auth, req.GetSample()); err != nil {
+		if err := a.writeSample(auth, req.GetSample()); err != nil {
 			return &response, err
 		}
 	}
@@ -44,7 +44,7 @@ func (a *Service) SetUser(ctx context.Context, req *pbaccount.SetRequestUser) (*
 
 		// The purpose of this code is to set a new password for an individual using the old password as a verification. If
 		// there is an error in setting the new password, the code will return an error.
-		if err := a.setPassword(auth, req.GetOldPassword(), req.GetNewPassword()); err != nil {
+		if err := a.writePassword(auth, req.GetOldPassword(), req.GetNewPassword()); err != nil {
 			return &response, err
 		}
 	}
@@ -286,7 +286,7 @@ func (a *Service) GetFactor(ctx context.Context, _ *pbaccount.GetRequestFactor) 
 		// authenticating to, AccountName which is the user's email address, and SecretSize which is the length of the secret
 		// key being generated. If an error is encountered, it is returned and the function is exited.
 		key, err := totp.Generate(totp.GenerateOpts{
-			Issuer:      "Paymex Exchange",
+			Issuer:      "Envoys Exchange",
 			AccountName: user.GetEmail(),
 			SecretSize:  15,
 		})

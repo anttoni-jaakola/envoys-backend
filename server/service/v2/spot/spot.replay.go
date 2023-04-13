@@ -5,162 +5,11 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/blockchain"
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
-	"github.com/cryptogateway/backend-envoys/assets/common/marketplace"
-	"github.com/cryptogateway/backend-envoys/assets/common/query"
-	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbohlcv"
-	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbspot"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/provider"
 	"github.com/cryptogateway/backend-envoys/server/types"
-	"google.golang.org/grpc/status"
 	"time"
 )
-
-// price - The purpose of this code is to update the prices of pairs at a specific time interval. It first loads the pair ids,
-// prices, base units, and quote units from the pairs table where the status is active. It then gets the candles for the
-// base and quote units and calculates the new price based on the data. Lastly, it updates the price of the pair in the database.
-func (e *Service) price() {
-
-	// The code above creates a new ticker that will run once a minute and then loop through each range of the ticker.C
-	// channel. This is useful for running a certain task or operation on a regular interval of time.
-	ticker := time.NewTicker(time.Minute * 1)
-	for range ticker.C {
-
-		func() {
-
-			// This code queries a database for pairs with a status of true and orders them by their ID. It uses the
-			// e.Context.Db.Query() function to execute a query and assigns the output of the query to the rows variable. If there
-			// is an error, it calls the e.Context.Debug() function to debug the error, and if successful, it will defer the
-			// rows.Close() function to close the rows after the function call.
-			rows, err := e.Context.Db.Query(`select id, price, base_unit, quote_unit from pairs where status = $1 order by id`, true)
-			if e.Context.Debug(err) {
-				return
-			}
-			defer rows.Close()
-
-			// The for loop with the rows.Next() statement is used to loop through a result set of an SQL query. The rows.Next()
-			// statement advances the current row pointer to the next row and returns true if it was successful. This loop is used
-			// to iterate through each row in the result set and perform an action on it.
-			for rows.Next() {
-
-				// This code creates two variables, pair and price, of the types.Pair and float64 respectively. This allows
-				// the program to store and use data of these two types.
-				var (
-					pair  types.Pair
-					price float64
-				)
-
-				// This code is used to scan the rows of data from a database and assign the values to variables. The if statement is
-				// used to check for any errors that may occur when scanning the rows. If an error is found, the code will skip to
-				// the next row. The e.Context.Debug() function is used to provide more information about what caused the error,
-				// which can help with debugging.
-				if err := rows.Scan(&pair.Id, &pair.Price, &pair.BaseUnit, &pair.QuoteUnit); e.Context.Debug(err) {
-					return
-				}
-
-				// The purpose of this code is to retrieve two candles from a given pair of base and quote units. The GetTicker()
-				// function is used to retrieve the candles and the returned value is stored in the migrate variable. If an error is
-				// encountered, the code will skip the iteration and continue to the next one.
-				migrate, err := pbohlcv.NewApiClient(e.Context.GrpcClient).GetTicker(context.Background(), &pbohlcv.GetRequest{BaseUnit: pair.GetBaseUnit(), QuoteUnit: pair.GetQuoteUnit(), Limit: 2})
-				if e.Context.Debug(err) {
-					return
-				}
-
-				// This if statement checks is the price of a given pair of currencies is greater than 0. This is important to ensure
-				// that the price is a valid number and is not negative.
-				if price = marketplace.Price().Unit(pair.GetBaseUnit(), pair.GetQuoteUnit()); price > 0 {
-
-					// This code is calculating the price of an item. The purpose of the if statement is to check if there are any
-					// "ticker.Fields" present. If there are, then the price is calculated by taking the average of the price, the
-					// pair's price, and the price of the first field in to migrate.Fields array. If there are no migrate.Fields, then
-					// the price is calculated by taking the average of the price and the pair's price.
-					if len(migrate.Fields) > 0 {
-						price = (price + pair.GetPrice() + migrate.Fields[0].GetPrice()) / 3
-					} else {
-						price = (price + pair.GetPrice()) / 2
-					}
-
-					// This piece of code is calculating the price of a pair of something.  The if statement is checking if the price of
-					// the pair is more than 100. If it is, then the price is reduced by 1/8 of the difference between the initial price
-					// and the new price.
-					if (price - pair.GetPrice()) > 100 {
-						price -= (price - pair.GetPrice()) - (price-pair.GetPrice())/8
-					}
-
-				}
-
-				// This is an if statement that checks whether the variable price is equal to 0. If it is, the code inside the curly
-				// braces will be executed. Otherwise, it will be skipped.
-				if price == 0 {
-
-					// This code is used to calculate the price of an item. It checks if to migrate.Fields array has any elements in
-					// it. If it does, it takes the first element, gets its price, adds that to the price of the pair, and divides the
-					// sum by 2. If the array is empty, it just returns the price of the pair.
-					if len(migrate.Fields) > 0 {
-						price = (migrate.Fields[0].GetPrice() + pair.GetPrice()) / 2
-					} else {
-						price = pair.GetPrice()
-					}
-
-				}
-
-				// This code is attempting to update a row in the database table "pairs" with the given values. The if statement is
-				// checking to see if there is an error and if there is, the code will continue without changing the values.
-				if _, err := e.Context.Db.Exec("update pairs set price = $3 where base_unit = $1 and quote_unit = $2;", pair.GetBaseUnit(), pair.GetQuoteUnit(), price); e.Context.Debug(err) {
-					return
-				}
-			}
-		}()
-	}
-}
-
-// market - This function is used to replay market prices. The function is executed on a specific time interval and retrieves data
-// from the database. It then inserts the data into the trades table, and publishes the data to exchange topics. This
-// allows for the market data to be replayed at a specific interval.
-func (e *Service) market() {
-
-	// The code creates a ticker that triggers every minute and runs a loop that executes each time the ticker is triggered.
-	// This allows code to be executed at regular intervals without the need for an explicit loop.
-	ticker := time.NewTicker(time.Minute * 1)
-	for range ticker.C {
-
-		func() {
-
-			// This code allows the program to query a database and retrieve the values of the 'id', 'price', 'base_unit', and
-			// 'quote_unit' columns from the 'pairs' table, where the 'status' column is equal to 'true'. The code then closes the
-			// rows when the query is complete.
-			rows, err := e.Context.Db.Query(`select id, price, base_unit, quote_unit from pairs where status = $1 order by id`, true)
-			if e.Context.Debug(err) {
-				return
-			}
-			defer rows.Close()
-
-			// The for rows.Next() loop is used to iterate over each row in a database result set. It allows you to access each
-			// row one at a time, until all rows have been processed. This is useful for processing large result sets without
-			// loading them all into memory at once.
-			for rows.Next() {
-
-				// This is a variable declaration statement. The variable 'pair' is being declared as type 'types.Pair'. This allows
-				// the variable to store a pair of values (e.g. two integers, two strings, two objects, etc.).
-				var (
-					item types.Pair
-				)
-
-				// This code is checking for an error when scanning the rows of a database table. The if statement scans the rows of
-				// the database table using the Scan() method, and if it encounters an error, it will log the error and continue
-				// scanning the remaining rows.
-				if err := rows.Scan(&item.Id, &item.Price, &item.BaseUnit, &item.QuoteUnit); e.Context.Debug(err) {
-					continue
-				}
-
-				// This code is setting a ticker for a currency pair in order to track its price. The context.Background() is used to
-				// create a basic context, the SetRequest contains the key, price, base unit, quote unit, and assigning type.
-				// Finally, the e.Context.Debug(err) is used to debug any errors that may occur during the process. If an error occurs, the code will continue.
-				if _, err := pbohlcv.NewApiClient(e.Context.GrpcClient).SetTicker(context.Background(), &pbohlcv.SetRequest{Key: e.Context.Secrets[2], Price: item.GetPrice(), BaseUnit: item.GetBaseUnit(), QuoteUnit: item.GetQuoteUnit(), Assigning: types.AssigningSupply}); e.Context.Debug(err) {
-					continue
-				}
-			}
-		}()
-	}
-}
 
 // chain - This function is used to replay the status of chains stored in a database. It loads at a specific time interval and
 // queries the database for chains that have been stored. It then uses the 'help.Ping' function to check whether each
@@ -218,250 +67,6 @@ func (e *Service) chain() {
 				}
 			}
 		}()
-	}
-}
-
-// trade - This function is used to replay a trade init. It takes an order and a side (BID or ASK) as parameters. It then queries
-// the database for orders with the same base unit, quote unit and user ID, and with a status of "PENDING". It then
-// iterates through the results and checks if the order's price is higher than the item's price for a BID position and
-// lower for an ASK position. If this is the case, it calls the replayTradeProcess() function. Finally, it logs any matches or failed matches.
-func (e *Service) trade(order *types.Order, assigning string) {
-
-	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
-	// error and returning.
-	if err := e.Context.Publish(order, "exchange", "order/create"); e.Context.Debug(err) {
-		return
-	}
-
-	// This code is querying the "orders" table in a database for data that matches the given parameters. It is using the
-	// parameters given to query for a specific set of data from the "orders" table. It is using the $1, $2, $3, $4, $5 and
-	// $6 to represent the given parameters. The query is also ordering the results by the "id" column. It is checking for
-	// errors and deferring the closing of the rows.
-	rows, err := e.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and status = $5 and type = $6 order by id`, assigning, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), types.StatusPending, types.TypeSpot)
-	if e.Context.Debug(err) {
-		return
-	}
-	defer rows.Close()
-
-	// The purpose of the for loop is to iterate over a set of rows from a database query. The rows.Next() function advances
-	// the iterator to the next row in the result set, returning false when there are no more rows to iterate over.
-	for rows.Next() {
-
-		// The purpose of this line of code is to declare a variable named 'item' of type 'types.Order'. This will allow the
-		// programmer to use the 'item' variable to store data of type 'types.Order' in the program.
-		var (
-			item types.Order
-		)
-
-		// This code is attempting to scan the rows of a database table, assigning each column value to a variable (item.Id,
-		// item.Assigning, etc.). The if statement is checking for any errors that might occur when scanning the rows and
-		// returning any errors that might be present.
-		if err = rows.Scan(&item.Id, &item.Assigning, &item.BaseUnit, &item.QuoteUnit, &item.Value, &item.Quantity, &item.Price, &item.UserId, &item.Status); err != nil {
-			return
-		}
-
-		// This code is used to query a database for a specific row. The query is looking for an entry with a specific ID and
-		// status. The two parameters (order.GetId() and types.StatusPending) are used to filter the query results. The row
-		// variable will store the results of the query, and the err variable will store any errors that occur.
-		row, err := e.Context.Db.Query("select value from orders where id = $1 and status = $2 and type = $3", order.GetId(), types.StatusPending, types.TypeSpot)
-		if err != nil {
-			return
-		}
-
-		// The purpose of this code is to check if there is any data in the "row" and if there is, attempt to scan it and get
-		// the "Value" from the row. If there is no data, then set the "Value" to 0. Finally, close the row to free up any resources.
-		if row.Next() {
-			if err = row.Scan(&order.Value); err != nil {
-				return
-			}
-		} else {
-			order.Value = 0
-		}
-		row.Close()
-
-		// This switch statement is used to check for a match between the order and item prices, depending on the side of the
-		// trade (bid or ask). If the order and item prices match, the trade process is replayed. If not, a message is logged
-		// for the user. If the side is invalid, an error is returned.
-		switch assigning {
-
-		case types.AssigningBuy: // Buy at BID price.
-
-			// This code checks whether the price of an order is greater than or equal to the price of an item. If it is, it will
-			// log a message and call the replayTradeProcess function. If it is not, it will log another message.
-			if order.GetPrice() >= item.GetPrice() {
-				e.Context.Logger.Infof("[BID]: (item [%v]) >= (order [%v]), order ID: %v", order.GetPrice(), item.GetPrice(), item.GetId())
-
-				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
-				// trade process associated with them. The order and item parameters contain the necessary information needed to
-				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				e.process(types.AssigningBuy, order, &item)
-
-			} else {
-				e.Context.Logger.Infof("[BID]: no matches found: (item [%v]) >= (order [%v])", order.GetPrice(), item.GetPrice())
-			}
-
-			break
-
-		case types.AssigningSell: // Sell at ASK price.
-
-			// This code is checking if the price of an order is lower than or equal to the price of an item. If it is, it will
-			// log an informational message and call the replayTradeProcess() method. If not, it will log a different
-			// informational message.
-			if order.GetPrice() <= item.GetPrice() {
-				e.Context.Logger.Infof("[ASK]: (order [%v]) <= (item [%v]), order ID: %v", order.GetPrice(), item.GetPrice(), item.GetId())
-
-				// This function is used to replay a trade process. It takes two parameters, an order and an item, and replays the
-				// trade process associated with them. The order and item parameters contain the necessary information needed to
-				// replay the trade process, allowing the process to be repeated in order to confirm the accuracy of the trade.
-				e.process(types.AssigningSell, order, &item)
-
-			} else {
-				e.Context.Logger.Infof("[ASK]: no matches found: (order [%v]) <= (item [%v])", order.GetPrice(), item.GetPrice())
-			}
-
-			break
-		default:
-			if err := e.Context.Debug(status.Error(11589, "invalid assigning trade position")); err {
-				return
-			}
-		}
-
-	}
-
-	// The purpose of this code is to check for errors when using the rows.Err() function. It returns an error if there is
-	// one and returns the function if this is the case.
-	if err = rows.Err(); err != nil {
-		return
-	}
-}
-
-// process - This function is used to replay a trade process. It updates two orders with different amounts to determine the result
-// of a trade. It updates the order status in the database with pending in to filled, updates the balance by adding the
-// amount of the order to the balance, and sends a mail. In addition, it logs information about the trade.
-func (e *Service) process(assigning string, params ...*types.Order) {
-
-	// The purpose of this code is to declare two variables, instance and migrate. The variable instance is declared as an
-	// integer, and migrate is declared as a query.Migrate object with the Context field set to the value of the variable e.Context.
-	var (
-		price    float64
-		instance int
-		migrate  = query.Migrate{
-			Context: e.Context,
-		}
-	)
-
-	// This code is checking whether the value of the first parameter is greater than or equal to the value of the second
-	// parameter. If it is, the instance variable is set to 1.
-	if params[0].GetValue() >= params[1].GetValue() {
-		instance = 1
-	}
-
-	// This switch statement is used to determine the price based on the side (bid or ask) of an order. The switch statement
-	// checks for the side of the order and assigns the price accordingly, using the params array. If the side is BID, it
-	// will assign the price from the second element in the params array. If the side is ASK, it will assign the price from
-	// the first element in the params array.
-	switch assigning {
-	case types.AssigningBuy:
-		price = params[1].GetPrice()
-	case types.AssigningSell:
-		price = params[0].GetPrice()
-	}
-
-	// This code is used to update an order status from pending to filled when the order is completed. It also updates the
-	// quantity of the orders and sets the necessary parameters for the order. Finally, it logs the parameters of the order.
-	if params[instance].GetValue() > 0 {
-
-		// The purpose of the for loop is to iterate over the parameters passed in and update the "value" of the specified
-		// order in the database. It also sets the status of the order to FILLED if the value is equal to 0. The code also
-		// checks for any errors that may occur during the process. Lastly, the code sends an email to the user associated with the order once the order is filled.
-		for i := 0; i < 2; i++ {
-
-			// The purpose of this code is to declare a variable named "value" of type float64. This variable can be used to store a decimal number, such as 3.14159.
-			var (
-				value float64
-			)
-
-			// This if statement is used to update the "value" of a particular order in the database. The parameters passed in are
-			// used in the query to find the specific order to update. If the query is successful, the "value" of the order is
-			// stored in the "value" variable and the function will continue. If the query fails, the function will return.
-			if err := e.Context.Db.QueryRow("update orders set value = value - $2 where id = $1 and status = $3 and type = $4 returning value;", params[i].GetId(), params[instance].GetValue(), types.StatusPending, types.TypeSpot).Scan(&value); e.Context.Debug(err) {
-				return
-			}
-
-			if value == 0 {
-
-				// This code is performing an update on the orders table in a database. It is setting the status of the order with the
-				// specified ID to the specified status (in this case, FILLED). The code is also checking for any errors that may
-				// occur during the process. If an error is found, the code will return without proceeding.
-				if _, err := e.Context.Db.Exec("update orders set status = $2 where id = $1 and type = $3;", params[i].GetId(), types.StatusFilled, types.TypeSpot); e.Context.Debug(err) {
-					return
-				}
-
-				go migrate.SendMail(params[i].GetUserId(), "order_filled", params[i].GetId(), e.getQuantity(params[i].GetAssigning(), params[i].GetQuantity(), price, false), params[i].GetBaseUnit(), params[i].GetQuoteUnit(), params[i].GetAssigning())
-			}
-		}
-
-		switch params[1].GetAssigning() {
-		case types.AssigningBuy:
-
-			// Order trades logs.
-			quantity, err := e.setTrade(params[0].GetId(), params[0].GetQuoteUnit(), params[instance].GetValue(), price, true)
-			if e.Context.Debug(err) {
-				return
-			}
-
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
-			if err := e.setBalance(params[0].GetQuoteUnit(), params[0].GetUserId(), quantity, types.BalancePlus); e.Context.Debug(err) {
-				return
-			}
-
-			// Order trades logs.
-			quantity, err = e.setTrade(params[1].GetId(), params[0].GetBaseUnit(), params[instance].GetValue(), price, false)
-			if e.Context.Debug(err) {
-				return
-			}
-
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
-			if err := e.setBalance(params[0].GetBaseUnit(), params[1].GetUserId(), quantity, types.BalancePlus); err != nil {
-				return
-			}
-
-			break
-		case types.AssigningSell:
-
-			// Order trades logs.
-			quantity, err := e.setTrade(params[0].GetId(), params[0].GetBaseUnit(), params[instance].GetValue(), price, false)
-			if e.Context.Debug(err) {
-				return
-			}
-
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
-			if err := e.setBalance(params[0].GetBaseUnit(), params[0].GetUserId(), quantity, types.BalancePlus); e.Context.Debug(err) {
-				return
-			}
-
-			// Order trades logs.
-			quantity, err = e.setTrade(params[1].GetId(), params[0].GetQuoteUnit(), params[instance].GetValue(), price, true)
-			if e.Context.Debug(err) {
-				return
-			}
-
-			// This code is part of a function that allows the user to set the balance of a certain item to a certain quantity.
-			// The purpose of the if statement is to check if there is an error when setting the balance. If there is an error, the function will return without doing anything.
-			if err := e.setBalance(params[0].GetQuoteUnit(), params[1].GetUserId(), quantity, types.BalancePlus); e.Context.Debug(err) {
-				return
-			}
-
-			break
-		}
-	}
-
-	//The purpose of this code is to create a new API client for the pbohlcv package using the existing gRPC client in the context.
-	if _, err := pbohlcv.NewApiClient(e.Context.GrpcClient).SetTicker(context.Background(), &pbohlcv.SetRequest{Key: e.Context.Secrets[2], Price: params[0].GetPrice(), Value: params[0].GetValue(), BaseUnit: params[0].GetBaseUnit(), QuoteUnit: params[0].GetQuoteUnit(), Assigning: params[0].GetAssigning()}); e.Context.Debug(err) {
-		return
 	}
 }
 
@@ -586,6 +191,11 @@ func (e *Service) withdraw() {
 
 		func() {
 
+			// Creates a service provider to be used in the given context, providing the necessary services for the application.
+			_provider := provider.Service{
+				Context: e.Context,
+			}
+
 			// This code is querying a database for transactions with specific parameters. The code uses the sql Query method to
 			// query the database, passing in the parameters as variables. The query will return rows, which are stored in the
 			// rows variable. The error from the query is stored in the err variable, and an error is printed out if err is not
@@ -616,7 +226,7 @@ func (e *Service) withdraw() {
 
 				// This code is setting up a chain and checking for errors. If an error is encountered, the code will continue on
 				// without executing the rest of the code. This allows the code to continue running in the event of an error.
-				chain, err := e.getChain(item.GetChainId(), true)
+				chain, err := _provider.QueryChain(item.GetChainId(), true)
 				if e.Context.Debug(err) {
 					return
 				}
@@ -652,7 +262,7 @@ func (e *Service) withdraw() {
 						// This code is part of a loop that is looping through a list of items. The purpose of this code is to set a
 						// reserve lock for each item in the list. If it is successful, the loop will continue to the next item. If there
 						// is an error, the loop will skip the current item and move on to the next one.
-						if err := e.setReserveLock(reserve.GetUserId(), item.GetSymbol(), item.GetPlatform(), item.GetProtocol()); e.Context.Debug(err) {
+						if err := _provider.WriteReserveLock(reserve.GetUserId(), item.GetSymbol(), item.GetPlatform(), item.GetProtocol()); e.Context.Debug(err) {
 							return
 						}
 
@@ -689,7 +299,7 @@ func (e *Service) withdraw() {
 
 						// This code is checking for an error when setting a reserve lock. If an error is found, the code continues without
 						// taking any action. This is usually done to prevent the code from crashing due to an unexpected error.
-						if err := e.setReserveLock(reserve.GetUserId(), item.GetSymbol(), item.GetPlatform(), item.GetProtocol()); e.Context.Debug(err) {
+						if err := _provider.WriteReserveLock(reserve.GetUserId(), item.GetSymbol(), item.GetPlatform(), item.GetProtocol()); e.Context.Debug(err) {
 							return
 						}
 
@@ -745,6 +355,11 @@ func (e *Service) reward() {
 
 		func() {
 
+			// Creates a service provider to be used in the given context, providing the necessary services for the application.
+			_provider := provider.Service{
+				Context: e.Context,
+			}
+
 			// This code is used to query the database to retrieve data from the transactions table. The query is filtered by the
 			// allocation and status parameters, which are passed in as arguments to the query. The rows object is then used to
 			// iterate over the retrieved data. The defer statement is used to ensure that the rows object is closed when the function ends.
@@ -773,7 +388,7 @@ func (e *Service) reward() {
 				// This code is used to get the chain with the corresponding id. The if statement checks to see if there is an error
 				// when getting the chain and if so, it will return. The purpose of the code is to retrieve the chain with the given
 				// id and to check for any errors while doing so.
-				chain, err := e.getChain(item.GetChainId(), true)
+				chain, err := _provider.QueryChain(item.GetChainId(), true)
 				if e.Context.Debug(err) {
 					return
 				}
@@ -808,7 +423,7 @@ func (e *Service) reward() {
 						// reserve. It is also setting the Allocation to INTERNAL, the Protocol to MAINNET, and the Assignment to
 						// WITHDRAWS. The purpose of this code is to create a transaction and set the properties necessary for it to be
 						// processed. If there is an error in setting up the transaction, the code will stop and return.
-						_, err := e.setTransaction(&types.Transaction{
+						_, err := _provider.WriteTransaction(&types.Transaction{
 							Symbol:     chain.GetParentSymbol(),
 							Block:      chain.GetBlock(),
 							Parent:     item.GetId(),
@@ -846,6 +461,14 @@ func (e *Service) reward() {
 // of confirmations is not yet met, the number of confirmations is updated in the database.
 func (e *Service) confirmation() {
 
+	// Creates a new API client to interact with the Provider API.
+	migrate := pbprovider.NewApiClient(e.Context.GrpcClient)
+
+	// Creates a service provider to be used in the given context, providing the necessary services for the application.
+	_provider := provider.Service{
+		Context: e.Context,
+	}
+
 	// This code is performing a SQL query to select information from a database. The purpose is to select a specific set of
 	// information from the database based on the parameters of the query. The query is selecting the fields' id, hash,
 	// symbol, "to", fees, chain_id, user_id, value, confirmation, block, platform, protocol, and create_at where the status
@@ -875,7 +498,7 @@ func (e *Service) confirmation() {
 
 		// The purpose of this code is to get a chain from the "e" object, using the item's chain ID. If an error occurs, the
 		// function will return, and the error will be printed if debugging is enabled.
-		chain, err := e.getChain(item.GetChainId(), true)
+		chain, err := _provider.QueryChain(item.GetChainId(), true)
 		if e.Context.Debug(err) {
 			return
 		}
@@ -907,7 +530,7 @@ func (e *Service) confirmation() {
 
 					// This code is used to get a contract from the Ethereum network. The contract is retrieved using the item's symbol
 					// and chain ID. If there is an error, the Context.Debug() function will be used to return an error message.
-					contract, err := e.getContract(item.GetSymbol(), item.GetChainId())
+					contract, err := _provider.QueryContract(item.GetSymbol(), item.GetChainId())
 					if e.Context.Debug(err) {
 						return
 					}
@@ -915,7 +538,7 @@ func (e *Service) confirmation() {
 					// This code is used to get the price of a requested symbol given a base unit. It uses the GetPrice method from the e
 					// object and passes in a context.Background() and a GetRequestPrice object containing the base unit and the
 					// requested symbol. If the GetPrice method returns an error, the error is returned in the response and the Context.Error() method handles the error.
-					price, err := e.GetPrice(context.Background(), &pbspot.GetRequestPrice{BaseUnit: chain.GetParentSymbol(), QuoteUnit: item.GetSymbol()})
+					price, err := migrate.GetPrice(context.Background(), &pbprovider.GetRequestPrice{BaseUnit: chain.GetParentSymbol(), QuoteUnit: item.GetSymbol()})
 					if e.Context.Debug(err) {
 						return
 					}
@@ -962,7 +585,7 @@ func (e *Service) confirmation() {
 					// This code is setting up a reverse balance change in a database, and is checking for errors while doing so. The if
 					// statement is checking to see if the setReverse() function returns an error, and if it does, it prints the error
 					// to the debug log and returns. If the setReverse() function does not return an error, the code continues to execute.
-					if err := e.setReverse(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), types.BalancePlus); e.Context.Debug(err) {
+					if err := _provider.WriteReverse(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), types.BalancePlus); e.Context.Debug(err) {
 						return
 					}
 
@@ -971,7 +594,7 @@ func (e *Service) confirmation() {
 
 				// The purpose of this code is to set a reserve for a specified user, symbol, value, platform, and protocol. If an
 				// error occurs, the code will continue to execute. The e.Context.Debug(err) line logs the error for debugging purposes.
-				if err := e.setReserve(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), types.BalancePlus); e.Context.Debug(err) {
+				if err := _provider.WriteReserve(item.GetUserId(), item.GetTo(), item.GetSymbol(), item.GetValue(), item.GetPlatform(), item.GetProtocol(), types.BalancePlus); e.Context.Debug(err) {
 					return
 				}
 

@@ -1,7 +1,6 @@
 .idea/
 .vscode/
 writer.log
-./main
 .DS_Store
 *.pb.go
 *.pb.gw.go

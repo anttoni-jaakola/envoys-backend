@@ -7,6 +7,8 @@ import (
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/provider"
 	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -191,10 +193,15 @@ func (e *Service) ethereum(chain *types.Chain) {
 		// then the code inside the if statement will be executed.
 		if item.GetValue() > 0 {
 
+			// Creates a service provider to be used in the given context, providing the necessary services for the application.
+			_provider := provider.Service{
+				Context: e.Context,
+			}
+
 			// This code is setting up a transaction and checking for errors. If an error is encountered, the code will return and
 			// stop further execution. This is a way to make sure that the transaction is handled correctly, and that any
 			// potential errors are addressed.
-			transaction, err := e.setTransaction(&item)
+			transaction, err := _provider.WriteTransaction(&item)
 			if e.Context.Debug(err) {
 				return
 			}
@@ -408,9 +415,14 @@ func (e *Service) tron(chain *types.Chain) {
 		// if statement will be executed.
 		if item.GetValue() > 0 {
 
+			// Creates a service provider to be used in the given context, providing the necessary services for the application.
+			_provider := provider.Service{
+				Context: e.Context,
+			}
+
 			// This code is setting up a transaction for an item, and then checking for any errors that may occur during that
 			// transaction. If an error is detected, the code will return and terminate the transaction.
-			transaction, err := e.setTransaction(&item)
+			transaction, err := _provider.WriteTransaction(&item)
 			if e.Context.Debug(err) {
 				return
 			}
@@ -462,15 +474,22 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 	// such as keypair.CrossChain, query.Migrate, float64, blockchain.Transfer, and big.Int. These variables are used to
 	// store data that will be needed throughout the program, such as fees, convert, transfer, and wei.
 	var (
-		cross   keypair.CrossChain
-		migrate = query.Migrate{
-			Context: e.Context,
-		}
+		cross                  keypair.CrossChain
 		fees, charges, convert float64
 		repayment              bool
 		transfer               *blockchain.Transfer
 		wei                    *big.Int
 	)
+
+	// Creates a service provider to be used in the given context, providing the necessary services for the application.
+	_provider := provider.Service{
+		Context: e.Context,
+	}
+
+	// Service is a struct which holds the context to be used by the account operations.
+	_account := account.Service{
+		Context: e.Context,
+	}
 
 	// This code is establishing a connection between a client and a blockchain. The blockchain.Dial() function is used to
 	// create a new connection and returns a client instance and an error. The chain.GetRpc() and chain.GetPlatform()
@@ -483,7 +502,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 
 	// The purpose of this code is to retrieve entropy for a given userId and then check for errors using the
 	// Context.Debug() function. If an error is found, the function returns.
-	entropy, err := e.getEntropy(userId)
+	entropy, err := _account.QueryEntropy(userId)
 	if e.Context.Debug(err) {
 		return
 	}
@@ -554,7 +573,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 
 		// This code is checking for errors from the getContract() function, which is presumably retrieving a contract from a
 		// chain. If the function returns an error, the code will print the error and then exit the function.
-		contract, err := e.getContract(symbol, chain.GetId())
+		contract, err := _provider.QueryContract(symbol, chain.GetId())
 		if e.Context.Debug(err) {
 			return
 		}
@@ -631,7 +650,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			// This statement is used to add the reserve amount for a user to their account. The parameters passed to the
 			// setReserve function are the userId, owner, chain symbol, amount, platform, protocol, and balance type. The
 			// statement then checks for any errors that occurred while setting the reserve, and if there was an error, the statement will return.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), types.ProtocolMainnet, types.BalanceMinus); e.Context.Debug(err) {
+			if err := _provider.WriteReserve(userId, owner, chain.GetParentSymbol(), decimal.New(value).Add(fees).Float(), chain.GetPlatform(), types.ProtocolMainnet, types.BalanceMinus); e.Context.Debug(err) {
 				return
 			}
 
@@ -640,7 +659,7 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			// This code is a part of a function that is attempting to set a reserve for a user on a given platform and chain. The
 			// purpose of the if statement is to check if an error occurs when the reserve is being set. If an error occurs, the
 			// function will return and stop executing. The e.Context.Debug(err) is used to log the error, so that it can be investigated later.
-			if err := e.setReserve(userId, owner, chain.GetParentSymbol(), value, chain.GetPlatform(), types.ProtocolMainnet, types.BalanceMinus); e.Context.Debug(err) {
+			if err := _provider.WriteReserve(userId, owner, chain.GetParentSymbol(), value, chain.GetPlatform(), types.ProtocolMainnet, types.BalanceMinus); e.Context.Debug(err) {
 				return
 			}
 		}
@@ -652,23 +671,23 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 
 		// This code is checking to see if a reserve is set for a given userId, owner, chain symbol, fees, platform, and
 		// balance. If the reserve is set, it will continue the code, but if there is an error, it will debug the error and then return.
-		if err := e.setReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), types.ProtocolMainnet, types.BalanceMinus); e.Context.Debug(err) {
+		if err := _provider.WriteReserve(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), types.ProtocolMainnet, types.BalanceMinus); e.Context.Debug(err) {
 			return
 		}
 
 		// Update the reserve account, the amount that was deposited for the withdrawal of the token is converted and debited in a partial amount, excluding commission, for example:
 		// (fee: 0.006 eth) * (price: 2450 tst) = 14.7 tst; (value: 1000 - fees: 14.7 tst = 985.3 tst); This amount is 985.3 tst and will be overwritten without commission.
-		if err := e.setReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, types.BalanceMinus); e.Context.Debug(err) {
+		if err := _provider.WriteReserve(userId, owner, symbol, decimal.New(value).Sub(convert).Float(), chain.GetPlatform(), protocol, types.BalanceMinus); e.Context.Debug(err) {
 			return
 		}
 
 		// The purpose of this code is to check if the value of reverse is greater than or equal to the fees. The reverse
 		// variable is set to the return value of the function e.getReverse(), which takes four parameters: userId, owner, symbol, and chain.GetPlatform().
-		if reverse := e.getReverse(userId, owner, chain.GetParentSymbol(), chain.GetPlatform()); reverse >= fees {
+		if reverse := _provider.QueryReverse(userId, owner, chain.GetParentSymbol(), chain.GetPlatform()); reverse >= fees {
 
 			// This code is used to set a reverse transaction for the given user, owner, symbol, fees, platform and balance type.
 			// If there is an error in setting the reverse transaction, the error is logged and the code returns.
-			if err := e.setReverse(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), types.BalanceMinus); e.Context.Debug(err) {
+			if err := _provider.WriteReverse(userId, owner, chain.GetParentSymbol(), fees, chain.GetPlatform(), types.BalanceMinus); e.Context.Debug(err) {
 				return
 			}
 
@@ -710,13 +729,17 @@ func (e *Service) transfer(userId, txId int64, symbol string, to string, value, 
 			return
 		}
 
-		go migrate.SendMail(userId, "withdrawal", value, symbol)
+		_query := query.Migrate{
+			Context: e.Context,
+		}
+
+		go _query.SendMail(userId, "withdrawal", value, symbol)
 	}
 
 	// This code is making sure that a reserve is unlocked in order to allow a user with a given ID, symbol, platform, and
 	// protocol to access it. The "if err" statement is checking for any errors that might occur when attempting to set the
 	// reserve unlock. If an error is encountered, the code will return, otherwise it will continue with execution.
-	if err := e.setReserveUnlock(userId, symbol, chain.GetPlatform(), protocol); e.Context.Debug(err) {
+	if err := _provider.WriteReserveUnlock(userId, symbol, chain.GetPlatform(), protocol); e.Context.Debug(err) {
 		return
 	}
 }
@@ -731,10 +754,15 @@ func (e *Service) transferError(id, userId int64, symbol, platform, protocol str
 	// message broker. It checks for an error and returns true if there is one.
 	if err != nil {
 
+		// Creates a service provider to be used in the given context, providing the necessary services for the application.
+		_provider := provider.Service{
+			Context: e.Context,
+		}
+
 		// This code is making sure that a reserve is unlocked in order to allow a user with a given ID, symbol, platform, and
 		// protocol to access it. The "if err" statement is checking for any errors that might occur when attempting to set the
 		// reserve unlock. If an error is encountered, the code will return, otherwise it will continue with execution.
-		if err := e.setReserveUnlock(userId, symbol, platform, protocol); e.Context.Debug(err) {
+		if err := _provider.WriteReserveUnlock(userId, symbol, platform, protocol); e.Context.Debug(err) {
 			return true
 		}
 

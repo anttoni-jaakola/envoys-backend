@@ -1,0 +1,237 @@
+syntax = "proto3";
+
+package pb.provider;
+
+option go_package = "server/proto/v2/pbprovider";
+
+import "google/api/annotations.proto";
+import "server/types/types.proto";
+
+service Api {
+  rpc GetSymbol (GetRequestSymbol) returns (ResponseSymbol) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-symbol",
+      body: "*"
+    };
+  }
+  rpc GetMarkers (GetRequestMarkers) returns (ResponseMarker) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-markers",
+      body: "*"
+    };
+  }
+  rpc GetAssets (GetRequestAssets) returns (ResponseAsset) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-assets",
+      body: "*"
+    };
+  }
+  rpc SetAsset (SetRequestAsset) returns (ResponseAsset) {
+    option (google.api.http) = {
+      post: "/v2/provider/set-asset",
+      body: "*"
+    };
+  }
+  rpc GetAsset (GetRequestAsset) returns (ResponseAsset) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-asset",
+      body: "*"
+    };
+  }
+  rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-pairs",
+      body: "*"
+    };
+  }
+  rpc GetPair (GetRequestPair) returns (ResponsePair) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-pair",
+      body: "*"
+    };
+  }
+  rpc GetTicker (GetRequestTicker) returns (ResponseTicker) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-ticker",
+      body: "*",
+      additional_bindings {
+        get: "/v2/provider/get-ticker"
+      }
+    };
+  }
+  rpc SetTicker (SetRequestTicker) returns (ResponseTicker) {
+    option (google.api.http) = {
+      post: "/v2/provider/set-ticker",
+      body: "*"
+    };
+  }
+  rpc GetPrice (GetRequestPrice) returns (ResponsePrice) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-price",
+      body: "*",
+      additional_bindings {
+        get: "/v2/provider/get-price"
+      }
+    };
+  }
+  rpc GetOrders (GetRequestOrders) returns (ResponseOrder) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-orders",
+      body: "*"
+    };
+  }
+  rpc SetOrder (SetRequestOrder) returns (ResponseOrder) {
+    option (google.api.http) = {
+      post: "/v2/provider/set-order",
+      body: "*"
+    };
+  }
+  rpc CancelOrder (CancelRequestOrder) returns (ResponseOrder) {
+    option (google.api.http) = {
+      post: "/v2/provider/cancel-order",
+      body: "*"
+    };
+  }
+  rpc GetTrades (GetRequestTrades) returns (ResponseTrade) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-trades",
+      body: "*"
+    };
+  }
+  rpc GetTransactions (GetRequestTransactions) returns (ResponseTransaction) {
+    option (google.api.http) = {
+      post: "/v2/provider/get-transactions",
+      body: "*"
+    };
+  }
+}
+
+message GetRequestTransactions {
+  int64 id = 1;
+  int64 limit = 2;
+  int64 page = 3;
+  string symbol = 4;
+  string search = 5;
+  string assignment = 6;
+}
+message ResponseTransaction {
+  repeated types.Transaction fields = 1;
+  int32 count = 2;
+}
+
+message GetRequestTrades {
+  bool owner = 1;
+  int64 limit = 2;
+  int64 order_id = 3;
+  string assigning = 4;
+}
+message ResponseTrade {
+  repeated types.Trade fields = 1;
+}
+
+message SetRequestOrder {
+  double price = 1;
+  double quantity = 2;
+  string base_unit = 3;
+  string quote_unit = 4;
+  string trading = 5;
+  string assigning = 6;
+  string type = 7;
+}
+message CancelRequestOrder {
+  int64 id = 1;
+}
+message GetRequestOrders {
+  bool owner = 1;
+  int64 user_id = 2;
+  int64 limit = 3;
+  int64 page = 4;
+  string base_unit = 5;
+  string quote_unit = 6;
+  string assigning = 7;
+  string status = 8;
+  string type = 9;
+}
+message ResponseOrder {
+  repeated types.Order fields = 1;
+  double volume = 2;
+  bool success = 3;
+  int32 count = 4;
+}
+
+message GetRequestSymbol {
+  string base_unit = 1;
+  string quote_unit = 2;
+}
+message ResponseSymbol {
+  bool success = 1;
+}
+
+message GetRequestMarkers {
+  string type = 1;
+}
+message ResponseMarker {
+  repeated string fields = 1;
+}
+
+message GetRequestPrice{
+  string base_unit = 1;
+  string quote_unit = 2;
+}
+message ResponsePrice {
+  double price = 1;
+}
+
+message GetRequestAssets {
+  string type = 1;
+  string group = 2;
+}
+message GetRequestAsset {
+  string symbol = 1;
+  string type = 2;
+}
+message SetRequestAsset {
+  string symbol = 1;
+  string platform = 2;
+  string protocol = 3;
+  string group = 4;
+  string type = 5;
+}
+message ResponseAsset {
+  repeated types.Asset fields = 1;
+  string address = 2;
+  bool success = 3;
+}
+
+message GetRequestPairs {
+  string symbol = 1;
+  string type = 2;
+}
+message GetRequestPair {
+  string base_unit = 1;
+  string quote_unit = 2;
+}
+message ResponsePair {
+  repeated types.Pair fields = 1;
+}
+
+message GetRequestTicker {
+  int64 limit = 1;
+  int64 from = 2;
+  int64 to = 3;
+  string base_unit = 4;
+  string quote_unit = 5;
+  string resolution = 6;
+}
+message SetRequestTicker {
+  string key = 1;
+  double price = 2;
+  double value = 3;
+  string base_unit = 4;
+  string quote_unit = 5;
+  string assigning = 6;
+}
+message ResponseTicker {
+  repeated types.Ticker fields = 1;
+  types.Stats stats = 2;
+}

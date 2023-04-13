@@ -1,4 +1,4 @@
-create table if not exists public.withdraws
+create table if not exists public.transfer
 (
     id        serial,
     quantity  numeric(20, 18)          default 0.000000000000000000  not null,
@@ -10,9 +10,9 @@ create table if not exists public.withdraws
     create_at timestamp with time zone default CURRENT_TIMESTAMP
 );
 
-alter table public.withdraws
+alter table public.transfer
     owner to envoys;
 
-alter table public.withdraws
-    add constraint withdraws_pkey
+alter table public.transfer
+    add constraint transfer_pkey
         primary key (id);

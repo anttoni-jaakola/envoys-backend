@@ -227,6 +227,12 @@ func (app *Context) Write() *Context {
 		logrus.Fatal(err)
 	}
 
+	// Ping the database to ensure a connection is successful.
+	err = app.Db.Ping()
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
 	// The code above is creating a new redis client connection with the specified Redis host, password, and DB from the
 	// app. It allows the app to interact with Redis and perform operations such as retrieving or setting data.
 	app.RedisClient = redis.NewClient(&redis.Options{

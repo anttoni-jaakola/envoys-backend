@@ -10,10 +10,10 @@ type Service struct {
 	Context *assets.Context
 }
 
-// getPrice - This function is used to calculate the price ratio between two different units of a currency. It takes the base and
+// queryPrice - This function is used to calculate the price ratio between two different units of a currency. It takes the base and
 // quote units as arguments and returns the ratio as a float64 and an error (if any). It uses the database to query the
 // price of the two units, then calculates the ratio based on the prices.
-func (i *Service) getPrice(base, quote string) (ratio float64, err error) {
+func (i *Service) queryPrice(base, quote string) (ratio float64, err error) {
 
 	// The purpose of this code is to create a variable called "scales" that is an empty slice of type float64. This
 	// variable can then be used to store floats in a list.

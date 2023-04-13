@@ -5,24 +5,26 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/gateway"
 	admin_pbaccount "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbaccount"
 	admin_pbads "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbads"
+	admin_pbmarket "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbmarket"
 	admin_pbspot "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbspot"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbads"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbauth"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
-	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbohlcv"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbspot"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbstock"
 	admin_account "github.com/cryptogateway/backend-envoys/server/service/v1/admin.account"
 	admin_ads "github.com/cryptogateway/backend-envoys/server/service/v1/admin.ads"
+	admin_market "github.com/cryptogateway/backend-envoys/server/service/v1/admin.market"
 	admin_spot "github.com/cryptogateway/backend-envoys/server/service/v1/admin.spot"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/ads"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/auth"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/index"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/kyc"
-	"github.com/cryptogateway/backend-envoys/server/service/v2/ohlcv"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/provider"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/spot"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/stock"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -194,20 +196,21 @@ func Register(option *assets.Context) {
 		serviceSpot.Initialization()
 		pbspot.RegisterApiServer(srv, &serviceSpot)
 
-		serviceStock := stock.Service{Context: option}
-		serviceStock.Initialization()
-		pbstock.RegisterApiServer(srv, &serviceStock)
+		serviceProvider := provider.Service{Context: option}
+		serviceProvider.Initialization()
+		pbprovider.RegisterApiServer(srv, &provider.Service{Context: option})
 
+		pbstock.RegisterApiServer(srv, &stock.Service{Context: option})
 		pbindex.RegisterApiServer(srv, &index.Service{Context: option})
 		pbauth.RegisterApiServer(srv, &auth.Service{Context: option})
 		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
 		pbads.RegisterApiServer(srv, &ads.Service{Context: option})
 		pbkyc.RegisterApiServer(srv, &kyc.Service{Context: option})
-		pbohlcv.RegisterApiServer(srv, &ohlcv.Service{Context: option})
 
 		admin_pbaccount.RegisterApiServer(srv, &admin_account.Service{Context: option})
 		admin_pbads.RegisterApiServer(srv, &admin_ads.Service{Context: option})
 		admin_pbspot.RegisterApiServer(srv, &admin_spot.Service{Context: option})
+		admin_pbmarket.RegisterApiServer(srv, &admin_market.Service{Context: option})
 
 		// Reflection.Register is a method that registers a service with a gRPC server. This method is used to create a service
 		// endpoint to allow clients to communicate with the server. The method sets up a connection between the server and the

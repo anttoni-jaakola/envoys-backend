@@ -8,36 +8,6 @@ import "google/api/annotations.proto";
 import "server/types/types.proto";
 
 service Api {
-    rpc GetMarketPrice (GetRequestPrice) returns (ResponsePrice) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/get-market-price",
-            body: "*"
-        };
-    }
-    rpc SetAsset (SetRequestAsset) returns (ResponseAsset) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/set-asset",
-            body: "*"
-        };
-    }
-    rpc GetAsset (GetRequestAsset) returns (ResponseAsset) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/get-asset",
-            body: "*"
-        };
-    }
-    rpc GetAssets (GetRequestAssets) returns (ResponseAsset) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/get-assets",
-            body: "*"
-        };
-    }
-    rpc DeleteAsset (DeleteRequestAsset) returns (ResponseAsset) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/delete-asset",
-            body: "*"
-        };
-    }
     rpc GetChains (GetRequestChains) returns (ResponseChain) {
         option (google.api.http) = {
             post: "/v1/admin/spot/get-chains",
@@ -59,30 +29,6 @@ service Api {
     rpc DeleteChain (DeleteRequestChain) returns (ResponseChain) {
         option (google.api.http) = {
             post: "/v1/admin/spot/delete-chain",
-            body: "*"
-        };
-    }
-    rpc GetPairs (GetRequestPairs) returns (ResponsePair) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/get-pairs",
-            body: "*"
-        };
-    }
-    rpc GetPair (GetRequestPair) returns (ResponsePair) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/get-pair",
-            body: "*"
-        };
-    }
-    rpc SetPair (SetRequestPair) returns (ResponsePair) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/set-pair",
-            body: "*"
-        };
-    }
-    rpc DeletePair (DeleteRequestPair) returns (ResponsePair) {
-        option (google.api.http) = {
-            post: "/v1/admin/spot/delete-pair",
             body: "*"
         };
     }
@@ -164,15 +110,6 @@ message ResponseBalance {
     int32 count = 2;
 }
 
-// Price structure.
-message GetRequestPrice {
-    string base_unit = 1;
-    string quote_unit = 2;
-}
-message ResponsePrice {
-    double price = 1;
-}
-
 // Contract structure.
 message GetRequestContracts {
     int64 limit = 1;
@@ -212,52 +149,6 @@ message DeleteRequestChain {
 }
 message ResponseChain {
     repeated types.Chain fields = 1;
-    int32 count = 2;
-    bool success = 3;
-}
-
-// Assets structure.
-message GetRequestAssets {
-    string search = 1;
-    int64 limit = 2;
-    int64 page = 3;
-}
-message GetRequestAsset {
-    string symbol = 1;
-}
-message SetRequestAsset {
-    string symbol = 1;
-    bytes image = 2;
-    types.Asset asset = 3;
-}
-message DeleteRequestAsset {
-    string symbol = 1;
-}
-message ResponseAsset {
-    repeated types.Asset fields = 1;
-    string address = 2;
-    bool success = 3;
-    int32 count = 4;
-}
-
-// Pair structure.
-message GetRequestPairs {
-    int64 limit = 1;
-    int64 page = 2;
-    string search = 3;
-}
-message GetRequestPair {
-    int64 id = 1;
-}
-message SetRequestPair {
-    int64 id = 1;
-    types.Pair pair = 2;
-}
-message DeleteRequestPair {
-    int64 id = 1;
-}
-message ResponsePair {
-    repeated types.Pair fields = 1;
     int32 count = 2;
     bool success = 3;
 }

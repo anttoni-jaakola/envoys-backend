@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
+	"github.com/cryptogateway/backend-envoys/server/types"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -168,7 +169,7 @@ func (p *Api) CreateApplicants(param map[string]string) (*pbkyc.ResponseApplican
 // CreateForm - the purpose of this code is to make an HTTP request to a given URL with a set of parameters, decode the request body
 // in the JSON format, and check if the response is valid. If it is valid, it will return the response, otherwise, it
 // will return an error message.
-func (p *Api) CreateForm(param map[string]string, types pbkyc.Type) (*pbkyc.FormResponse, error) {
+func (p *Api) CreateForm(param map[string]string, _type string) (*pbkyc.FormResponse, error) {
 
 	// This is a variable declaration, which is used to create a variable named "response" of type "FormResponse". The
 	// purpose of this is to allocate memory and store a value, which can be accessed and used in the program.
@@ -180,12 +181,12 @@ func (p *Api) CreateForm(param map[string]string, types pbkyc.Type) (*pbkyc.Form
 	// statement is used to evaluate an expression and depending on the value of the expression, it will perform a different
 	// code block. In this case, the expression is the type of form and depending on the type of form, the response.FormId
 	// will be set to the appropriate key.
-	switch types {
-	case pbkyc.Type_STANDARD:
+	switch _type {
+	case types.KYCLevel1:
 		response.FormId = p.Kyc.Forms.S.Key
-	case pbkyc.Type_PREMIUM:
+	case types.KYCLevel2:
 		response.FormId = p.Kyc.Forms.P.Key
-	case pbkyc.Type_CORPORATE:
+	case types.KYCLevel3:
 		response.FormId = p.Kyc.Forms.C.Key
 	}
 
