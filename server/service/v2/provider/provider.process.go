@@ -24,7 +24,7 @@ func (a *Service) trade(order *types.Order, assigning string) {
 	// parameters given to query for a specific set of data from the "orders" table. It is using the $1, $2, $3, $4, $5 and
 	// $6 to represent the given parameters. The query is also ordering the results by the "id" column. It is checking for
 	// errors and deferring the closing of the rows.
-	rows, err := a.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and type = $5 and status = $6 order by id`, assigning, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), order.GetType(), types.StatusPending)
+	rows, err := a.Context.Db.Query(`select id, assigning, base_unit, quote_unit, value, quantity, price, user_id, type, status from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and user_id != $4 and type = $5 and status = $6 order by id`, assigning, order.GetBaseUnit(), order.GetQuoteUnit(), order.GetUserId(), order.GetType(), types.StatusPending)
 	if a.Context.Debug(err) {
 		return
 	}
@@ -43,7 +43,7 @@ func (a *Service) trade(order *types.Order, assigning string) {
 		// This code is attempting to scan the rows of a database table, assigning each column value to a variable (item.Id,
 		// item.Assigning, etc.). The if statement is checking for any errors that might occur when scanning the rows and
 		// returning any errors that might be present.
-		if err = rows.Scan(&item.Id, &item.Assigning, &item.BaseUnit, &item.QuoteUnit, &item.Value, &item.Quantity, &item.Price, &item.UserId, &item.Status); err != nil {
+		if err = rows.Scan(&item.Id, &item.Assigning, &item.BaseUnit, &item.QuoteUnit, &item.Value, &item.Quantity, &item.Price, &item.UserId, &item.Type, &item.Status); err != nil {
 			return
 		}
 
