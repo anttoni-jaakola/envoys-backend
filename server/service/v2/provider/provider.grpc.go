@@ -656,12 +656,22 @@ func (a *Service) GetPairs(_ context.Context, req *pbprovider.GetRequestPairs) (
 			pair.Price = price
 		}
 
+		// _status is used to indicate the current status of a process.
+		var (
+			_status bool
+		)
+
 		// This code executes a database query to retrieve the status of an asset using the provided symbol, base unit, and quote unit values.
 		// If the asset status is retrieved successfully, it will be saved in the pair.Status variable, otherwise the function will return an error.
 		// The code demonstrates the use of the QueryRow method to execute the query and the Scan method to scan the query result.
 		// Error handling in this code ensures that the function will only return an error if something goes wrong during the query execution.
-		if err := a.Context.Db.QueryRow("select not (false in (select status from assets where symbol in ($1, $2))) as result;", pair.GetBaseUnit(), pair.GetQuoteUnit()).Scan(&pair.Status); err != nil {
+		if err := a.Context.Db.QueryRow("select not (false in (select status from assets where symbol in ($1, $2))) as result;", pair.GetBaseUnit(), pair.GetQuoteUnit()).Scan(&_status); err != nil {
 			return &response, err
+		}
+
+		// If '_status' is false, set the 'Status' property of 'pair' to '_status'.
+		if !_status {
+			pair.Status = _status
 		}
 
 		// This statement is appending the value of the variable "pair" to the list of fields in the "response" variable. This
