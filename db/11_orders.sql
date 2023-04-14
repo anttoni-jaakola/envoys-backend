@@ -12,6 +12,7 @@ create table if not exists public.orders
     base_unit  varchar,
     quote_unit varchar,
     user_id    integer,
+    extra      jsonb                    default '{}'::jsonb                  not null,
     type       varchar                  default 'spot'::character varying    not null,
     trading    varchar                  default 'limit'::character varying   not null,
     status     varchar                  default 'pending'::character varying not null,
