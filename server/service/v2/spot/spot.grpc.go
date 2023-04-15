@@ -190,7 +190,7 @@ func (e *Service) SetWithdraw(ctx context.Context, req *pbspot.SetRequestWithdra
 
 	// This if statement is checking to see if the address given by the request is the same as the address that it is attempting to send the request to.
 	// If they are the same, the code will return an error indicating that the user cannot send from an address to the same address.
-	if address := _provider.QueryAddress(auth, req.GetSymbol(), req.GetPlatform(), contract.GetProtocol()); address == strings.ToLower(req.GetAddress()) {
+	if address := _provider.QueryAddress(auth, req.GetPlatform()); address == strings.ToLower(req.GetAddress()) {
 		return &response, status.Error(758690, "your cannot send from an address to the same address")
 	}
 

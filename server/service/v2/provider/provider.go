@@ -465,18 +465,14 @@ func (a *Service) QueryPair(id int64, _type string, status bool) (*types.Pair, e
 }
 
 // QueryAddress - This function is used to get the address associated with a userId, symbol, platform and protocol. It does this by
-// querying the assets and wallets tables in the database for a matching userId, symbol, platform, and protocol, and
+// querying the assets and wallets tables in the database for a matching userId, symbol and platform, and
 // returns the address associated with the query if one is found.
-func (a *Service) QueryAddress(userId int64, symbol, platform, protocol string) (address string) {
+func (a *Service) QueryAddress(userId int64, platform string) (address string) {
 
-	if len(protocol) == 0 {
-		protocol = types.ProtocolMainnet
-	}
-
-	// This statement is used to query a database to get an address associated with a user, platform, protocol, and symbol.
+	// This statement is used to query a database to get an address associated with a user, platform and symbol.
 	// The purpose of using `coalesce` is to return a blank string if the address is null. The purpose of using `QueryRow`
 	// is to limit the query to a single row. The purpose of using `Scan` is to store the result of the query into the `address` variable.
-	_ = a.Context.Db.QueryRow("select coalesce(w.address, '') from balances a inner join wallets w on w.platform = $1 and w.protocol = $2 and w.symbol = a.symbol and w.user_id = a.user_id where a.symbol = $3 and a.user_id = $4 and a.type = $5", platform, protocol, symbol, userId, types.TypeSpot).Scan(&address)
+	_ = a.Context.Db.QueryRow("select coalesce(w.address, '') from balances a inner join wallets w on w.platform = $1 and w.user_id = a.user_id where a.user_id = $2 and a.type = $3", platform, userId, types.TypeSpot).Scan(&address)
 	return address
 }
 

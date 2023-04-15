@@ -193,9 +193,8 @@ message GetRequestAsset {
 message SetRequestAsset {
   string symbol = 1;
   string platform = 2;
-  string protocol = 3;
-  string group = 4;
-  string type = 5;
+  string group = 3;
+  string type = 4;
 }
 message ResponseAsset {
   repeated types.Asset fields = 1;

@@ -7,11 +7,9 @@ create table if not exists public.wallets
             unique
         constraint wallets_id_key1
             unique,
-    symbol   varchar,
     address  varchar,
     user_id  integer,
-    platform varchar default 'ethereum'::character varying not null,
-    protocol varchar default 'erc20'::character varying    not null
+    platform varchar default 'ethereum'::character varying not null
 );
 
 alter table public.wallets

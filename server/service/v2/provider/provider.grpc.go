@@ -315,12 +315,6 @@ func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset)
 			return &response, err
 		}
 
-		// The purpose of the code snippet is to check whether the protocol (passed in as "req.GetProtocol()") is valid. If it
-		// is not valid, then an error is returned and the response is returned.
-		if err := types.Protocol(req.GetProtocol()); err != nil {
-			return &response, err
-		}
-
 		// This code is used to get entropy from a given authentication (auth) and assign it to the variable entropy. If an
 		// error is encountered during this process, the code returns a response and an error is logged.
 		entropy, err := _account.QueryEntropy(auth)
@@ -350,12 +344,12 @@ func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset)
 
 			// The code above is checking if the address returned from the e.getAddress() method is empty. If the address is
 			// empty, the code inside the if statement will be executed.
-			if address := a.QueryAddress(auth, req.GetSymbol(), req.GetPlatform(), req.GetProtocol()); len(address) == 0 {
+			if address := a.QueryAddress(auth, req.GetPlatform()); len(address) == 0 {
 
 				// This code is performing an SQL INSERT statement to add a new record to the 'wallets' table. The values being
-				// inserted are the address, symbol, platform, protocol, and user_id from the request parameters. The query is then
+				// inserted are the address, platform, and user_id from the request parameters. The query is then
 				// executed and if there is an error, an error message is returned.
-				if _, err = a.Context.Db.Exec("insert into wallets (address, symbol, platform, protocol, user_id) values ($1, $2, $3, $4, $5)", response.GetAddress(), req.GetSymbol(), req.GetPlatform(), req.GetProtocol(), auth); err != nil {
+				if _, err = a.Context.Db.Exec("insert into wallets (address, platform, user_id) values ($1, $2, $3)", response.GetAddress(), req.GetPlatform(), auth); err != nil {
 					return &response, err
 				}
 
@@ -373,9 +367,9 @@ func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset)
 		}
 
 		// This code is used to insert values into the wallets table in a database. The values being inserted are the address,
-		// symbol, platform, protocol, and user_id, which are passed in as arguments. It checks for any errors that may occur
+		// platform, and user_id, which are passed in as arguments. It checks for any errors that may occur
 		// while inserting the values and returns an error if one is encountered.
-		if _, err = a.Context.Db.Exec("insert into wallets (address, symbol, platform, protocol, user_id) values ($1, $2, $3, $4, $5)", response.GetAddress(), req.GetSymbol(), req.GetPlatform(), req.GetProtocol(), auth); err != nil {
+		if _, err = a.Context.Db.Exec("insert into wallets (address, platform, user_id) values ($1, $2, $3)", response.GetAddress(), req.GetPlatform(), auth); err != nil {
 			return &response, err
 		}
 
@@ -482,9 +476,9 @@ func (a *Service) GetAsset(ctx context.Context, req *pbprovider.GetRequestAsset)
 				switch row.GetGroup() {
 				case types.GroupCrypto:
 
-					// The purpose of this code is to get the address for a particular symbol, platform, and protocol from an external
+					// The purpose of this code is to get the address for a particular platform from an external
 					// source (e.getAddress) and assign the address to the chain.Address variable.
-					if chain.Address = a.QueryAddress(auth, req.GetSymbol(), chain.GetPlatform(), chain.Contract.GetProtocol()); len(chain.Address) > 0 {
+					if chain.Address = a.QueryAddress(auth, chain.GetPlatform()); len(chain.Address) > 0 {
 
 						//The purpose of this code is to query a database for a row that matches the given parameters, which include the symbol, user_id, and type. It then stores the result in the 'chain.Exist' boolean variable.
 						_ = a.Context.Db.QueryRow("select exists(select value as balance from balances where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, types.TypeSpot).Scan(&chain.Exist)
