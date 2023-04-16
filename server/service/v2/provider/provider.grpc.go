@@ -268,10 +268,10 @@ func (a *Service) GetMarkers(_ context.Context, req *pbprovider.GetRequestMarker
 // into the database. It then sets the success to true and returns the response and no error.
 func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset) (*pbprovider.ResponseAsset, error) {
 
-	// The purpose of this code is to declare a variable called "response" of type "pbprovider.ResponseAsset". This variable
-	// will be used to store data that is returned from a request made to a pbprovider API.
+	// Response and cross are used to store various variables used in pbprovider.ResponseAsset and keypair.CrossChain respectively.
 	var (
 		response pbprovider.ResponseAsset
+		cross    keypair.CrossChain
 	)
 
 	// The purpose of this code is to retrieve the authentication information associated with the given context (ctx). If
@@ -291,18 +291,11 @@ func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset)
 		return &response, err
 	}
 
-	// The switch statement is used to check the value of the req.GetType() expression and then execute the relevant case
-	// statement depending on the result. The purpose of this is to allow the code to behave differently depending on the
-	// value of the expression. For example, if the value of req.GetType() is "fixed", it will run the first case
-	// statement, if it is "variable" it will run the second, and so on.
-	switch req.GetGroup() {
-	case types.GroupCrypto:
+	// CheckBalance attempts to detect if a balance entry exists for the given symbol, user_id and type, and returns the result in the Success field of the response.
+	_ = a.Context.Db.QueryRow("select exists(select value as balance from balances where symbol = $1 and user_id = $2 and type = $3)::bool", req.GetSymbol(), auth, req.GetType()).Scan(&response.Success)
 
-		// The purpose of this code is to declare a variable named "cross" and set it to a CrossChain object. This allows the
-		// code to reference the CrossChain object and use it in the program.
-		var (
-			cross keypair.CrossChain
-		)
+	// If the request group is of the type 'GroupCrypto', then perform the code following this comment.
+	if req.GetGroup() == types.GroupCrypto {
 
 		// Service account is a Service struct used by account package to store context.
 		_account := account.Service{
@@ -328,61 +321,28 @@ func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset)
 			return &response, err
 		}
 
-		// This code is querying a database for an asset with a given symbol and user_id. The row variable is used to store the
-		// result of the query, and err is used to store any errors that may occur. The if err != nil statement checks for any
-		// errors that may have occurred and, if one is found, the error is returned. To defer row.Close() statement closes
-		// the database query at the end of the function, regardless of how the function ends.
-		row, err := a.Context.Db.Query(`select id from balances where symbol = $1 and type = $2 and user_id = $3`, req.GetSymbol(), req.GetType(), auth)
-		if err != nil {
-			return &response, err
-		}
-		defer row.Close()
+		// The code above is checking if the address returned from the e.getAddress() method is empty. If the address is
+		// empty, the code inside the if statement will be executed.
+		if address := a.QueryAddress(auth, req.GetPlatform()); len(address) == 0 {
 
-		// The if row.Next() statement is used to check if there is another row available in a result set from a database
-		// query. If there is another row, it returns true and can be used to loop through the result set.
-		if row.Next() {
-
-			// The code above is checking if the address returned from the e.getAddress() method is empty. If the address is
-			// empty, the code inside the if statement will be executed.
-			if address := a.QueryAddress(auth, req.GetPlatform()); len(address) == 0 {
-
-				// This code is performing an SQL INSERT statement to add a new record to the 'wallets' table. The values being
-				// inserted are the address, platform, and user_id from the request parameters. The query is then
-				// executed and if there is an error, an error message is returned.
-				if _, err = a.Context.Db.Exec("insert into wallets (address, platform, user_id) values ($1, $2, $3)", response.GetAddress(), req.GetPlatform(), auth); err != nil {
-					return &response, err
-				}
-
-				return &response, nil
+			// This code is performing an SQL INSERT statement to add a new record to the 'wallets' table. The values being
+			// inserted are the address, platform, and user_id from the request parameters. The query is then
+			// executed and if there is an error, an error message is returned.
+			if _, err = a.Context.Db.Exec("insert into wallets (address, platform, user_id) values ($1, $2, $3)", response.GetAddress(), req.GetPlatform(), auth); err != nil {
+				return &response, err
 			}
-
-			return &response, status.Error(700990, "the asset address has already been generated")
 		}
+	}
 
-		// This code snippet is used to execute an SQL query to insert a row of data into the 'assets' table. The first
-		// parameter is the user_id from the auth variable, and the second parameter is the symbol from the req.GetSymbol()
-		// variable. If there is an error during the execution of the query, an error will be returned.
-		if _, err = a.Context.Db.Exec("insert into balances (user_id, symbol) values ($1, $2);", auth, req.GetSymbol()); err != nil {
-			return &response, err
-		}
-
-		// This code is used to insert values into the wallets table in a database. The values being inserted are the address,
-		// platform, and user_id, which are passed in as arguments. It checks for any errors that may occur
-		// while inserting the values and returns an error if one is encountered.
-		if _, err = a.Context.Db.Exec("insert into wallets (address, platform, user_id) values ($1, $2, $3)", response.GetAddress(), req.GetPlatform(), auth); err != nil {
-			return &response, err
-		}
-
-	case types.GroupFiat, types.GroupAction:
+	// Check if the response was successful, if not return an error message.
+	if !response.GetSuccess() {
 
 		// The purpose of this code is to set the asset for the given symbol, using the provided authentication details. If
 		// there is an error encountered while attempting to set the asset, the response variable is returned and the error is logged.
 		if err := a.writeAsset(req.GetSymbol(), req.GetType(), auth, true); err != nil {
 			return &response, err
 		}
-
 	}
-	response.Success = true
 
 	return &response, nil
 }

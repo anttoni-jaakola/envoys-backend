@@ -150,7 +150,6 @@ func (e *Service) SetAsset(ctx context.Context, req *admin_pbmarket.SetRequestAs
 		// does this by checking if the currency symbol from the request is different from the existing currency symbol, and if
 		// so, it updates the associated tables with the new symbol.
 		if req.GetSymbol() != req.Asset.GetSymbol() {
-			_, _ = e.Context.Db.Exec("update wallets set symbol = $2 where symbol = $1", req.GetSymbol(), req.Asset.GetSymbol())
 			_, _ = e.Context.Db.Exec("update balances set symbol = $2 where symbol = $1 and type = $3", req.GetSymbol(), req.Asset.GetSymbol(), asset.GetType())
 			_, _ = e.Context.Db.Exec("update ohlcv set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Asset.GetSymbol())
 			_, _ = e.Context.Db.Exec("update trades set base_unit = coalesce(nullif(base_unit, $1), $2), quote_unit = coalesce(nullif(quote_unit, $1), $2) where base_unit = $1 or quote_unit = $1", req.GetSymbol(), req.Asset.GetSymbol())
@@ -423,7 +422,6 @@ func (e *Service) DeleteAsset(ctx context.Context, req *admin_pbmarket.DeleteReq
 	// related data in other related tables.
 	if row, _ := _provider.QueryAsset(req.GetSymbol(), false); row.GetId() > 0 {
 		_, _ = e.Context.Db.Exec("delete from pairs where base_unit = $1 or quote_unit = $1", req.GetSymbol())
-		_, _ = e.Context.Db.Exec("delete from wallets where symbol = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from balances where symbol = $1 and type = $2", row.GetSymbol(), row.GetType())
 		_, _ = e.Context.Db.Exec("delete from ohlcv where base_unit = $1 or quote_unit = $1", row.GetSymbol())
 		_, _ = e.Context.Db.Exec("delete from trades where base_unit = $1 or quote_unit = $1", row.GetSymbol())

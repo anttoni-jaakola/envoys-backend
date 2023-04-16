@@ -166,7 +166,7 @@ func (e *Service) ethereum(chain *types.Chain) {
 								// This code is querying a database to locate a user ID associated with a wallet address, platform, and protocol.
 								// If a user ID is found and is greater than 0, then the item associated with that user is set to various values,
 								// such as symbol, protocol, chain ID, platform, financial type, transaction type, value, hash, and block.
-								if _ = e.Context.Db.QueryRow("select user_id from wallets where address = $1 and platform = $2 and protocol = $3", item.GetTo(), chain.GetPlatform(), contract.GetProtocol()).Scan(&item.UserId); item.GetUserId() > 0 {
+								if _ = e.Context.Db.QueryRow("select user_id from wallets where address = $1 and platform = $2", item.GetTo(), chain.GetPlatform()).Scan(&item.UserId); item.GetUserId() > 0 {
 
 									// This code is setting properties of an item object. Specifically, it is setting the symbol of a parent chain, the
 									// id of a chain, the platform, the financial type, the transaction type, the value, the hash, and the block.
@@ -388,7 +388,7 @@ func (e *Service) tron(chain *types.Chain) {
 								// protocol in order to update the item with symbol, protocol, chain id, platform, financial type, transaction
 								// type, value, hash and block. The if statement is used to check if the user_id is greater than 0, indicating
 								// that the query was successful and the item can be updated.
-								if _ = e.Context.Db.QueryRow("select user_id from wallets where address = $1 and platform = $2 and protocol = $3", item.GetTo(), chain.GetPlatform(), contract.GetProtocol()).Scan(&item.UserId); item.GetUserId() > 0 {
+								if _ = e.Context.Db.QueryRow("select user_id from wallets where address = $1 and platform = $2", item.GetTo(), chain.GetPlatform()).Scan(&item.UserId); item.GetUserId() > 0 {
 
 									// This code is setting properties of an item object. Specifically, it is setting the symbol of a parent chain, the
 									// id of a chain, the platform, the financial type, the transaction type, the value, the hash, and the block.

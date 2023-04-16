@@ -606,7 +606,6 @@ func (e *Service) DeleteContract(ctx context.Context, req *admin_pbspot.DeleteRe
 	// executes a series of SQL queries to delete the contract, its wallets, transactions, and reserves from the database.
 	if row, _ := _provider.QueryContractById(req.GetId()); row.GetId() > 0 {
 		_, _ = e.Context.Db.Exec("delete from contracts where id = $1", row.GetId())
-		_, _ = e.Context.Db.Exec("delete from wallets where symbol = $1 and protocol = $2", row.GetSymbol(), row.GetProtocol())
 		_, _ = e.Context.Db.Exec("delete from transactions where symbol = $1 and protocol = $2", row.GetSymbol(), row.GetProtocol())
 		_, _ = e.Context.Db.Exec("delete from reserves where symbol = $1 and protocol = $2", row.GetSymbol(), row.GetProtocol())
 	}
