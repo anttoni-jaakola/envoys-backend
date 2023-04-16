@@ -342,6 +342,8 @@ func (a *Service) SetAsset(ctx context.Context, req *pbprovider.SetRequestAsset)
 		if err := a.writeAsset(req.GetSymbol(), req.GetType(), auth, true); err != nil {
 			return &response, err
 		}
+
+		response.Success = true
 	}
 
 	return &response, nil
