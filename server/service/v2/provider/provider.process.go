@@ -37,8 +37,7 @@ func (a *Service) trade(order *types.Order, assigning string) {
 		// Item is a variable of type Order from the types package, used to store a reference to an Order.
 		// value is a variable of type float64, used to store a floating-point value.
 		var (
-			item  types.Order
-			value float64
+			item types.Order
 		)
 
 		// This code is attempting to scan the rows of a database table, assigning each column value to a variable (item.Id,
@@ -48,9 +47,9 @@ func (a *Service) trade(order *types.Order, assigning string) {
 			return
 		}
 
-		// Execute the database query and immediately check for any errors. This removes the need for an additional "if err != nil" check later.
-		if _ = a.Context.Db.QueryRow("select value from orders where id = $1 and type = $2 and status = $3", order.GetId(), order.GetType(), types.StatusPending).Scan(&value); value > 0 {
-			order.Value = value
+		// Check if the order is in a pending status and update the order value accordingly.
+		if row := a.queryOrder(order.GetId()); row.GetStatus() == types.StatusPending {
+			order.Value = row.GetValue()
 		}
 
 		// This switch statement is used to check for a match between the order and item prices, depending on the side of the
