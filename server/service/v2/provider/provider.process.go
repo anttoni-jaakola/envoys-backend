@@ -34,37 +34,24 @@ func (a *Service) trade(order *types.Order, assigning string) {
 	// the iterator to the next row in the result set, returning false when there are no more rows to iterate over.
 	for rows.Next() {
 
-		// The purpose of this line of code is to declare a variable named 'item' of type 'types.Order'. This will allow the
-		// programmer to use the 'item' variable to store data of type 'types.Order' in the program.
+		// Item is a variable of type Order from the types package, used to store a reference to an Order.
+		// value is a variable of type float64, used to store a floating-point value.
 		var (
-			item types.Order
+			item  types.Order
+			value float64
 		)
 
 		// This code is attempting to scan the rows of a database table, assigning each column value to a variable (item.Id,
 		// item.Assigning, etc.). The if statement is checking for any errors that might occur when scanning the rows and
 		// returning any errors that might be present.
-		if err = rows.Scan(&item.Id, &item.Assigning, &item.BaseUnit, &item.QuoteUnit, &item.Value, &item.Quantity, &item.Price, &item.UserId, &item.Type, &item.Status); err != nil {
+		if err = rows.Scan(&item.Id, &item.Assigning, &item.BaseUnit, &item.QuoteUnit, &item.Value, &item.Quantity, &item.Price, &item.UserId, &item.Type, &item.Status); a.Context.Debug(err) {
 			return
 		}
 
-		// This code is used to query a database for a specific row. The query is looking for an entry with a specific ID and
-		// status. The two parameters (order.GetId() and types.StatusPending) are used to filter the query results. The row
-		// variable will store the results of the query, and the err variable will store any errors that occur.
-		row, err := a.Context.Db.Query("select value from orders where id = $1 and status = $2 and type = $3", order.GetId(), types.StatusPending, types.TypeSpot)
-		if err != nil {
-			return
+		// Execute the database query and immediately check for any errors. This removes the need for an additional "if err != nil" check later.
+		if _ = a.Context.Db.QueryRow("select value from orders where id = $1 and type = $2 and status = $3", order.GetId(), order.GetType(), types.StatusPending).Scan(&value); value > 0 {
+			order.Value = value
 		}
-
-		// The purpose of this code is to check if there is any data in the "row" and if there is, attempt to scan it and get
-		// the "Value" from the row. If there is no data, then set the "Value" to 0. Finally, close the row to free up any resources.
-		if row.Next() {
-			if err = row.Scan(&order.Value); err != nil {
-				return
-			}
-		} else {
-			order.Value = 0
-		}
-		row.Close()
 
 		// This switch statement is used to check for a match between the order and item prices, depending on the side of the
 		// trade (bid or ask). If the order and item prices match, the trade process is replayed. If not, a message is logged
@@ -129,7 +116,7 @@ func (a *Service) trade(order *types.Order, assigning string) {
 
 	// The purpose of this code is to check for errors when using the rows.Err() function. It returns an error if there is
 	// one and returns the function if this is the case.
-	if err = rows.Err(); err != nil {
+	if err = rows.Err(); a.Context.Debug(err) {
 		return
 	}
 }
