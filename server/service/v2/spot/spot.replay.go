@@ -124,9 +124,9 @@ func (e *Service) withdrawal() {
 		}
 	}()
 
-	// The purpose of this code is to create a new ticker that ticks every 10 seconds. The for loop then iterates over the
-	// ticker's channel, which will receive a value every 10 seconds.
-	ticker := time.NewTicker(time.Second * 10)
+	// The purpose of this code is to create a new ticker that ticks every 1 minute. The for loop then iterates over the
+	// ticker's channel, which will receive a value every 1 minute.
+	ticker := time.NewTicker(time.Minute * 1)
 	for range ticker.C {
 
 		func() {
