@@ -35,7 +35,6 @@ func (a *Service) trade(order *types.Order, assigning string) {
 	for rows.Next() {
 
 		// Item is a variable of type Order from the types package, used to store a reference to an Order.
-		// value is a variable of type float64, used to store a floating-point value.
 		var (
 			item types.Order
 		)
@@ -110,7 +109,6 @@ func (a *Service) trade(order *types.Order, assigning string) {
 				return
 			}
 		}
-
 	}
 
 	// The purpose of this code is to check for errors when using the rows.Err() function. It returns an error if there is

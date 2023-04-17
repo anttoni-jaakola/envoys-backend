@@ -902,7 +902,7 @@ func (a *Service) WriteReverse(userId int64, address, symbol string, value float
 	// This code is performing an SQL query to insert data into a database table called "reserves". The data being inserted
 	// consists of user_id, symbol, platform, protocol, address, and value. If there is an error in executing the query, the
 	// function will return the error.
-	if _, err = a.Context.Db.Exec("insert into reserves (user_id, symbol, platform, protocol, address, value, reverse) values ($1, $2, $3, $4, $5, $6, $7)", userId, symbol, platform, types.ProtocolMainnet, address, value, value); err != nil {
+	if _, err = a.Context.Db.Exec("insert into reserves (user_id, symbol, platform, protocol, address, reverse) values ($1, $2, $3, $4, $5, $6)", userId, symbol, platform, types.ProtocolMainnet, address, value); err != nil {
 		return err
 	}
 
