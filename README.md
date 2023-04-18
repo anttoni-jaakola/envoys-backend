@@ -3,6 +3,12 @@
 ****
 
 ## Proto build
+`sudo apt install protobuf-compiler libprotobuf-dev`  
+`go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway`  
+`go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger`  
+`go install github.com/golang/protobuf/protoc-gen-go`  
+`go install github.com/golang/protobuf/{proto,protoc-gen-go}`
+
 `./proto.sh`
 ****
 

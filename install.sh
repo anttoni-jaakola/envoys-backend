@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt update
-sudo apt install -y build-essential git curl libkrb5-dev cmake protobuf-compiler libprotobuf-dev postgresql-14 postgresql-client-14 postgresql-server-dev-14 rabbitmq-server redis-server
+sudo apt install -y build-essential git curl libkrb5-dev cmake postgresql-14 postgresql-client-14 postgresql-server-dev-14 rabbitmq-server redis-server
 sudo rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_web_stomp rabbitmq_web_mqtt rabbitmq_shovel rabbitmq_shovel_management
 
 sudo touch rabbitmq.conf
@@ -12,11 +12,6 @@ if [ -f "/etc/rabbitmq/rabbitmq.conf" ]; then
 fi
 sudo mv rabbitmq.conf /etc/rabbitmq/
 sudo service rabbitmq-server restart
-
-go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-go install github.com/golang/protobuf/protoc-gen-go
-go install github.com/golang/protobuf/{proto,protoc-gen-go}
 
 git clone https://github.com/timescale/timescaledb/
 
@@ -33,11 +28,11 @@ sudo -i -u postgres pg_createcluster 14 main -- --auth-host=scram-sha-256 --auth
 
 sudo service postgresql start
 
-sudo -i -u postgres psql -c "alter user postgres with password 'postgres';"
+sudo -i -u postgres psql -c "alter user postgres with password '**************';"
 sudo -i -u postgres psql -c "alter system set listen_addresses to '*';"
 sudo -i -u postgres psql -c "alter system set shared_preload_libraries to 'timescaledb';"
 sudo -i -u postgres psql -c "create database envoys;"
-sudo -i -u postgres psql -c "create user envoys with encrypted password 'envoys';"
+sudo -i -u postgres psql -c "create user envoys with encrypted password '**************';"
 sudo -i -u postgres psql -c "grant all privileges on database envoys to envoys;"
 
 sudo sed -i "s|# host    .*|host all all all scram-sha-256|g" /etc/postgresql/14/main/pg_hba.conf
