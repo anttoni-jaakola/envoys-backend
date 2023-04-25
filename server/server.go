@@ -1,6 +1,10 @@
 package server
 
 import (
+	"math"
+	"net"
+	"time"
+
 	"github.com/cryptogateway/backend-envoys/assets"
 	"github.com/cryptogateway/backend-envoys/server/gateway"
 	admin_pbaccount "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbaccount"
@@ -38,9 +42,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
-	"math"
-	"net"
-	"time"
 )
 
 // Register - The purpose of this function is to create a gRPC server with certain options and to define a gateway for it. It sets

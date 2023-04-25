@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package pb.future;
+
+option go_package = "server/proto/v2/pbfuture";
+
+import "google/api/annotations.proto";
+
+service Api {
+    rpc GetFutures (Request) returns (Response) {
+        option (google.api.http) = {
+            get: "/v2/future/get-futures",
+            body: "*"
+        };
+    }
+}
+
+message Request {
+    string name = 1;
+}
+
+message Response {
+    string reply = 1;
+}
