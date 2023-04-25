@@ -4,6 +4,11 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/cryptogateway/backend-envoys/assets"
 	admin_pbaccount "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbaccount"
 	admin_pbads "github.com/cryptogateway/backend-envoys/server/proto/v1/admin.pbads"
@@ -12,6 +17,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbads"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbauth"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbfuture"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
@@ -23,10 +29,6 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
-	"io/ioutil"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // Endpoint describes a gRPC endpoint.
@@ -365,6 +367,7 @@ func (o *Options) gateway(ctx context.Context, connect *grpc.ClientConn, opts []
 		pbstock.RegisterApiHandler,
 		pbkyc.RegisterApiHandler,
 		pbprovider.RegisterApiHandler,
+		pbfuture.RegisterApiHandler,
 		// V1 - Admin apis.
 		admin_pbaccount.RegisterApiHandler,
 		admin_pbspot.RegisterApiHandler,

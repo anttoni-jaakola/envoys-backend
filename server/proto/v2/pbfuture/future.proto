@@ -7,18 +7,15 @@ option go_package = "server/proto/v2/pbfuture";
 import "google/api/annotations.proto";
 
 service Api {
-    rpc GetFutures (Request) returns (Response) {
+    rpc GetFutures (GetRequestFutures) returns (ResponseFutures) {
         option (google.api.http) = {
-            get: "/v2/future/get-futures",
-            body: "*"
+            get: "/v2/future/get-futures"
         };
     }
 }
 
-message Request {
-    string name = 1;
-}
+message GetRequestFutures {}
 
-message Response {
+message ResponseFutures {
     string reply = 1;
 }

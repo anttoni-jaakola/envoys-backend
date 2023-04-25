@@ -14,6 +14,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbaccount"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbads"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbauth"
+	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbfuture"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbindex"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbkyc"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
@@ -26,6 +27,7 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/ads"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/auth"
+	"github.com/cryptogateway/backend-envoys/server/service/v2/future"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/index"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/kyc"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/provider"
@@ -207,6 +209,8 @@ func Register(option *assets.Context) {
 		pbaccount.RegisterApiServer(srv, &account.Service{Context: option})
 		pbads.RegisterApiServer(srv, &ads.Service{Context: option})
 		pbkyc.RegisterApiServer(srv, &kyc.Service{Context: option})
+		// serviceFuture := future.Service{Context: option}
+		pbfuture.RegisterApiServer(srv, &future.Service{Context: option})
 
 		admin_pbaccount.RegisterApiServer(srv, &admin_account.Service{Context: option})
 		admin_pbads.RegisterApiServer(srv, &admin_ads.Service{Context: option})

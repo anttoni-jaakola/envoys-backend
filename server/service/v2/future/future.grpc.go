@@ -7,10 +7,10 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbfuture"
 )
 
-func (a *Service) GetFutures(_ context.Context, req *pbfuture.GetRequest) *pbfuture.Response {
+func (a *Service) GetFutures(_ context.Context, req *pbfuture.GetRequestFutures) (*pbfuture.ResponseFutures, error) {
 	var (
-		response pbprovider.Response
-		exist    bool
+		response pbfuture.ResponseFutures
+		// exist    bool
 	)
 	return &response, nil
 }
