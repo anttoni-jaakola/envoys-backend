@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/assets/common/keypair"
@@ -10,8 +13,6 @@ import (
 	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
 	"github.com/cryptogateway/backend-envoys/server/types"
 	"google.golang.org/grpc/status"
-	"strings"
-	"time"
 )
 
 // GetSymbol - This function is used to get the symbol of a given currency pair (base unit and quote unit). It first checks if the

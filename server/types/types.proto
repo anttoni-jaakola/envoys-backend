@@ -203,3 +203,21 @@ message Advertising {
   string text = 4;
   string pattern = 5;
 }
+
+message FutureOrder {
+  int64 id = 1;
+  string position = 2;
+  string trading = 3;
+  string base_unit = 4;
+  string quote_unit = 5;
+  double price = 6;
+  double quantity = 7;
+  double leverage = 8;
+  double take_profit = 9;
+  double stop_loss = 10;
+  double fees = 11;
+  string status = 12;
+  string create_at = 13;
+  int64 user_id = 14;
+  string assigning = 15;
+}

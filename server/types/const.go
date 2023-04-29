@@ -3,10 +3,11 @@ package types
 import "github.com/pkg/errors"
 
 const (
-	TypeZero  = ""
-	TypeSpot  = "spot"
-	TypeStock = "stock"
-	TypeCross = "cross"
+	TypeZero   = ""
+	TypeSpot   = "spot"
+	TypeStock  = "stock"
+	TypeCross  = "cross"
+	TypeFuture = "future"
 
 	KYCLevel1 = "level_1"
 	KYCLevel2 = "level_2"
@@ -18,6 +19,12 @@ const (
 	AssigningBuy    = "buy"
 	AssigningSell   = "sell"
 	AssigningSupply = "supply"
+
+	AssigningOpen  = "open"
+	AssigningClose = "close"
+
+	PositionLong  = "long"
+	PositionShort = "short"
 
 	StatusCancel     = "cancel"
 	StatusFilled     = "filled"
