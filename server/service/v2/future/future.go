@@ -178,7 +178,7 @@ func (a *Service) QueryBalance(symbol, _type string, userId int64) (balance floa
 func (a *Service) writeTrade(id int64, symbol string, value, price float64, convert bool) (float64, error) {
 
 	order := a.queryOrder(id)
-	order.Value = value
+	// order.Value = value
 
 	if convert {
 		value = decimal.New(value).Mul(price).Float()
@@ -195,7 +195,7 @@ func (a *Service) writeTrade(id int64, symbol string, value, price float64, conv
 		order.Fees = f
 	}
 
-	if _, err := a.Context.Db.Exec(`insert into trades (order_id, assigning, user_id, base_unit, quote_unit, quantity, fees, price, maker) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, order.GetId(), order.GetAssigning(), order.GetUserId(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetValue(), order.GetFees(), price, maker); err != nil {
+	if _, err := a.Context.Db.Exec(`insert into trades (order_id, assigning, user_id, base_unit, quote_unit, quantity, fees, price, maker) values ($1, $2, $3, $4, $5, $6, $7, $8)`, order.GetId(), order.GetAssigning(), order.GetUserId(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetQuantity(), order.GetFees(), price, maker); err != nil {
 		return 0, err
 	}
 
@@ -212,13 +212,13 @@ func (a *Service) writeTrade(id int64, symbol string, value, price float64, conv
 
 	return s, nil
 }
-func (a *Service) queryOrder(id int64) *types.Order {
+func (a *Service) queryOrder(id int64) *types.FutureOrder {
 
 	var (
-		order types.Order
+		order types.FutureOrder
 	)
 
-	_ = a.Context.Db.QueryRow("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1", id).Scan(&order.Id, &order.Value, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
+	_ = a.Context.Db.QueryRow("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1", id).Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
 func (a *Service) queryOrders(userId int64) []*types.FutureOrder {

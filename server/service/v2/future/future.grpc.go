@@ -8,7 +8,6 @@ import (
 
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbfuture"
-	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
 	"github.com/cryptogateway/backend-envoys/server/types"
 	"google.golang.org/grpc/status"
@@ -143,7 +142,7 @@ func (a *Service) SetTicker(_ context.Context, req *pbfuture.SetRequestTicker) (
 
 	for _, interval := range help.Depth() {
 
-		migrate, err := a.GetTicker(context.Background(), &pbprovider.GetRequestTicker{BaseUnit: req.GetBaseUnit(), QuoteUnit: req.GetQuoteUnit(), Limit: 2, Resolution: interval})
+		migrate, err := a.GetTicker(context.Background(), &pbfuture.GetRequestTicker{BaseUnit: req.GetBaseUnit(), QuoteUnit: req.GetQuoteUnit(), Limit: 2, Resolution: interval})
 		if err != nil {
 			return &response, err
 		}
@@ -157,10 +156,10 @@ func (a *Service) SetTicker(_ context.Context, req *pbfuture.SetRequestTicker) (
 
 	return &response, nil
 }
-func (a *Service) GetTicker(_ context.Context, req *pbprovider.GetRequestTicker) (*pbprovider.ResponseTicker, error) {
+func (a *Service) GetTicker(_ context.Context, req *pbfuture.GetRequestTicker) (*pbfuture.ResponseTicker, error) {
 
 	var (
-		response pbprovider.ResponseTicker
+		response pbfuture.ResponseTicker
 		limit    string
 		maps     []string
 	)
