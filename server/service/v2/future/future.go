@@ -70,7 +70,7 @@ func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64,
 	switch order.GetAssigning() {
 	case types.AssigningOpen:
 
-		quantity := decimal.New(order.GetQuantity()).Mul(order.GetPrice()).Div(order.GetLeverage()).Float()
+		quantity := decimal.New(order.GetQuantity()).Mul(order.GetPrice()).Float()
 
 		if min, max, ok := a.queryRange(order.GetQuoteUnit(), quantity); !ok {
 			return 0, status.Errorf(11623, "[quote]: minimum trading amount: %v~%v, maximum trading amount: %v", min, strconv.FormatFloat(decimal.New(min).Mul(2).Float(), 'f', -1, 64), strconv.FormatFloat(max, 'f', -1, 64))
@@ -88,13 +88,14 @@ func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64,
 
 		quantity := order.GetQuantity()
 
+		_, openQuantity := a.queryOrders(order.UserId, types.AssigningOpen, order.GetBaseUnit())
 		if min, max, ok := a.queryRange(order.GetBaseUnit(), order.GetQuantity()); !ok {
 			return 0, status.Errorf(11587, "[base]: minimum trading amount: %v~%v, maximum trading amount: %v", min, strconv.FormatFloat(decimal.New(min).Mul(2).Float(), 'f', -1, 64), strconv.FormatFloat(max, 'f', -1, 64))
 		}
 
-		balance := a.QueryBalance(order.GetBaseUnit(), "future", order.GetUserId())
+		// balance := a.QueryBalance(order.GetBaseUnit(), "future", order.GetUserId())
 
-		if quantity > balance || order.GetQuantity() == 0 {
+		if quantity > openQuantity || order.GetQuantity() == 0 {
 			return 0, status.Error(11624, "[base]: there is not enough funds on your asset balance to place an order")
 		}
 
@@ -221,14 +222,15 @@ func (a *Service) queryOrder(id int64) *types.FutureOrder {
 	_ = a.Context.Db.QueryRow("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1", id).Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
-func (a *Service) queryOrders(userId int64) []*types.FutureOrder {
+func (a *Service) queryOrders(userId int64, assigning string, baseUnit string) ([]*types.FutureOrder, float64) {
 	var (
-		orders []*types.FutureOrder
+		orders        []*types.FutureOrder
+		totalQuantity float64 = 0
 	)
-	rows, err := a.Context.Db.Query("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where user_id = $1", userId)
+	rows, err := a.Context.Db.Query("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where user_id = $1 and assigning = $2 and base_unit = $3", userId, assigning, baseUnit)
 
 	if err != nil {
-		return nil
+		return nil, 0
 	}
 	defer rows.Close()
 
@@ -237,12 +239,14 @@ func (a *Service) queryOrders(userId int64) []*types.FutureOrder {
 			order types.FutureOrder
 		)
 		if err := rows.Scan(&order.Id, &order.BaseUnit, &order.QuoteUnit, &order.Price, &order.Quantity, &order.Assigning, &order.Status, &order.Position, &order.Fees); err != nil {
-			return nil
+			return nil, 0
 		}
+
+		totalQuantity = totalQuantity + order.Quantity*order.Price/order.Leverage
 		orders = append(orders, &order)
 	}
 
-	return orders
+	return orders, totalQuantity
 }
 
 func (a *Service) querySum(id int64, symbol string, value float64) (b, f float64, m bool, err error) {
