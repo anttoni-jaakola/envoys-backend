@@ -12,7 +12,7 @@
  Target Server Version : 140007 (140007)
  File Encoding         : 65001
 
- Date: 29/04/2023 05:13:44
+ Date: 02/05/2023 10:17:53
 */
 
 
@@ -21,8 +21,8 @@
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."futures";
 CREATE TABLE "public"."futures" (
-  "id" int4 NOT NULL,
-  "assignning" varchar(8) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 'open'::character varying,
+  "id" int4 NOT NULL DEFAULT nextval('contracts_id_seq'::regclass),
+  "assigning" varchar(8) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 'open'::character varying,
   "position" varchar(8) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 'long'::character varying,
   "trading" varchar(8) COLLATE "pg_catalog"."default",
   "base_unit" varchar(8) COLLATE "pg_catalog"."default",
@@ -32,16 +32,13 @@ CREATE TABLE "public"."futures" (
   "take_profit" numeric(16,8),
   "stop_loss" numeric(4,4),
   "status" varchar(8) COLLATE "pg_catalog"."default",
-  "create_at" timestamptz(6)
+  "create_at" timestamptz(6),
+  "leverage" numeric(4,0) DEFAULT 1,
+  "user_id" numeric(8,0) NOT NULL,
+  "fees" numeric(16,8)
 )
 ;
 ALTER TABLE "public"."futures" OWNER TO "envoys";
-
--- ----------------------------
--- Records of futures
--- ----------------------------
-BEGIN;
-COMMIT;
 
 -- ----------------------------
 -- Primary Key structure for table futures

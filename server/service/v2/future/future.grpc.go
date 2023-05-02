@@ -79,6 +79,7 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 	order.QuoteUnit = req.GetQuoteUnit()
 	order.Assigning = req.GetAssigning()
 	order.Trading = req.GetTrading()
+	order.Leverage = req.GetLeverage()
 	order.Status = types.StatusPending
 	order.CreateAt = time.Now().UTC().Format(time.RFC3339)
 

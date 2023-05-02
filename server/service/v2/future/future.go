@@ -78,7 +78,7 @@ func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64,
 
 		balance := a.QueryBalance(order.GetQuoteUnit(), "future", order.GetUserId())
 
-		if quantity/order.GetLeverage() > balance || order.GetQuantity() == 0 {
+		if decimal.New(quantity).Div(order.GetLeverage()).Float() > balance || order.GetQuantity() == 0 {
 			return 0, status.Error(11586, "[quote]: there is not enough funds on your asset balance to place an order")
 		}
 
@@ -96,7 +96,7 @@ func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64,
 		// balance := a.QueryBalance(order.GetBaseUnit(), "future", order.GetUserId())
 
 		if quantity > openQuantity || order.GetQuantity() == 0 {
-			return 0, status.Error(11624, "[base]: there is not enough funds on your asset balance to place an order")
+			return 0, status.Error(11624, "[base]: there is not enough funds locking in your orders")
 		}
 
 		return quantity, nil
