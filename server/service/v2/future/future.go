@@ -1,6 +1,7 @@
 package future
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/cryptogateway/backend-envoys/assets"
@@ -42,11 +43,11 @@ func (a *Service) queryMarket(base, quote, _type string, assigning string, price
 	switch assigning {
 	case types.AssigningBuy:
 
-		_ = a.Context.Db.QueryRow("select min(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5 and type = $6", types.AssigningSell, base, quote, price, types.StatusPending, _type).Scan(&price)
+		_ = a.Context.Db.QueryRow("select min(price) as price from futures where assigning = $1 and base_unit = $2 and quote_unit = $3 and price >= $4 and status = $5 and type = $6", types.AssigningSell, base, quote, price, types.StatusPending, _type).Scan(&price)
 
 	case types.AssigningSell:
 
-		_ = a.Context.Db.QueryRow("select max(price) as price from orders where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5 and type = $6", types.AssigningBuy, base, quote, price, types.StatusPending, _type).Scan(&price)
+		_ = a.Context.Db.QueryRow("select max(price) as price from futures where assigning = $1 and base_unit = $2 and quote_unit = $3 and price <= $4 and status = $5 and type = $6", types.AssigningBuy, base, quote, price, types.StatusPending, _type).Scan(&price)
 	}
 
 	return price
@@ -88,7 +89,9 @@ func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64,
 
 		quantity := order.GetQuantity()
 
-		_, openQuantity := a.queryOrders(order.UserId, types.AssigningOpen, order.GetBaseUnit())
+		_, openQuantity := a.queryOrders(order.UserId, types.AssigningOpen, order.GetPosition(), order.GetBaseUnit())
+
+		fmt.Println("TOTAL OPEN QUANTITY IS ", openQuantity)
 		if min, max, ok := a.queryRange(order.GetBaseUnit(), order.GetQuantity()); !ok {
 			return 0, status.Errorf(11587, "[base]: minimum trading amount: %v~%v, maximum trading amount: %v", min, strconv.FormatFloat(decimal.New(min).Mul(2).Float(), 'f', -1, 64), strconv.FormatFloat(max, 'f', -1, 64))
 		}
@@ -219,30 +222,30 @@ func (a *Service) queryOrder(id int64) *types.FutureOrder {
 		order types.FutureOrder
 	)
 
-	_ = a.Context.Db.QueryRow("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where id = $1", id).Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
+	_ = a.Context.Db.QueryRow("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from futures where id = $1", id).Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
-func (a *Service) queryOrders(userId int64, assigning string, baseUnit string) ([]*types.FutureOrder, float64) {
+func (a *Service) queryOrders(userId int64, assigning string, position string, baseUnit string) ([]*types.FutureOrder, float64) {
 	var (
 		orders        []*types.FutureOrder
-		totalQuantity float64 = 0
+		totalQuantity float64 = 0.0
 	)
-	rows, err := a.Context.Db.Query("select id, value, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from orders where user_id = $1 and assigning = $2 and base_unit = $3", userId, assigning, baseUnit)
+	rows, err := a.Context.Db.Query("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, position, fees, create_at, leverage from futures where user_id = $1 and assigning = $2 and position = $3 and base_unit = $4", userId, assigning, position, baseUnit)
 
 	if err != nil {
 		return nil, 0
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		var (
 			order types.FutureOrder
 		)
-		if err := rows.Scan(&order.Id, &order.BaseUnit, &order.QuoteUnit, &order.Price, &order.Quantity, &order.Assigning, &order.Status, &order.Position, &order.Fees); err != nil {
+		if err := rows.Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.Position, &order.Fees, &order.CreateAt, &order.Leverage); err != nil {
+			fmt.Println("Error occured", err)
 			return nil, 0
 		}
-
-		totalQuantity = totalQuantity + order.Quantity*order.Price/order.Leverage
+		totalQuantity += decimal.New(totalQuantity).Add(decimal.New(order.Quantity).Mul(order.Price).Div(order.Leverage).Float()).Float()
+		// totalQuantity = totalQuantity + order.Quantity*order.Price/order.Leverage
 		orders = append(orders, &order)
 	}
 
@@ -260,7 +263,7 @@ func (a *Service) querySum(id int64, symbol string, value float64) (b, f float64
 		return b, f, m, err
 	}
 
-	if err := a.Context.Db.QueryRow("select status from orders where id = $1;", id).Scan(&s); err != nil {
+	if err := a.Context.Db.QueryRow("select status from futures where id = $1;", id).Scan(&s); err != nil {
 		return b, f, m, err
 	}
 

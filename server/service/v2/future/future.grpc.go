@@ -35,6 +35,7 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 	if err != nil {
 		return &response, err
 	}
+	// var auth int64 = 6
 
 	if err := a.queryValidatePair(req.GetBaseUnit(), req.GetQuoteUnit(), "future"); err != nil {
 		return &response, err

@@ -12,7 +12,7 @@
  Target Server Version : 140007 (140007)
  File Encoding         : 65001
 
- Date: 02/05/2023 10:17:53
+ Date: 02/05/2023 21:49:15
 */
 
 
@@ -32,7 +32,7 @@ CREATE TABLE "public"."futures" (
   "take_profit" numeric(16,8),
   "stop_loss" numeric(4,4),
   "status" varchar(8) COLLATE "pg_catalog"."default",
-  "create_at" timestamptz(6),
+  "create_at" timestamptz(6) DEFAULT CURRENT_TIMESTAMP,
   "leverage" numeric(4,0) DEFAULT 1,
   "user_id" numeric(8,0) NOT NULL,
   "fees" numeric(16,8)
