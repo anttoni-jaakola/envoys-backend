@@ -62,7 +62,7 @@ func (a *Service) queryPrice(base, quote string) (price float64, ok bool) {
 	return price, true
 }
 
-func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64, err error) {
+func (a *Service) queryValidateOrder(order *types.Future) (summary float64, err error) {
 
 	if order.GetPrice() == 0 {
 		return 0, status.Errorf(65790, "impossible price %v", order.GetPrice())
@@ -108,7 +108,7 @@ func (a *Service) queryValidateOrder(order *types.FutureOrder) (summary float64,
 	return 0, status.Error(11596, "invalid input parameter")
 }
 
-func (a *Service) writeOrder(order *types.FutureOrder) (id int64, err error) {
+func (a *Service) writeOrder(order *types.Future) (id int64, err error) {
 
 	if err := a.Context.Db.QueryRow("insert into futures (position, trading, base_unit, quote_unit, price, quantity, leverage, take_profit, stop_loss, fees, status, user_id, assigning) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning id", order.GetPosition(), order.GetTrading(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetLeverage(), order.GetTakeProfit(), order.GetStopLoss(), order.GetFees(), types.StatusPending, order.GetUserId(), order.GetAssigning()).Scan(&id); err != nil {
 		return id, err
@@ -216,18 +216,18 @@ func (a *Service) writeTrade(id int64, symbol string, value, price float64, conv
 
 	return s, nil
 }
-func (a *Service) queryOrder(id int64) *types.FutureOrder {
+func (a *Service) queryOrder(id int64) *types.Future {
 
 	var (
-		order types.FutureOrder
+		order types.Future
 	)
 
 	_ = a.Context.Db.QueryRow("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from futures where id = $1", id).Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
-func (a *Service) queryOrders(userId int64, assigning string, position string, baseUnit string) ([]*types.FutureOrder, float64) {
+func (a *Service) queryOrders(userId int64, assigning string, position string, baseUnit string) ([]*types.Future, float64) {
 	var (
-		orders        []*types.FutureOrder
+		orders        []*types.Future
 		totalQuantity float64 = 0.0
 	)
 	rows, err := a.Context.Db.Query("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, position, fees, create_at, leverage from futures where user_id = $1 and assigning = $2 and position = $3 and base_unit = $4", userId, assigning, position, baseUnit)
@@ -238,7 +238,7 @@ func (a *Service) queryOrders(userId int64, assigning string, position string, b
 	defer rows.Close()
 	for rows.Next() {
 		var (
-			order types.FutureOrder
+			order types.Future
 		)
 		if err := rows.Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.Position, &order.Fees, &order.CreateAt, &order.Leverage); err != nil {
 			fmt.Println("Error occured", err)

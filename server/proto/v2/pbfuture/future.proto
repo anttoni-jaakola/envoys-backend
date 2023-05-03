@@ -53,6 +53,7 @@ message SetRequestOrder {
     double leverage = 8;
     double take_profit = 9;
     double stop_loss = 10;
+    string mode = 11;
 }
 
 message GetRequestOrders {
@@ -60,7 +61,7 @@ message GetRequestOrders {
 }
 
 message ResponseOrder {
-    repeated types.FutureOrder fields = 1;
+    repeated types.Future fields = 1;
     double volume = 2;
     bool success = 3;
     int32 count = 4;

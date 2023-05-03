@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/cryptogateway/backend-envoys/assets"
-	"github.com/cryptogateway/backend-envoys/server"
 	"os"
 	"runtime"
+
+	"github.com/cryptogateway/backend-envoys/assets"
+	"github.com/cryptogateway/backend-envoys/server"
 )
 
 func init() {

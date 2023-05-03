@@ -22,20 +22,20 @@ func (a *Service) GetFutures(_ context.Context, req *pbfuture.GetRequestFutures)
 }
 
 func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (*pbfuture.ResponseOrder, error) {
-
+	fmt.Println("\nset order api")
 	var (
 		response pbfuture.ResponseOrder
-		order    types.FutureOrder
+		order    types.Future
 	)
 	// if err := types.Type(req.GetType()); err != nil {
 	// 	return &response, err
 	// }
 
-	auth, err := a.Context.Auth(ctx)
-	if err != nil {
-		return &response, err
-	}
-	// var auth int64 = 6
+	// auth, err := a.Context.Auth(ctx)
+	// if err != nil {
+	// return &response, err
+	// }
+	var auth int64 = 6
 
 	if err := a.queryValidatePair(req.GetBaseUnit(), req.GetQuoteUnit(), "future"); err != nil {
 		return &response, err
@@ -104,8 +104,6 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 			return &response, err
 		}
 
-		a.trade(&order, types.AssigningSell)
-
 		break
 	case types.AssigningClose:
 
@@ -117,7 +115,7 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 			return &response, err
 		}
 
-		a.trade(&order, types.AssigningBuy)
+		a.closePosition(&order)
 
 		break
 	default:

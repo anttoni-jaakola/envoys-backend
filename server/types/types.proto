@@ -204,7 +204,7 @@ message Advertising {
   string pattern = 5;
 }
 
-message FutureOrder {
+message Future {
   int64 id = 1;
   string position = 2;
   string trading = 3;
@@ -220,4 +220,6 @@ message FutureOrder {
   string create_at = 13;
   int64 user_id = 14;
   string assigning = 15;
+  string mode = 16;
+  double value = 17;
 }
