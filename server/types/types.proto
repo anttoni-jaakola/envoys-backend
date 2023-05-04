@@ -207,7 +207,7 @@ message Advertising {
 message Future {
   int64 id = 1;
   string position = 2;
-  string trading = 3;
+  string order_type = 3;
   string base_unit = 4;
   string quote_unit = 5;
   double price = 6;

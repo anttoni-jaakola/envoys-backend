@@ -22,25 +22,21 @@ func (a *Service) GetFutures(_ context.Context, req *pbfuture.GetRequestFutures)
 }
 
 func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (*pbfuture.ResponseOrder, error) {
-	fmt.Println("\nset order api")
+
 	var (
 		response pbfuture.ResponseOrder
 		order    types.Future
 	)
-	// if err := types.Type(req.GetType()); err != nil {
-	// 	return &response, err
-	// }
 
-	// auth, err := a.Context.Auth(ctx)
-	// if err != nil {
-	// return &response, err
-	// }
-	var auth int64 = 6
+	auth, err := a.Context.Auth(ctx)
+	if err != nil {
+		return &response, err
+	}
+	// var auth int64 = 6
 
 	if err := a.queryValidatePair(req.GetBaseUnit(), req.GetQuoteUnit(), "future"); err != nil {
 		return &response, err
 	}
-
 	_account := account.Service{
 		Context: a.Context,
 	}
@@ -56,9 +52,9 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 
 	order.Quantity = req.GetQuantity()
 	order.Position = req.GetPosition()
-	order.Trading = req.GetTrading()
+	order.OrderType = req.GetOrderType()
 
-	switch req.GetTrading() {
+	switch req.GetOrderType() {
 	case types.TradingMarket:
 
 		// order.Price = a.queryMarket(req.GetBaseUnit(), req.GetQuoteUnit(), req.GetType(), req.GetAssigning(), req.GetPrice())
@@ -79,12 +75,12 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 	order.BaseUnit = req.GetBaseUnit()
 	order.QuoteUnit = req.GetQuoteUnit()
 	order.Assigning = req.GetAssigning()
-	order.Trading = req.GetTrading()
+	order.OrderType = req.GetOrderType()
 	order.Leverage = req.GetLeverage()
 	order.Status = types.StatusPending
 	order.CreateAt = time.Now().UTC().Format(time.RFC3339)
 
-	quantity, err := a.queryValidateOrder(&order)
+	margin, err := a.queryValidateOrder(&order)
 	if err != nil {
 		return &response, err
 	}
@@ -96,22 +92,14 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 	switch order.GetAssigning() {
 	case types.AssigningOpen:
 
-		if err := a.writeAsset(order.GetBaseUnit(), order.GetAssigning(), order.GetUserId(), false); err != nil {
-			return &response, err
-		}
-
-		if err := a.WriteBalance(order.GetQuoteUnit(), order.GetAssigning(), order.GetUserId(), quantity, types.BalanceMinus); err != nil {
+		if err := a.WriteBalance(order.GetQuoteUnit(), order.GetAssigning(), order.GetUserId(), margin, types.BalanceMinus); err != nil {
 			return &response, err
 		}
 
 		break
 	case types.AssigningClose:
 
-		if err := a.writeAsset(order.GetQuoteUnit(), order.GetAssigning(), order.GetUserId(), false); err != nil {
-			return &response, err
-		}
-
-		if err := a.WriteBalance(order.GetBaseUnit(), order.GetAssigning(), order.GetUserId(), quantity, types.BalanceMinus); err != nil {
+		if err := a.WriteBalance(order.GetBaseUnit(), order.GetAssigning(), order.GetUserId(), margin, types.BalancePlus); err != nil {
 			return &response, err
 		}
 

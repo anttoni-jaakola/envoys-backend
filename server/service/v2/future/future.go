@@ -19,7 +19,6 @@ func (a *Service) Initialization() {
 }
 
 func (a *Service) queryValidatePair(base, quote, _type string) error {
-
 	var (
 		exist bool
 	)
@@ -110,7 +109,7 @@ func (a *Service) queryValidateOrder(order *types.Future) (summary float64, err 
 
 func (a *Service) writeOrder(order *types.Future) (id int64, err error) {
 
-	if err := a.Context.Db.QueryRow("insert into futures (position, trading, base_unit, quote_unit, price, quantity, leverage, take_profit, stop_loss, fees, status, user_id, assigning) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning id", order.GetPosition(), order.GetTrading(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetLeverage(), order.GetTakeProfit(), order.GetStopLoss(), order.GetFees(), types.StatusPending, order.GetUserId(), order.GetAssigning()).Scan(&id); err != nil {
+	if err := a.Context.Db.QueryRow("insert into futures (position, trading, base_unit, quote_unit, price, quantity, leverage, take_profit, stop_loss, fees, status, user_id, assigning) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning id", order.GetPosition(), order.GetOrderType(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetLeverage(), order.GetTakeProfit(), order.GetStopLoss(), order.GetFees(), types.StatusPending, order.GetUserId(), order.GetAssigning()).Scan(&id); err != nil {
 		return id, err
 	}
 
@@ -278,7 +277,7 @@ func (a *Service) querySum(id int64, symbol string, value float64) (b, f float64
 	return decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(f).Float()).Div(100).Float()).Float(), decimal.New(value).Sub(decimal.New(value).Sub(decimal.New(decimal.New(value).Mul(f).Float()).Div(100).Float()).Float()).Float(), m, nil
 }
 
-func (a *Service) queryQuantity(assigning string, quantity, price float64, cross bool) float64 {
+func (a *Service) queryQuantity(assigning string, position string, quantity, price float64, cross bool) float64 {
 
 	if cross {
 
