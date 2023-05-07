@@ -88,7 +88,7 @@ func (a *Service) queryValidateOrder(order *types.Future) (summary float64, err 
 
 		quantity := order.GetQuantity()
 
-		_, openQuantity := a.queryOrders(order.UserId, types.AssigningOpen, order.GetPosition(), order.GetBaseUnit())
+		_, openQuantity := a.queryOrders(order.UserId, types.AssigningOpen, order.GetPosition(), order.GetBaseUnit(), order.GetQuoteUnit())
 
 		fmt.Println("TOTAL OPEN QUANTITY IS ", openQuantity)
 		if min, max, ok := a.queryRange(order.GetBaseUnit(), order.GetQuantity()); !ok {
@@ -109,7 +109,7 @@ func (a *Service) queryValidateOrder(order *types.Future) (summary float64, err 
 
 func (a *Service) writeOrder(order *types.Future) (id int64, err error) {
 
-	if err := a.Context.Db.QueryRow("insert into futures (position, trading, base_unit, quote_unit, price, quantity, leverage, take_profit, stop_loss, fees, status, user_id, assigning) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning id", order.GetPosition(), order.GetOrderType(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetLeverage(), order.GetTakeProfit(), order.GetStopLoss(), order.GetFees(), types.StatusPending, order.GetUserId(), order.GetAssigning()).Scan(&id); err != nil {
+	if err := a.Context.Db.QueryRow("insert into futures (position, trading, base_unit, quote_unit, price, quantity, leverage, take_profit, stop_loss, fees, status, user_id, assigning, value) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning id", order.GetPosition(), order.GetOrderType(), order.GetBaseUnit(), order.GetQuoteUnit(), order.GetPrice(), order.GetQuantity(), order.GetLeverage(), order.GetTakeProfit(), order.GetStopLoss(), order.GetFees(), types.StatusPending, order.GetUserId(), order.GetAssigning(), order.GetValue()).Scan(&id); err != nil {
 		return id, err
 	}
 
@@ -192,7 +192,7 @@ func (a *Service) writeTrade(id int64, symbol string, value, price float64, conv
 		return 0, err
 	}
 
-	if order.GetAssigning() == types.AssigningSell {
+	if order.GetPosition() == types.PositionLong {
 		order.Fees = decimal.New(f).Div(price).Float()
 	} else {
 		order.Fees = f
@@ -224,12 +224,12 @@ func (a *Service) queryOrder(id int64) *types.Future {
 	_ = a.Context.Db.QueryRow("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, create_at from futures where id = $1", id).Scan(&order.Id, &order.Quantity, &order.Price, &order.Assigning, &order.UserId, &order.BaseUnit, &order.QuoteUnit, &order.Status, &order.CreateAt)
 	return &order
 }
-func (a *Service) queryOrders(userId int64, assigning string, position string, baseUnit string) ([]*types.Future, float64) {
+func (a *Service) queryOrders(userId int64, assigning string, position string, baseUnit string, quoteUnit string) ([]*types.Future, float64) {
 	var (
 		orders        []*types.Future
 		totalQuantity float64 = 0.0
 	)
-	rows, err := a.Context.Db.Query("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, position, fees, create_at, leverage from futures where user_id = $1 and assigning = $2 and position = $3 and base_unit = $4", userId, assigning, position, baseUnit)
+	rows, err := a.Context.Db.Query("select id, quantity, price, assigning, user_id, base_unit, quote_unit, status, position, fees, create_at, leverage from futures where user_id = $1 and assigning = $2 and position = $3 and base_unit = $4 and quote_unit = $5", userId, assigning, position, baseUnit, quoteUnit)
 
 	if err != nil {
 		return nil, 0

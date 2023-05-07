@@ -232,3 +232,14 @@ func Group(request string) error {
 	}
 	return nil
 }
+
+func Position(request string) error {
+	positions := map[string]bool{
+		PositionLong:  true,
+		PositionShort: true,
+	}
+	if _, ok := positions[request]; !ok {
+		return errors.New("Invalid position")
+	}
+	return nil
+}

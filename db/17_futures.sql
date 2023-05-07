@@ -1,46 +1,31 @@
-/*
- Navicat PostgreSQL Data Transfer
+-- public.futures definition
 
- Source Server         : envoys
- Source Server Type    : PostgreSQL
- Source Server Version : 140007 (140007)
- Source Host           : localhost:5432
- Source Catalog        : envoys
- Source Schema         : public
+-- Drop table
 
- Target Server Type    : PostgreSQL
- Target Server Version : 140007 (140007)
- File Encoding         : 65001
+-- DROP TABLE public.futures;
 
- Date: 02/05/2023 21:49:15
-*/
+CREATE TABLE public.futures (
+	id int4 NOT NULL DEFAULT nextval('contracts_id_seq'::regclass),
+	assigning varchar(8) NOT NULL DEFAULT 'open'::character varying,
+	"position" varchar(8) NOT NULL DEFAULT 'long'::character varying,
+	trading varchar(8) NULL,
+	base_unit varchar(8) NULL,
+	quote_unit varchar(8) NULL,
+	price numeric(16, 8) NULL,
+	quantity numeric(16, 8) NULL,
+	take_profit numeric(16, 8) NULL,
+	stop_loss numeric(4, 4) NULL,
+	status varchar(8) NULL,
+	create_at timestamptz NULL DEFAULT CURRENT_TIMESTAMP,
+	leverage numeric(4) NULL DEFAULT 1,
+	user_id numeric(8) NOT NULL,
+	fees numeric(16, 8) NULL,
+	"mode" varchar(8) NULL DEFAULT 'cross'::character varying,
+	value numeric(16, 8) NOT NULL DEFAULT 0,
+	CONSTRAINT futures_pkey PRIMARY KEY (id)
+);
 
+-- Permissions
 
--- ----------------------------
--- Table structure for futures
--- ----------------------------
-DROP TABLE IF EXISTS "public"."futures";
-CREATE TABLE "public"."futures" (
-  "id" int4 NOT NULL DEFAULT nextval('contracts_id_seq'::regclass),
-  "assigning" varchar(8) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 'open'::character varying,
-  "position" varchar(8) COLLATE "pg_catalog"."default" NOT NULL DEFAULT 'long'::character varying,
-  "trading" varchar(8) COLLATE "pg_catalog"."default",
-  "base_unit" varchar(8) COLLATE "pg_catalog"."default",
-  "quote_unit" varchar(8) COLLATE "pg_catalog"."default",
-  "price" numeric(16,8),
-  "quantity" numeric(16,8),
-  "take_profit" numeric(16,8),
-  "stop_loss" numeric(4,4),
-  "status" varchar(8) COLLATE "pg_catalog"."default",
-  "create_at" timestamptz(6) DEFAULT CURRENT_TIMESTAMP,
-  "leverage" numeric(4,0) DEFAULT 1,
-  "user_id" numeric(8,0) NOT NULL,
-  "fees" numeric(16,8)
-)
-;
-ALTER TABLE "public"."futures" OWNER TO "envoys";
-
--- ----------------------------
--- Primary Key structure for table futures
--- ----------------------------
-ALTER TABLE "public"."futures" ADD CONSTRAINT "futures_pkey" PRIMARY KEY ("id");
+ALTER TABLE public.futures OWNER TO envoys;
+GRANT ALL ON TABLE public.futures TO envoys;

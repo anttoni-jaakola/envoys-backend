@@ -47,7 +47,7 @@ func (a *Service) closePosition(order *types.Future) {
 		switch position {
 		//case long
 		case types.PositionLong:
-			if order.GetPrice() >= item.GetPrice() {
+			if order.GetPrice() <= item.GetPrice() {
 				a.Context.Logger.Infof("[BID]: (item [%v]) >= (order [%v]), order ID: %v", order.GetPrice(), item.GetPrice(), item.GetId())
 
 				//process trade
