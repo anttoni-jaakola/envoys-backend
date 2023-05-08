@@ -5,17 +5,87 @@ package pb.future;
 option go_package = "server/proto/v2/pbfuture";
 
 import "google/api/annotations.proto";
+import "server/types/types.proto";
 
 service Api {
     rpc GetFutures (GetRequestFutures) returns (ResponseFutures) {
         option (google.api.http) = {
             get: "/v2/future/get-futures"
         };
+    };
+    rpc SetOrder (SetRequestOrder) returns (ResponseOrder) {
+        option (google.api.http) = {
+            post: "/v2/future/set-order",
+            body: "*",
+        };
+    };
+    rpc SetTicker (SetRequestTicker) returns (ResponseTicker) {
+        option (google.api.http) = {
+        post: "/v2/future/set-ticker",
+        body: "*"
+        };
     }
-}
+    rpc GetTicker (GetRequestTicker) returns (ResponseTicker) {
+        option (google.api.http) = {
+            post: "/v2/provider/get-ticker",
+            body: "*",
+            additional_bindings {
+            get: "/v2/provider/get-ticker"
+            }
+        };
+    }
+};
 
 message GetRequestFutures {}
 
 message ResponseFutures {
     string reply = 1;
+}
+
+message SetRequestOrder {
+    string assigning = 1;
+    string position = 2;
+    string order_type = 3;
+    string base_unit = 4;
+    string quote_unit = 5;
+    double price = 6;
+    double quantity = 7;
+    double leverage = 8;
+    double take_profit = 9;
+    double stop_loss = 10;
+    string mode = 11;
+}
+
+message GetRequestOrders {
+    string assinging = 1;
+}
+
+message ResponseOrder {
+    repeated types.Future fields = 1;
+    double volume = 2;
+    bool success = 3;
+    int32 count = 4;
+}
+
+
+message GetRequestTicker {
+    int64 limit = 1;
+    int64 from = 2;
+    int64 to = 3;
+    string base_unit = 4;
+    string quote_unit = 5;
+    string resolution = 6;
+}
+
+message SetRequestTicker {
+    string key = 1;
+    double price = 2;
+    double value = 3;
+    string base_unit = 4;
+    string quote_unit = 5;
+    string assigning = 6;
+}
+message ResponseTicker {
+    repeated types.Ticker fields = 1;
+    types.Stats stats = 2;
 }
