@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cryptogateway/backend-envoys/assets/common/decimal"
 	"github.com/cryptogateway/backend-envoys/assets/common/help"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbfuture"
 	"github.com/cryptogateway/backend-envoys/server/service/v2/account"
@@ -20,6 +21,92 @@ func (a *Service) GetFutures(_ context.Context, req *pbfuture.GetRequestFutures)
 	)
 	return &response, nil
 }
+func (a *Service) GetOrders(ctx context.Context, req *pbfuture.GetRequestOrders) (*pbfuture.ResponseOrder, error) {
+	var (
+		response pbfuture.ResponseOrder
+		maps     []string
+	)
+
+	if req.GetLimit() == 0 {
+		req.Limit = 30
+	}
+
+	switch req.GetAssigning() {
+	case types.AssigningOpen:
+		maps = append(maps, fmt.Sprintf("where assigning = '%v'", types.AssigningOpen))
+	case types.AssigningClose:
+		maps = append(maps, fmt.Sprintf("where assigning = '%v'", types.AssigningClose))
+	default:
+		maps = append(maps, fmt.Sprintf("where assigning = '%v' or assigning = '%v'", types.AssigningClose, types.AssigningOpen))
+	}
+
+	if len(req.GetPosition()) > 0 {
+		if err := types.Position(req.GetPosition()); err != nil {
+			return &response, err
+		}
+		maps = append(maps, fmt.Sprintf("and type = '%v'", req.GetPosition()))
+	}
+	// check order type
+
+	if req.GetOwner() {
+
+		auth, err := a.Context.Auth(ctx)
+		if err != nil {
+			return &response, err
+		}
+
+		maps = append(maps, fmt.Sprintf("and user_id = '%v'", auth))
+
+	} else if req.GetUserId() > 0 {
+
+		maps = append(maps, fmt.Sprintf("and user_id = '%v'", req.GetUserId()))
+	}
+	switch req.GetStatus() {
+	case types.StatusFilled:
+		maps = append(maps, fmt.Sprintf("and status = '%v'", types.StatusFilled))
+	case types.StatusPending:
+		maps = append(maps, fmt.Sprintf("and status = '%v'", types.StatusPending))
+	case types.StatusCancel:
+		maps = append(maps, fmt.Sprintf("and status = '%v'", types.StatusCancel))
+	}
+	if len(req.GetBaseUnit()) > 0 && len(req.GetQuoteUnit()) > 0 {
+		maps = append(maps, fmt.Sprintf("and base_unit = '%v' and quote_unit = '%v'", req.GetBaseUnit(), req.GetQuoteUnit()))
+	}
+	_ = a.Context.Db.QueryRow(fmt.Sprintf("select count(*) as count, sum(value) as volume from futures %s", strings.Join(maps, " "))).Scan(&response.Count, &response.Volume)
+
+	if response.GetCount() > 0 {
+
+		offset := req.GetLimit() * req.GetPage()
+		if req.GetPage() > 0 {
+			offset = req.GetLimit() * (req.GetPage() - 1)
+		}
+
+		rows, err := a.Context.Db.Query(fmt.Sprintf("select id, assigning, price, value, quantity, base_unit, quote_unit, user_id, create_at, Position, status from futures %s order by id desc limit %d offset %d", strings.Join(maps, " "), req.GetLimit(), offset))
+		if err != nil {
+			return &response, err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+
+			var (
+				item types.Future
+			)
+
+			if err = rows.Scan(&item.Id, &item.Assigning, &item.Price, &item.Value, &item.Quantity, &item.BaseUnit, &item.QuoteUnit, &item.UserId, &item.CreateAt, &item.Position, &item.Status); err != nil {
+				return &response, err
+			}
+
+			response.Fields = append(response.Fields, &item)
+		}
+
+		if err = rows.Err(); err != nil {
+			return &response, err
+		}
+	}
+
+	return &response, nil
+}
 
 func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (*pbfuture.ResponseOrder, error) {
 
@@ -28,11 +115,11 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 		order    types.Future
 	)
 
-	auth, err := a.Context.Auth(ctx)
-	if err != nil {
-		return &response, err
-	}
-	// var auth int64 = 6
+	// auth, err := a.Context.Auth(ctx)
+	// if err != nil {
+	// 	return &response, err
+	// }
+	var auth int64 = 6
 
 	if err := a.queryValidatePair(req.GetBaseUnit(), req.GetQuoteUnit(), "future"); err != nil {
 		return &response, err
@@ -84,10 +171,12 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 	if err != nil {
 		return &response, err
 	}
+	order.Value = decimal.New(req.GetQuantity()).Mul(req.GetPrice()).Float()
 
 	if order.Id, err = a.writeOrder(&order); err != nil {
 		return &response, err
 	}
+	fmt.Println("order saved id ", order.Id)
 
 	switch order.GetAssigning() {
 	case types.AssigningOpen:
@@ -103,7 +192,7 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 			return &response, err
 		}
 
-		a.closePosition(&order)
+		// a.closePosition(&order)
 
 		break
 	default:

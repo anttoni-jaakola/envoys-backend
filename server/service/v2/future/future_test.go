@@ -96,8 +96,8 @@ func TestApi_FutureSetOrder(t *testing.T) {
 				Context: &option,
 			}
 			ctx := context.Background()
-			p.SetOrder(ctx, &tt.args)
-
+			_, got := p.SetOrder(ctx, &tt.args)
+			t.Log(got)
 		})
 	}
 }

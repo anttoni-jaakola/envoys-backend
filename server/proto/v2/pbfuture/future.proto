@@ -19,6 +19,12 @@ service Api {
             body: "*",
         };
     };
+    rpc GetOrders (GetRequestOrders) returns (ResponseOrder) {
+        option (google.api.http) = {
+            post: "/v2/future/get-orders",
+            body: "*",
+        };
+    };
     rpc SetTicker (SetRequestTicker) returns (ResponseTicker) {
         option (google.api.http) = {
         post: "/v2/future/set-ticker",
@@ -57,9 +63,16 @@ message SetRequestOrder {
 }
 
 message GetRequestOrders {
-    string assinging = 1;
+    bool owner = 1;
+    int64 user_id = 2;
+    int64 limit = 3;
+    int64 page = 4;
+    string base_unit = 5;
+    string quote_unit = 6;
+    string assigning = 7;
+    string status = 8;
+    string position = 9;
 }
-
 message ResponseOrder {
     repeated types.Future fields = 1;
     double volume = 2;
