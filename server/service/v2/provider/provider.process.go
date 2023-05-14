@@ -17,7 +17,7 @@ func (a *Service) trade(order *types.Order, assigning string) {
 
 	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
 	// error and returning.
-	if err := a.Context.Publish(order, "exchange", "future/create"); a.Context.Debug(err) {
+	if err := a.Context.Publish(order, "exchange", "order/create"); a.Context.Debug(err) {
 		return
 	}
 
