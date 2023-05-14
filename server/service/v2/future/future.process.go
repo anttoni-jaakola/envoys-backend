@@ -2,6 +2,7 @@ package future
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbfuture"
@@ -11,6 +12,7 @@ import (
 
 func (a *Service) closePosition(order *types.Future) {
 	// publish exchange
+	fmt.Println("PUBLISH EXCHANGE")
 	if err := a.Context.Publish(order, "exchange", "future/create"); a.Context.Debug(err) {
 		return
 	}

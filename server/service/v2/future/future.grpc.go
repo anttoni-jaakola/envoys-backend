@@ -44,7 +44,7 @@ func (a *Service) GetOrders(ctx context.Context, req *pbfuture.GetRequestOrders)
 		if err := types.Position(req.GetPosition()); err != nil {
 			return &response, err
 		}
-		maps = append(maps, fmt.Sprintf("and type = '%v'", req.GetPosition()))
+		maps = append(maps, fmt.Sprintf("and position = '%v'", req.GetPosition()))
 	}
 	// check order type
 
@@ -192,7 +192,7 @@ func (a *Service) SetOrder(ctx context.Context, req *pbfuture.SetRequestOrder) (
 			return &response, err
 		}
 
-		// a.closePosition(&order)
+		a.closePosition(&order)
 
 		break
 	default:

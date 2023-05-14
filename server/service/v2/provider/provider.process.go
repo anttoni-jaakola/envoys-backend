@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+
 	"github.com/cryptogateway/backend-envoys/assets/common/query"
 	"github.com/cryptogateway/backend-envoys/server/proto/v2/pbprovider"
 	"github.com/cryptogateway/backend-envoys/server/types"
@@ -16,7 +17,7 @@ func (a *Service) trade(order *types.Order, assigning string) {
 
 	// This code is checking for an error when publishing to the exchange. If an error occurs, the code is printing out the
 	// error and returning.
-	if err := a.Context.Publish(order, "exchange", "order/create"); a.Context.Debug(err) {
+	if err := a.Context.Publish(order, "exchange", "future-order/create"); a.Context.Debug(err) {
 		return
 	}
 

@@ -209,7 +209,7 @@ func (a *Service) writeTrade(id int64, symbol string, value, price float64, conv
 		}
 	}
 
-	if err := a.Context.Publish(a.queryOrder(order.GetId()), "exchange", "order/status"); err != nil {
+	if err := a.Context.Publish(a.queryOrder(order.GetId()), "exchange", "future/status"); err != nil {
 		return 0, err
 	}
 
