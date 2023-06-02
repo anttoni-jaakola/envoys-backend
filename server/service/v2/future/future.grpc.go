@@ -18,6 +18,7 @@ func (a *Service) GetFutures(_ context.Context, req *pbfuture.GetRequestFutures)
 	var (
 		response pbfuture.ResponseFutures
 		// exist    bool
+		// success bool
 	)
 	return &response, nil
 }
